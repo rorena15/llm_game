@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+httpx
+pydantic
+chromadb
+numpy
+matplotlib
+tenserflow
+pandas
