@@ -25,6 +25,8 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_v8n3u")
 
+[node name="HTTPRequest" type="HTTPRequest" parent="."]
+
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -104,17 +106,12 @@ alignment = 1
 [node name="TitleLabel" type="Label" parent="BriefingLayer/BriefingPopup/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 6
-text = "작전명: 그림자 인사 (Shadow HR)"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="DescLabel" type="RichTextLabel" parent="BriefingLayer/BriefingPopup/VBoxContainer"]
 layout_mode = 2
 bbcode_enabled = true
-text = "타겟: 김철수 부장
-목표: 사내망 접속 비밀번호 탈취
-특이사항: 기계치이며 권위적임.
-이메일과 메신저를 활용하여 접근하라."
 fit_content = true
 
 [node name="StartButton" type="Button" parent="BriefingLayer/BriefingPopup/VBoxContainer"]

@@ -17,44 +17,10 @@ var app_email_scene = preload("res://app_email.tscn")
 @onready var title_label = $BriefingLayer/BriefingPopup/VBoxContainer/TitleLabel
 @onready var desc_label = $BriefingLayer/BriefingPopup/VBoxContainer/DescLabel
 @onready var start_button = $BriefingLayer/BriefingPopup/VBoxContainer/StartButton
+@onready var http_request = $HTTPRequest
 
 # 윈도우 생성 위치
 var spawn_pos = Vector2(50, 50)
-
-# 시나리오별 브리핑 데이터 (튜토리얼 포함)
-var mission_data = {
-	"tutorial": {
-		"title": "TUTORIAL: 신입 사원 교육",
-		"desc": """
-		[center]
-		신입 해커님, 환영합니다.
-		첫 번째 임무는 간단한 [OSINT 훈련]입니다.
-		
-		타겟: 신입 사원 '이민수'
-		목표: [비밀번호]를 알아내어 접속하기.
-		
-		1. [이메일]을 확인해 힌트를 얻으세요.
-		2. [메신저]로 친절하게 말을 거세요.
-		3. 정보를 [수사보드]에 연결하세요.
-		[/center]
-		"""
-	},
-	"mission_1": {
-		"title": "MISSION 01: 그림자 인사 (Shadow HR)",
-		"desc": """
-		[center]
-		타겟: 인사팀 '김철수 부장'
-		난이도: ★☆☆☆☆
-		
-		목표: 사내망 접속 권한 탈취
-		
-		특이사항:
-		- 기계치이며 권위적임.
-		- '급하다'고 재촉하거나 아부하면 약함.
-		[/center]
-		"""
-	}
-}
 
 func _ready():
 	# 버튼 연결
@@ -62,35 +28,58 @@ func _ready():
 	btn_board.pressed.connect(open_app.bind(app_board_scene))
 	btn_server.pressed.connect(open_app.bind(app_server_scene))
 	btn_email.pressed.connect(open_app.bind(app_email_scene))
-	
 	start_button.pressed.connect(_on_start_button_pressed)
-	
+	if http_request:
+		http_request.process_mode = Node.PROCESS_MODE_ALWAYS
 	# 게임 시작 시 브리핑 설정
 	setup_briefing()
 
 func setup_briefing():
-	# 1. Global 변수에서 현재 시나리오 ID 가져오기
-	var current_id = Global.current_scenario
-	if current_id == "": current_id = "tutorial"
-	
-	print("📂 현재 시나리오 로딩: ", current_id)
-	
-	# 2. 데이터 사전에서 텍스트 꺼내기
-	var data = mission_data.get(current_id, mission_data["tutorial"])
-	
-	# 3. UI 업데이트 (노드가 존재할 때만)
-	if title_label: title_label.text = data["title"]
-	if desc_label: desc_label.text = data["desc"]
-	
-	# 4. 화면 띄우기 및 일시정지
+	# 1. 일시정지 먼저 걸기 (데이터 로딩 중 플레이 방지)
 	briefing_layer.visible = true
-	
-	# ⭐ [핵심 수정] 브리핑 레이어는 일시정지 상태에서도 멈추지 않게 설정
-	# 이 설정이 없으면 버튼이 눌리지 않습니다.
 	briefing_layer.process_mode = Node.PROCESS_MODE_ALWAYS
-	
-	# 게임 세계 멈춤
 	get_tree().paused = true
+	
+	# 로딩 중 메시지 표시
+	title_label.text = "Loading..."
+	desc_label.text = "본부에서 작전 데이터를 수신 중입니다..."
+	start_button.disabled = true
+	
+	# 2. 서버에 미션 정보 요청
+	var current_id = Global.current_scenario
+	if current_id == "": current_id = "mission_Tutorial"
+	
+	print("📂 시나리오 데이터 요청: ", current_id)
+	
+	if http_request:
+		http_request.request_completed.connect(_on_briefing_received)
+		http_request.request("http://127.0.0.1:8000/mission/" + current_id)
+	else:
+		print("❌ HTTPRequest 노드가 없습니다!")
+
+func _on_briefing_received(result, response_code, _headers, body):
+	var dots = [".", "..", "...", ".", ".."]
+	for dot in dots:
+		if title_label:
+			title_label.text = "Loading" + dot
+		await get_tree().create_timer(0.8).timeout
+	
+	if result == HTTPRequest.RESULT_SUCCESS and response_code == 200:
+		var json = JSON.new()
+		if json.parse(body.get_string_from_utf8()) == OK:
+			var data = json.get_data()
+			
+			# ⭐ 서버 데이터로 UI 업데이트
+			title_label.text = data.get("title", "제목 없음")
+			desc_label.text = data.get("briefing", "내용 없음")
+			
+			# 로딩 완료 후 시작 버튼 활성화
+			start_button.disabled = false
+			print("✅ 브리핑 데이터 수신 완료")
+		else:
+			desc_label.text = "데이터 파싱 실패"
+	else:
+		desc_label.text = "서버 연결 실패. (Python 서버를 확인하세요)"
 
 func _on_start_button_pressed():
 	# 팝업 숨기고 게임 재개

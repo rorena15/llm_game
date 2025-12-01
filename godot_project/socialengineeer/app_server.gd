@@ -28,7 +28,7 @@ func _ready():
 	# 씬에 HTTPRequest 노드가 있어야 오류가 나지 않습니다.
 	if http_request:
 		http_request.request_completed.connect(_on_mission_info_received)
-		var error = http_request.request("http://127.0.0.1:8000/mission/mission_1")
+		var error = http_request.request("http://127.0.0.1:8000/mission/" + Global.current_scenario)
 		if error != OK:
 			print("❌ 서버 요청 실패")
 	else:

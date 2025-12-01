@@ -21,7 +21,7 @@ func _ready():
 	chat_output.meta_clicked.connect(_on_meta_clicked)
 	retry_button.pressed.connect(_on_retry_button_pressed)
 	
-	add_chat_log("System", "서버 로그인 완료.")
+	#add_chat_log("System", "서버 로그인 완료.")
 	
 	# ⭐ 1. 게임 시작 시 서버에 미션 정보(정답) 요청
 	# 기존 채팅용 HTTPRequest 노드를 재사용합니다.
@@ -85,14 +85,17 @@ func add_chat_log(sender: String, message: String):
 	if sender == "Player": color = "#569CD6"
 	elif sender == "NPC": color = "#CE9178"
 	elif sender == "System": color = "gray"
-	
-	# ⭐ 3. 비밀번호 감지 로직 (동적 변수 사용)
-	# target_password가 비어있지 않고, 메시지에 포함되어 있다면 링크 생성
+	# === ⭐ [수정됨] 힌트 자동 링크 걸기 ===
+	# 1. 정답(비밀번호) 감지
 	if target_password != "" and target_password in message:
-		var bbcode = '[url={"type":"password", "value":"%s"}]%s[/url]' % [target_password, target_password]
-		message = message.replace(target_password, bbcode)
-	
-	# 4. 서버 감지 (기존 유지)
+		message = _make_link(message, target_password, "password")
+	# 2. 튜토리얼용 사원번호 (2024001) 감지
+	if "2024001" in message:
+		message = _make_link(message, "2024001", "id")
+	# 3. 튜토리얼용 연도 (2024) 감지
+	if "2024" in message:
+		message = _make_link(message, "2024", "hint")
+	# 4. 서버 감지
 	if "Server" in message or "서버" in message:
 		message = message.replace("Server", '[url={"type":"server", "value":"Database Server"}]Server[/url]')
 		message = message.replace("서버", '[url={"type":"server", "value":"Database Server"}]서버[/url]')
@@ -108,6 +111,10 @@ func add_chat_log(sender: String, message: String):
 		await get_tree().create_timer(0.03).timeout
 	
 	chat_output.visible_ratio = 1.0
+
+func _make_link(text, keyword, type):
+	var bbcode = '[url={"type":"%s", "value":"%s"}]%s[/url]' % [type, keyword, keyword]
+	return text.replace(keyword, bbcode)
 
 func _on_user_input_gui_input(event):
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ENTER:
