@@ -101,20 +101,15 @@ size_flags_vertical = 3
 layout_mode = 2
 alignment = 1
 
-[node name="op_1_title" type="Label" parent="BriefingLayer/BriefingPopup/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="BriefingLayer/BriefingPopup/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 6
 text = "작전명: 그림자 인사 (Shadow HR)"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="RichTextLabel" type="RichTextLabel" parent="BriefingLayer/BriefingPopup/VBoxContainer/op_1_title"]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_top = 37.0
-offset_bottom = 137.0
-grow_horizontal = 2
+[node name="DescLabel" type="RichTextLabel" parent="BriefingLayer/BriefingPopup/VBoxContainer"]
+layout_mode = 2
 bbcode_enabled = true
 text = "타겟: 김철수 부장
 목표: 사내망 접속 비밀번호 탈취
@@ -122,16 +117,8 @@ text = "타겟: 김철수 부장
 이메일과 메신저를 활용하여 접근하라."
 fit_content = true
 
-[node name="StartButton" type="Button" parent="BriefingLayer/BriefingPopup/VBoxContainer/op_1_title"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 321.0
-offset_bottom = 349.0
-grow_horizontal = 2
-grow_vertical = 0
+[node name="StartButton" type="Button" parent="BriefingLayer/BriefingPopup/VBoxContainer"]
+layout_mode = 2
 text = "작전 개시 (Start)"
 
 [node name="ScreenEffects" type="CanvasLayer" parent="."]

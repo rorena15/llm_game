@@ -1,14 +1,10 @@
 extends Node
+var current_scenario = "mission_Tutorial"
 var server_pid = -1
-# "단서 발견했어!" 라고 외치는 신호
-# type: 단서 종류 (IP, Password, Name 등)
-# value: 실제 값 (192.168.0.1, admin123 등)
 @warning_ignore("unused_signal")
 signal clue_found(type, value)
 
 func _ready():
-	# ⭐ 수정됨: "배포된 게임(standalone)"일 때만 서버를 자동으로 켭니다.
-	# 에디터에서 개발 중일 때는 Python 서버를 따로 켜두시는 게 디버깅에 좋습니다.
 	if OS.has_feature("standalone"):
 		_start_server()
 	else:

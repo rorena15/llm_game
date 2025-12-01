@@ -26,7 +26,7 @@ SCENARIO_DB = {
             "mission_objective": "튜토리얼: 자연스럽게 대화를 시도하세요."
         }
     },
-    "tutorial": {
+    "mission_Tutorial": {
         "persona": """
         당신은 'CorpX' 인사팀의 **이민수 사원**입니다.
         

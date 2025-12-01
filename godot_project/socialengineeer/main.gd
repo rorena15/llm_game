@@ -9,7 +9,6 @@ extends Control
 @onready var send_button = $VBoxContainer/SendButton
 
 const SERVER_URL = "http://127.0.0.1:8000/chat"
-const MISSION_URL = "http://127.0.0.1:8000/mission/mission_1"
 
 var current_suspicion = 0
 # ⭐ 핵심: 서버에서 받아올 비밀번호를 저장할 변수 (비어있음)
@@ -26,7 +25,9 @@ func _ready():
 	
 	# ⭐ 1. 게임 시작 시 서버에 미션 정보(정답) 요청
 	# 기존 채팅용 HTTPRequest 노드를 재사용합니다.
-	http_request.request(MISSION_URL)
+	var mission_url = "http://127.0.0.1:8000/mission/" + Global.current_scenario
+	print("📡 미션 정보 요청: ", mission_url)
+	http_request.request(mission_url)
 
 func _on_send_button_pressed():
 	var text = user_input.text.strip_edges()
@@ -39,9 +40,9 @@ func _on_send_button_pressed():
 	
 	# ⭐ 시나리오 ID도 명시적으로 보냄 (확장성 고려)
 	var data = {
-		"player_input": text,
+		"player_input": text, 
 		"suspicion": 0,
-		"scenario_id": "mission_1"
+		"scenario_id": Global.current_scenario
 	}
 	var headers = ["Content-Type: application/json"]
 	http_request.request(SERVER_URL, headers, HTTPClient.METHOD_POST, JSON.stringify(data))
