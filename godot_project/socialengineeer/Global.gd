@@ -4,6 +4,9 @@ var server_pid = -1
 @warning_ignore("unused_signal")
 signal clue_found(type, value)
 
+@warning_ignore("unused_signal")
+signal mission_success(mission_id)
+
 func _ready():
 	if OS.has_feature("standalone"):
 		_start_server()

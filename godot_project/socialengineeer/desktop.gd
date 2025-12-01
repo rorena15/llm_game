@@ -1,5 +1,9 @@
 extends Control
 
+# 승리 화면 UI 경로
+@onready var victory_layer = $VictoryLayer
+@onready var btn_return = $VictoryLayer/ColorRect/VBoxContainer/Btn_Return
+
 # 앱 씬 미리 로드
 var app_messenger_scene = preload("res://app_messenger.tscn")
 var app_board_scene = preload("res://app_board.tscn")
@@ -29,9 +33,12 @@ func _ready():
 	btn_server.pressed.connect(open_app.bind(app_server_scene))
 	btn_email.pressed.connect(open_app.bind(app_email_scene))
 	start_button.pressed.connect(_on_start_button_pressed)
+	Global.mission_success.connect(_on_mission_success)
+	btn_return.pressed.connect(_on_return_pressed)
 	if http_request:
 		http_request.process_mode = Node.PROCESS_MODE_ALWAYS
 	# 게임 시작 시 브리핑 설정
+	victory_layer.visible = false
 	setup_briefing()
 
 func setup_briefing():
@@ -96,3 +103,24 @@ func open_app(app_scene: PackedScene):
 		var center = screen_size / 2
 		var offset = Vector2(randf_range(-30, 30), randf_range(-30, 30))
 		window.position = (center - window.size / 2) + offset
+
+func _on_mission_success(mission_id):
+	print("🏆 미션 성공: ", mission_id)
+	
+	# 1. 1초 뒤에 승리 화면 띄우기 (여운을 주기 위해)
+	await get_tree().create_timer(1.0).timeout
+	
+	victory_layer.visible = true
+	victory_layer.process_mode = Node.PROCESS_MODE_ALWAYS # 멈춰도 작동하게
+	
+	# 2. 축하 효과음 재생 (선택 사항)
+	# $VictorySound.play() 
+	
+	# 3. 게임 멈춤
+	get_tree().paused = true
+
+func _on_return_pressed():
+	# 메인 화면으로 돌아가기 (씬 다시 로드 또는 타이틀로 이동)
+	get_tree().paused = false
+	# 타이틀 화면 씬 경로가 맞는지 확인하세요!
+	get_tree().change_scene_to_file("res://title_screen.tscn")

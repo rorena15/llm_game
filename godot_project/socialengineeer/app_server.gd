@@ -93,6 +93,9 @@ func _show_success_screen():
 	...
 	(증거 확보 완료)
 	""" % target_password
+# ⭐ [핵심 추가] 승리 신호 발사!
+	print("🔓 잠금 해제 성공! 승리 신호 전송...")
+	Global.mission_success.emit(Global.current_scenario)
 
 func _show_fail_animation():
 	password_input.text = ""
