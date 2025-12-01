@@ -1,0 +1,34 @@
+[gd_scene load_steps=3 format=3 uid="uid://c4xv0uwge8ybf"]
+
+[ext_resource type="PackedScene" uid="uid://c0ngimr0turuu" path="res://windowBase.tscn" id="1_lmety"]
+[ext_resource type="Script" path="res://app_server.gd" id="2_kf3ox"]
+
+[node name="App_Server" instance=ExtResource("1_lmety")]
+offset_right = 1151.0
+offset_bottom = 139.0
+script = ExtResource("2_kf3ox")
+
+[node name="TitleLabel" parent="Layout/TitleBar" index="0"]
+text = ""
+
+[node name="LoginContainer" type="VBoxContainer" parent="Layout/ContentArea" index="0"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Layout/ContentArea/LoginContainer" index="0"]
+layout_mode = 2
+text = "관리자 접속 승인 대기 중..."
+
+[node name="PasswordInput" type="LineEdit" parent="Layout/ContentArea/LoginContainer" index="1"]
+layout_mode = 2
+placeholder_text = "암호 입력"
+secret = true
+
+[node name="LoginButton" type="Button" parent="Layout/ContentArea/LoginContainer" index="2"]
+layout_mode = 2
+text = "서버 접속"
+
+[node name="SecretData" type="RichTextLabel" parent="Layout/ContentArea" index="1"]
+visible = false
+layout_mode = 2
+text = "Confidential: 시스템 루트 암호 변경 이력 *****(데이터 말소)
+Database Password : admin123"

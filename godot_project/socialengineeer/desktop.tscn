@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://cr3km66yqn7u8"]
+[gd_scene load_steps=4 format=3 uid="uid://cr3km66yqn7u8"]
 
 [ext_resource type="PackedScene" uid="uid://b6cie3806kkr1" path="res://app_board.tscn" id="1_vpvrq"]
 [ext_resource type="PackedScene" uid="uid://cx7l83cxv4drh" path="res://app_messenger.tscn" id="2_emugc"]
+[ext_resource type="PackedScene" uid="uid://c4xv0uwge8ybf" path="res://app_server.tscn" id="3_58k10"]
 
 [node name="Desktop" type="Control"]
 layout_mode = 3
@@ -22,10 +23,10 @@ color = Color(0.237254, 0.0225852, 0.408345, 1)
 
 [node name="App_Board" parent="." instance=ExtResource("1_vpvrq")]
 layout_mode = 0
-offset_left = 11.0
-offset_top = 225.0
-offset_right = 1149.0
-offset_bottom = 384.0
+offset_left = -1.0
+offset_top = 217.0
+offset_right = 1151.0
+offset_bottom = 394.0
 
 [node name="App_Messenger" parent="." instance=ExtResource("2_emugc")]
 layout_mode = 0
@@ -33,3 +34,9 @@ offset_left = 1.0
 offset_top = 7.0
 offset_right = 1151.0
 offset_bottom = 221.0
+
+[node name="App_Server" parent="." instance=ExtResource("3_58k10")]
+layout_mode = 0
+offset_top = 76.0
+offset_right = 1150.0
+offset_bottom = 216.0

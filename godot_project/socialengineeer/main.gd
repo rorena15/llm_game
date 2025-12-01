@@ -19,7 +19,7 @@ func _ready():
 	# ⭐ 핵심: 링크(BBCode URL) 클릭 신호 연결
 	chat_output.meta_clicked.connect(_on_meta_clicked)
 	
-	add_chat_log("System", "서버 연결 준비 완료. 메시지를 입력하세요.")
+	add_chat_log("System", "서버 로그인 완료.")
 	retry_button.pressed.connect(_on_retry_button_pressed)
 
 func _on_send_button_pressed():
@@ -66,14 +66,16 @@ func add_chat_log(sender: String, message: String):
 	elif sender == "NPC": color = "#CE9178"
 	elif sender == "System": color = "gray"
 	
-	# 1. 키워드 자동 감지 및 링크 걸기 (간단한 버전)
-	# "admin123"이나 "Server" 같은 단어가 있으면 클릭 가능한 태그[url]로 감쌉니다.
-	# 형식: [url={"type":"종류", "value":"값"}]화면에보일글자[/url]
-	if "admin123" in message:
-		message = message.replace("admin123", '[url={"type":"password", "value":"admin123"}]admin123[/url]')
+	# 1. 비밀번호 감지 (bluesky2024)
+	if "bluesky2024" in message:
+		# 해당 단어를 클릭 가능한 태그[url]로 감싸기
+		message = message.replace("bluesky2024", '[url={"type":"password", "value":"bluesky2024"}]bluesky2024[/url]')
 	
-	if "Server" in message: # 예시: 서버라는 단어도 클릭 가능하게
+	# 2. 서버 감지 (대소문자 무시를 위해 간단히 처리)
+	if "Server" in message or "서버" in message:
+		# "서버"라는 단어가 나오면 무조건 Database Server 노드를 만드는 링크로 변환
 		message = message.replace("Server", '[url={"type":"server", "value":"Database Server"}]Server[/url]')
+		message = message.replace("서버", '[url={"type":"server", "value":"Database Server"}]서버[/url]')
 	
 	# 2. 텍스트 추가 (BBCode 적용)
 	chat_output.append_text("\n[color=%s]%s:[/color] %s" % [color, sender, message])

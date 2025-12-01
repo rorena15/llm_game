@@ -22,4 +22,3 @@ Global="*res://Global.gd"
 [gui]
 
 theme/custom="res://Hacker_Theme.tres"
-theme/custom_font="res://KoddiUDOnGothic-Regular.ttf"

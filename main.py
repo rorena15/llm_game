@@ -79,7 +79,10 @@ async def chat_endpoint(request: GameRequest):
         "messages": messages,
         "stream": False,
         "format": "json",
-        "options": {"temperature": 0.3}
+        "options": {
+            "temperature": 0.6,
+            "repeat_penalty": 1.2
+            }
     }
 
     async with httpx.AsyncClient() as client:
@@ -88,6 +91,10 @@ async def chat_endpoint(request: GameRequest):
             response.raise_for_status()
             
             ollama_data = response.json()
+            input_tokens = ollama_data.get("prompt_eval_count", 0) # 입력 토큰
+            output_tokens = ollama_data.get("eval_count", 0)       # 출력(대답) 토큰
+            print(f"💰 토큰 사용량 - 입력: {input_tokens} / 출력: {output_tokens} (총: {input_tokens + output_tokens})")
+            
             raw_content = ollama_data.get("message", {}).get("content", "")
             
             # 3. 이번 대화(User) 저장
