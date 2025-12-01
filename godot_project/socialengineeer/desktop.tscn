@@ -4,15 +4,15 @@
 [ext_resource type="PackedScene" uid="uid://cx7l83cxv4drh" path="res://app_messenger.tscn" id="2_emugc"]
 [ext_resource type="Shader" path="res://desktop.gdshader" id="4_iyjli"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_dougu"]
-shader = ExtResource("4_iyjli")
-shader_parameter/scanline_count = 50.0
-
 [sub_resource type="Environment" id="Environment_lrdr6"]
 background_mode = 3
 glow_enabled = true
 glow_intensity = 1.5
 glow_bloom = 0.3
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_dougu"]
+shader = ExtResource("4_iyjli")
+shader_parameter/scanline_count = 50.0
 
 [node name="Desktop" type="Control"]
 layout_mode = 3
@@ -25,14 +25,11 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_v8n3u")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 10.0
-offset_bottom = -3.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.237254, 0.0225852, 0.408345, 1)
@@ -85,9 +82,62 @@ offset_right = 3.0
 offset_bottom = -344.0
 grow_vertical = 2
 
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_lrdr6")
+
+[node name="BriefingLayer" type="CanvasLayer" parent="."]
+process_mode = 3
+
+[node name="BriefingPopup" type="PanelContainer" parent="BriefingLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="BriefingLayer/BriefingPopup"]
+layout_mode = 2
+alignment = 1
+
+[node name="op_1_title" type="Label" parent="BriefingLayer/BriefingPopup/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 6
+text = "작전명: 그림자 인사 (Shadow HR)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RichTextLabel" type="RichTextLabel" parent="BriefingLayer/BriefingPopup/VBoxContainer/op_1_title"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 37.0
+offset_bottom = 137.0
+grow_horizontal = 2
+bbcode_enabled = true
+text = "타겟: 김철수 부장
+목표: 사내망 접속 비밀번호 탈취
+특이사항: 기계치이며 권위적임.
+이메일과 메신저를 활용하여 접근하라."
+fit_content = true
+
+[node name="StartButton" type="Button" parent="BriefingLayer/BriefingPopup/VBoxContainer/op_1_title"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 321.0
+offset_bottom = 349.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "작전 개시 (Start)"
+
 [node name="ScreenEffects" type="CanvasLayer" parent="."]
 
 [node name="ColorRect" type="ColorRect" parent="ScreenEffects"]
+visible = false
 material = SubResource("ShaderMaterial_dougu")
 anchors_preset = 15
 anchor_right = 1.0
@@ -99,6 +149,3 @@ offset_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_lrdr6")

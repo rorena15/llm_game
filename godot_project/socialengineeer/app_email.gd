@@ -19,7 +19,8 @@ func _ready():
 	body_label.meta_clicked.connect(_on_meta_clicked)
 	
 	http_request.request_completed.connect(_on_data_received)
-	http_request.request("http://127.0.0.1:8000/mission/mission_1")
+	var url = "http://127.0.0.1:8000/mission/" + Global.current_scenario
+	http_request.request(url)
 	
 func _on_title_bar_gui_input(event):
 	if event is InputEventMouseButton:

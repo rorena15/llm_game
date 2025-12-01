@@ -12,6 +12,8 @@ var app_email_scene = preload("res://app_email.tscn")
 @onready var btn_board = $TaskbarLayer/Taskbar/AppContainer/Btn_Board
 @onready var btn_server = $TaskbarLayer/Taskbar/AppContainer/Btn_Server
 @onready var btn_email = $TaskbarLayer/Taskbar/AppContainer/Btn_Email
+@onready var start_button = $BriefingLayer/BriefingPopup/VBoxContainer/op_1_title/StartButton
+@onready var briefing_layer = $BriefingLayer # 새로 추가한 레이어
 
 # 윈도우가 생성될 위치 (랜덤하게 흩뿌리기 위함)
 var spawn_pos = Vector2(50, 50)
@@ -23,6 +25,14 @@ func _ready():
 	btn_board.pressed.connect(open_app.bind(app_board_scene))
 	btn_server.pressed.connect(open_app.bind(app_server_scene))
 	btn_email.pressed.connect(open_app.bind(app_email_scene))
+	briefing_layer.visible = true
+	get_tree().paused = true # 게임 일시정지 (선택 사항)
+	start_button.pressed.connect(_on_start_button_pressed)
+	
+func _on_start_button_pressed():
+	# 팝업 숨기고 게임 시작
+	briefing_layer.visible = false
+	get_tree().paused = false
 
 # 앱을 여는 공통 함수
 func open_app(app_scene: PackedScene):
