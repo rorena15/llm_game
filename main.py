@@ -6,6 +6,7 @@ import json
 import re
 import chromadb
 import uuid
+import random # ⭐ 랜덤 모듈 추가 필수!
 from datetime import datetime
 from scenarios import get_system_prompt, get_mission_metadata
 
@@ -55,7 +56,26 @@ def retrieve_memory(query, n_results=3):
 
 @app.get("/mission/{scenario_id}")
 async def get_mission_info(scenario_id: str):
-    return get_mission_metadata(scenario_id)
+    # 1. 시나리오 데이터 가져오기
+    metadata = get_mission_metadata(scenario_id)
+    
+    # 2. 기밀 문서 리스트 가져오기
+    docs = metadata.get("secret_documents", [])
+    
+    # 3. 랜덤 선택 로직
+    selected_secret = "기밀 문서가 없습니다."
+    if docs:
+        selected_secret = random.choice(docs) # 리스트 중 하나 뽑기
+        
+    # 4. Godot에 보낼 데이터 구성 (기존 데이터 복사 + 뽑힌 비밀 추가)
+    response_data = metadata.copy()
+    response_data["target_secret"] = selected_secret # 뽑힌 걸 'target_secret'에 담음
+    
+    # 원본 리스트는 굳이 Godot에 보낼 필요 없으니 삭제 (선택 사항)
+    if "secret_documents" in response_data:
+        del response_data["secret_documents"]
+        
+    return response_data
 
 # === 채팅 엔드포인트 (안전장치 강화됨) ===
 @app.post("/chat", response_model=GameResponse)
