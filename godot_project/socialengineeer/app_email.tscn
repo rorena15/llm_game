@@ -1,0 +1,27 @@
+[gd_scene load_steps=3 format=3 uid="uid://c374y3ra8r1nl"]
+
+[ext_resource type="PackedScene" uid="uid://c0ngimr0turuu" path="res://windowBase.tscn" id="1_jntjn"]
+[ext_resource type="Script" path="res://app_email.gd" id="2_s6vdu"]
+
+[node name="App_Email" instance=ExtResource("1_jntjn")]
+offset_right = -2.0
+offset_bottom = 363.0
+script = ExtResource("2_s6vdu")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="." index="0"]
+
+[node name="HSplitContainer" type="HSplitContainer" parent="Layout/ContentArea" index="0"]
+layout_mode = 2
+
+[node name="EmailList" type="ItemList" parent="Layout/ContentArea/HSplitContainer" index="0"]
+layout_mode = 2
+
+[node name="EmailDetail" type="VBoxContainer" parent="Layout/ContentArea/HSplitContainer" index="1"]
+layout_mode = 2
+
+[node name="SubjectLabel" type="Label" parent="Layout/ContentArea/HSplitContainer/EmailDetail" index="0"]
+layout_mode = 2
+
+[node name="BodyLabel" type="RichTextLabel" parent="Layout/ContentArea/HSplitContainer/EmailDetail" index="1"]
+layout_mode = 2
+bbcode_enabled = true
