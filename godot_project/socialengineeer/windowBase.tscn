@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c0ngimr0turuu"]
 
-[ext_resource type="Script" path="res://window_base.gd" id="1_cnube"]
+[ext_resource type="Script" path="res://windowBase.gd" id="1_cnube"]
 
 [node name="WindowBase" type="PanelContainer"]
 offset_right = 1150.0

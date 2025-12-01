@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cr3km66yqn7u8"]
 
-[ext_resource type="PackedScene" uid="uid://c0ngimr0turuu" path="res://window_base.tscn" id="1_73xdc"]
+[ext_resource type="PackedScene" uid="uid://c0ngimr0turuu" path="res://windowBase.tscn" id="1_73xdc"]
 
 [node name="Desktop" type="Control"]
 layout_mode = 3
@@ -12,8 +12,10 @@ grow_vertical = 2
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 0
-offset_right = 1152.0
-offset_bottom = 646.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 1154.0
+offset_bottom = 648.0
 color = Color(0.237254, 0.0225852, 0.408345, 1)
 
 [node name="WindowBase" parent="." instance=ExtResource("1_73xdc")]
@@ -23,7 +25,7 @@ offset_bottom = 252.0
 
 [node name="WindowBase2" parent="." instance=ExtResource("1_73xdc")]
 layout_mode = 0
-offset_left = 34.0
-offset_top = 338.0
-offset_right = 1184.0
-offset_bottom = 552.0
+offset_left = 4.0
+offset_top = 332.0
+offset_right = 1154.0
+offset_bottom = 546.0
