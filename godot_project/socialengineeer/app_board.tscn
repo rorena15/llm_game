@@ -26,14 +26,15 @@ minimap_enabled = false
 show_menu = false
 
 [node name="Server Node" type="GraphNode" parent="Layout/ContentArea/GraphEdit" index="1"]
+visible = false
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 18.0
-offset_top = -89.0
+offset_top = -93.0
 offset_right = 170.0
-offset_bottom = -11.0
+offset_bottom = -15.0
 grow_vertical = 0
 mouse_filter = 1
 position_offset = Vector2(18, 21)

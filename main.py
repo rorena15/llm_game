@@ -13,7 +13,8 @@ from scenarios import get_system_prompt, get_mission_metadata
 
 # === 설정 ===
 OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL_NAME = "llama3.1"
+# MODEL_NAME = "llama3.1"
+MODEL_NAME = "mistral-nemo"
 # 모델 명은 장치 별로 구분
 # 노트북은 llama3.1
 # 데스크탑은 mistral-nemo OR gemma2로 변경해서 사용
