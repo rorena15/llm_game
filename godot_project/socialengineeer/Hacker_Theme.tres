@@ -1,0 +1,19 @@
+[gd_resource type="Theme" load_steps=3 format=3 uid="uid://dy3h3cpcwslrs"]
+
+[ext_resource type="FontFile" uid="uid://cludkx5y8fxgl" path="res://KoddiUDOnGothic-ExtraBold.ttf" id="1_3ulur"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4nn5l"]
+bg_color = Color(0.0509804, 0.0509804, 0.0509804, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 1, 0.2, 1)
+
+[resource]
+default_font = ExtResource("1_3ulur")
+Button/colors/font_color = Color(0, 1, 0.254902, 1)
+Label/colors/font_color = Color(0, 1, 0.254902, 1)
+LineEdit/colors/font_color = Color(0, 1, 0.254902, 1)
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_4nn5l")
+RichTextLabel/colors/default_color = Color(0, 1, 0.254902, 1)

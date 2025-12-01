@@ -23,9 +23,9 @@ color = Color(0.237254, 0.0225852, 0.408345, 1)
 [node name="App_Board" parent="." instance=ExtResource("1_vpvrq")]
 layout_mode = 0
 offset_left = 11.0
-offset_top = 214.0
+offset_top = 225.0
 offset_right = 1149.0
-offset_bottom = 373.0
+offset_bottom = 384.0
 
 [node name="App_Messenger" parent="." instance=ExtResource("2_emugc")]
 layout_mode = 0
