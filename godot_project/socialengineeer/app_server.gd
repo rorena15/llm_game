@@ -1,8 +1,13 @@
 extends PanelContainer
 
+
+# === [창 이동 변수] ===
+var dragging = false
+var drag_start_position = Vector2()
+@onready var title_bar = $Layout/TitleBar
+
 # 정답 비밀번호 (서버에서 받아옴)
 var target_password = ""
-
 # 노드 경로
 @onready var password_input = $Layout/ContentArea/LoginContainer/PasswordInput
 @onready var login_button = $Layout/ContentArea/LoginContainer/LoginButton
@@ -13,6 +18,7 @@ var target_password = ""
 @onready var http_request = $HTTPRequest 
 
 func _ready():
+	title_bar.gui_input.connect(_on_title_bar_gui_input)
 	# UI 연결
 	$Layout/TitleBar/CloseButton.pressed.connect(queue_free)
 	login_button.pressed.connect(_on_login_button_pressed)
@@ -51,6 +57,18 @@ func _on_login_button_pressed():
 		_show_success_screen()
 	else:
 		_show_fail_animation()
+
+func _on_title_bar_gui_input(event):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				dragging = true
+				drag_start_position = get_global_mouse_position() - global_position
+				move_to_front()
+			else:
+				dragging = false
+	elif event is InputEventMouseMotion and dragging:
+		global_position = get_global_mouse_position() - drag_start_position
 
 func _show_success_screen():
 	# 로그인 창 숨기고 기밀 문서 보여주기

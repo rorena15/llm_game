@@ -13,9 +13,6 @@ script = ExtResource("2_kf3ox")
 
 [node name="HTTPRequest" type="HTTPRequest" parent="." index="0"]
 
-[node name="TitleLabel" parent="Layout/TitleBar" index="0"]
-text = ""
-
 [node name="LoginContainer" type="VBoxContainer" parent="Layout/ContentArea" index="0"]
 layout_mode = 2
 

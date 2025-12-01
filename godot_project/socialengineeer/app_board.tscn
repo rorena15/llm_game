@@ -4,21 +4,26 @@
 [ext_resource type="Script" path="res://app_board.gd" id="2_ve0w2"]
 
 [node name="App_Board" instance=ExtResource("1_ccxdn")]
-size_flags_horizontal = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.0
+offset_left = -636.0
+offset_right = 638.0
+offset_bottom = 190.0
 script = ExtResource("2_ve0w2")
 
 [node name="TitleLabel" parent="Layout/TitleBar" index="0"]
-text = ""
-
-[node name="CloseButton" parent="Layout/TitleBar" index="1"]
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
+anchors_preset = 10
 anchor_right = 1.0
-offset_left = -41.0
+offset_top = 0.0
 offset_right = 0.0
-grow_horizontal = 0
-text = ""
+offset_bottom = 20.0
+grow_horizontal = 2
+text = "힌트 수첩"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="GraphEdit" type="GraphEdit" parent="Layout/ContentArea" index="0"]
 layout_mode = 2
@@ -32,9 +37,9 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 18.0
-offset_top = -89.0
+offset_top = -126.0
 offset_right = 170.0
-offset_bottom = -11.0
+offset_bottom = -48.0
 grow_vertical = 0
 mouse_filter = 1
 position_offset = Vector2(18, 21)

@@ -17,10 +17,14 @@ script = ExtResource("1_eyw5i")
 [node name="ServerRequest" type="HTTPRequest" parent="."]
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_top = 460.0
-offset_right = 1148.0
-offset_bottom = 592.0
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = -2.0
+offset_top = 504.0
+offset_right = -7.0
+offset_bottom = 649.0
+grow_horizontal = 2
 scale = Vector2(1.00199, 1.39159)
 
 [node name="ChatOutput" type="RichTextLabel" parent="VBoxContainer"]
@@ -40,6 +44,15 @@ layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.0
 text = "전송"
+
+[node name="SuspicionBar" type="ProgressBar" parent="."]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 24.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.986217, 0.108348, 7.70092e-07, 1)
 
 [node name="GameOverOverlay" type="ColorRect" parent="."]
 visible = false

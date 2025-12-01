@@ -4,12 +4,12 @@
 [ext_resource type="Theme" uid="uid://dy3h3cpcwslrs" path="res://Hacker_Theme.tres" id="2_sc5ha"]
 
 [node name="WindowBase" type="PanelContainer"]
-anchors_preset = 10
-anchor_right = 1.0
-offset_right = -3.0
-offset_bottom = 153.0
+anchors_preset = -1
+anchor_right = 0.997396
+anchor_bottom = 0.236111
 grow_horizontal = 2
 script = ExtResource("1_cnube")
+metadata/_edit_use_anchors_ = true
 
 [node name="Layout" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -20,15 +20,20 @@ layout_mode = 2
 
 [node name="TitleLabel" type="Label" parent="Layout/TitleBar"]
 layout_mode = 2
+anchor_right = 0.0919811
 offset_top = 3.0
 offset_right = 1155.0
 offset_bottom = 31.0
+metadata/_edit_use_anchors_ = true
 
 [node name="CloseButton" type="Button" parent="Layout/TitleBar"]
-layout_mode = 2
-offset_left = 1108.0
-offset_right = 1149.0
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -41.0
 offset_bottom = 34.0
+grow_horizontal = 0
 size_flags_horizontal = 8
 size_flags_vertical = 0
 text = "X"

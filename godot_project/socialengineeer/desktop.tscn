@@ -1,8 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://cr3km66yqn7u8"]
+[gd_scene load_steps=6 format=3 uid="uid://cr3km66yqn7u8"]
 
-[ext_resource type="PackedScene" uid="uid://b6cie3806kkr1" path="res://app_board.tscn" id="1_vpvrq"]
+[ext_resource type="Script" path="res://desktop.gd" id="1_v8n3u"]
 [ext_resource type="PackedScene" uid="uid://cx7l83cxv4drh" path="res://app_messenger.tscn" id="2_emugc"]
-[ext_resource type="PackedScene" uid="uid://c4xv0uwge8ybf" path="res://app_server.tscn" id="3_58k10"]
 [ext_resource type="Shader" path="res://desktop.gdshader" id="4_iyjli"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dougu"]
@@ -20,46 +19,71 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -2.0
+offset_top = 2.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_v8n3u")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 10.0
+offset_bottom = -3.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.237254, 0.0225852, 0.408345, 1)
 
-[node name="App_Board" parent="." instance=ExtResource("1_vpvrq")]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-offset_left = -1.0
-offset_top = 217.0
-offset_right = 1151.0
-offset_bottom = 394.0
-grow_horizontal = 1
+[node name="TaskbarLayer" type="CanvasLayer" parent="."]
+
+[node name="Taskbar" type="Panel" parent="TaskbarLayer"]
+custom_minimum_size = Vector2(0, 50)
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="AppContainer" type="HBoxContainer" parent="TaskbarLayer/Taskbar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Btn_Messenger" type="Button" parent="TaskbarLayer/Taskbar/AppContainer"]
+visible = false
+layout_mode = 2
+text = "메신저"
+
+[node name="Btn_Board" type="Button" parent="TaskbarLayer/Taskbar/AppContainer"]
+layout_mode = 2
+text = "수사보드"
+
+[node name="Btn_Server" type="Button" parent="TaskbarLayer/Taskbar/AppContainer"]
+layout_mode = 2
+text = "서버접속"
+
+[node name="Btn_Email" type="Button" parent="TaskbarLayer/Taskbar/AppContainer"]
+layout_mode = 2
+text = "이메일"
 
 [node name="App_Messenger" parent="." instance=ExtResource("2_emugc")]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-offset_left = 1.0
-offset_top = 7.0
-offset_right = 1151.0
-offset_bottom = 221.0
-grow_horizontal = 1
-
-[node name="App_Server" parent="." instance=ExtResource("3_58k10")]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-offset_top = 76.0
-offset_right = 1150.0
-offset_bottom = 216.0
-grow_horizontal = 1
+layout_mode = 1
+anchor_left = 0.000780031
+anchor_top = 0.54039
+anchor_right = 1.0
+anchor_bottom = 0.54039
+offset_left = 3.0
+offset_top = -387.0
+offset_right = 3.0
+offset_bottom = -344.0
+grow_vertical = 2
 
 [node name="ScreenEffects" type="CanvasLayer" parent="."]
 
@@ -68,6 +92,10 @@ material = SubResource("ShaderMaterial_dougu")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 1.0
+offset_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
