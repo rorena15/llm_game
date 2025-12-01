@@ -13,7 +13,7 @@ const MISSION_URL = "http://127.0.0.1:8000/mission/mission_1"
 
 var current_suspicion = 0
 # ⭐ 핵심: 서버에서 받아올 비밀번호를 저장할 변수 (비어있음)
-var target_password = "" 
+var target_password = ""
 
 func _ready():
 	send_button.pressed.connect(_on_send_button_pressed)
@@ -39,7 +39,7 @@ func _on_send_button_pressed():
 	
 	# ⭐ 시나리오 ID도 명시적으로 보냄 (확장성 고려)
 	var data = {
-		"player_input": text, 
+		"player_input": text,
 		"suspicion": 0,
 		"scenario_id": "mission_1"
 	}
@@ -125,7 +125,8 @@ func update_suspicion(delta):
 	current_suspicion = clamp(current_suspicion, 0, 100)
 	
 	if suspicion_bar:
-		suspicion_bar.value = current_suspicion
+			var tween = create_tween()
+			tween.tween_property(suspicion_bar, "value", current_suspicion, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		
 	print("현재 의심도: ", current_suspicion, " (변화량: ", delta, ")")
 	

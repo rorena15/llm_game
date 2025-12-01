@@ -47,7 +47,25 @@ SCENARIO_DB = {
         """,
         "metadata": {
             "target_password": "blue_sky_2024",
-            "mission_objective": "김철수 부장의 사내망 접속 비밀번호를 알아내세요."
+            "mission_objective": "김철수 부장의 사내망 접속 비밀번호를 알아내세요.",
+        
+        "emails": [
+                {
+                    "sender": "인사팀 (hr@corpx.com)",
+                    "subject": "[중요] 11월 급여 명세서 발송",
+                    "body": "김철수 부장님, 11월 급여 명세서입니다.\n비밀번호는 사번(990132)입니다."
+                },
+                {
+                    "sender": "아내 (wife@home.net)",
+                    "subject": "여보, 주말에 파란 하늘 보러 가요",
+                    "body": "요즘 너무 우울해 하길래 여행 예약했어.\n우리가 처음 만난 2024년 그곳으로..."
+                },
+                {
+                    "sender": "보안팀 (security@corpx.com)",
+                    "subject": "비밀번호 변경 안내",
+                    "body": "최근 해킹 시도가 감지되었습니다.\n비밀번호를 주기적으로 변경해주세요."
+                }
+            ]
         }
     }
 }
