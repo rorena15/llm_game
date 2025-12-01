@@ -9,20 +9,24 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(1.00159, 1)
 script = ExtResource("1_eyw5i")
 
 [node name="ServerRequest" type="HTTPRequest" parent="."]
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 1.0
-offset_top = 520.0
-offset_right = 1149.0
-offset_bottom = 652.0
+offset_top = 460.0
+offset_right = 1148.0
+offset_bottom = 592.0
+scale = Vector2(1.00199, 1.39159)
 
 [node name="ChatOutput" type="RichTextLabel" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+tab_size = 10
 
 [node name="UserInput" type="TextEdit" parent="VBoxContainer"]
 layout_mode = 2

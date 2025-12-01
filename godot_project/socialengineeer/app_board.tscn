@@ -1,0 +1,68 @@
+[gd_scene load_steps=3 format=3 uid="uid://b6cie3806kkr1"]
+
+[ext_resource type="PackedScene" uid="uid://c0ngimr0turuu" path="res://windowBase.tscn" id="1_ccxdn"]
+[ext_resource type="Script" path="res://app_board.gd" id="2_ve0w2"]
+
+[node name="App_Board" instance=ExtResource("1_ccxdn")]
+script = ExtResource("2_ve0w2")
+
+[node name="TitleLabel" parent="Layout/TitleBar" index="0"]
+text = ""
+
+[node name="CloseButton" parent="Layout/TitleBar" index="1"]
+text = ""
+
+[node name="GraphEdit" type="GraphEdit" parent="Layout/ContentArea" index="0"]
+layout_mode = 2
+minimap_enabled = false
+show_menu = false
+
+[node name="Server Node" type="GraphNode" parent="Layout/ContentArea/GraphEdit" index="1"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = -154.0
+offset_right = 159.0
+offset_bottom = -76.0
+grow_vertical = 0
+mouse_filter = 1
+position_offset = Vector2(18, 21)
+title = "데이터베이스 서버"
+slot/0/left_enabled = true
+slot/0/left_type = 0
+slot/0/left_color = Color(1, 1, 1, 1)
+slot/0/left_icon = null
+slot/0/right_enabled = true
+slot/0/right_type = 0
+slot/0/right_color = Color(1, 1, 1, 1)
+slot/0/right_icon = null
+slot/0/draw_stylebox = true
+
+[node name="Label" type="Label" parent="Layout/ContentArea/GraphEdit/Server Node" index="1"]
+layout_mode = 2
+text = "데이터"
+
+[node name="password Node" type="GraphNode" parent="Layout/ContentArea/GraphEdit" index="2"]
+layout_mode = 0
+offset_left = 920.0
+offset_top = 27.0
+offset_right = 1091.0
+offset_bottom = 105.0
+mouse_filter = 1
+position_offset = Vector2(920, 27)
+title = "비밀번호 : admin123"
+slot/0/left_enabled = true
+slot/0/left_type = 0
+slot/0/left_color = Color(1, 1, 1, 1)
+slot/0/left_icon = null
+slot/0/right_enabled = true
+slot/0/right_type = 0
+slot/0/right_color = Color(1, 1, 1, 1)
+slot/0/right_icon = null
+slot/0/draw_stylebox = true
+
+[node name="Label" type="Label" parent="Layout/ContentArea/GraphEdit/password Node" index="1"]
+layout_mode = 2
+text = "데이터"

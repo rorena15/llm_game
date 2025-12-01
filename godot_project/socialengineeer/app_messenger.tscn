@@ -4,8 +4,10 @@
 [ext_resource type="PackedScene" uid="uid://73dcxvm8qmxy" path="res://main.tscn" id="2_85kln"]
 
 [node name="App_Messenger" instance=ExtResource("1_0ii5i")]
+scale = Vector2(1, 0.932153)
 
 [node name="TitleLabel" parent="Layout/TitleBar" index="0"]
+scale = Vector2(1, 0.997023)
 text = ""
 
 [node name="CloseButton" parent="Layout/TitleBar" index="1"]

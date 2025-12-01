@@ -32,3 +32,4 @@ text = "X"
 
 [node name="ContentArea" type="MarginContainer" parent="Layout"]
 layout_mode = 2
+size_flags_vertical = 3
