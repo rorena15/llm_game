@@ -6,7 +6,8 @@ import json
 
 # === 설정 ===
 OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL_NAME = "llama3.1"  # 사용자 사양에 맞춘 최적 모델 (변경 가능: llama3, mistral)
+MODEL_NAME = "llama3.1"  # 노트북 모델
+# MODEL_NAME = "mistral-nemo" # 데스트탑 모델 사용시 주석 제거
 
 # === 앱 초기화 ===
 app = FastAPI(title="Social Engineer Backend")
