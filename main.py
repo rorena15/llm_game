@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import httpx
 import json
+import re
 
 # === 설정 ===
 OLLAMA_URL = "http://localhost:11434/api/chat"
@@ -91,9 +92,16 @@ async def chat_endpoint(request: GameRequest):
                 # 1. AI가 준 문자열을 파이썬 딕셔너리로 변환 (포장 뜯기)
                 ai_json = json.loads(raw_content)
                 
+                # 1.5 한자/일본어 제거 필터링
+                original_dialogue = ai_json.get("dialogue", "...")
+                
+                # 정규식 설명: 한글(가-힣), 영문(a-z), 숫자, 기본 특수문자만 남기고 다 지움
+                # [^\uAC00-\uD7A3...] -> 이 범위에 없는 것들은 빈칸("")으로 대체
+                cleaned_dialogue = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s.,?!'\"~()]", "", original_dialogue)
+            
                 # 2. 필요한 정보만 쏙쏙 뽑아서 GameResponse에 넣기
                 return GameResponse(
-                    dialogue=ai_json.get("dialogue", "..."),
+                    dialogue=cleaned_dialogue,  # 👈 여기가 중요! (청소된 변수 사용)
                     suspicion_delta=ai_json.get("suspicion_delta", 0),
                     action=ai_json.get("action", "NONE")
                 )
@@ -101,8 +109,11 @@ async def chat_endpoint(request: GameRequest):
             except json.JSONDecodeError:
                 # 만약 AI가 JSON 형식을 실수로 어겼을 때를 대비한 안전장치
                 print("⚠️ JSON 파싱 실패. 원본 텍스트를 그대로 보냅니다.")
-                # 가끔 AI가 딴소리를 할 때는 그냥 그 말을 dialogue로 보냅니다.
-                return GameResponse(dialogue=raw_content, suspicion_delta=0)
+                
+                # 파싱 실패 시에도 원본 텍스트에 한자가 섞여있을 수 있으니 여기서도 청소 한번 해줍니다.
+                cleaned_raw = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s.,?!'\"~()]", "", raw_content)
+                
+                return GameResponse(dialogue=cleaned_raw, suspicion_delta=0)
 
         except Exception as e:
             print(f"❌ 오류 발생: {str(e)}")
