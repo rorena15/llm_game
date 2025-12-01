@@ -30,6 +30,7 @@ SYSTEM_PROMPT = {
     플레이어(해커)와 대화하며 다음 규칙을 따르십시오:
 
     1. 말투: 사무적이고, 조금은 방어적이어야 합니다.
+    
     2. JSON 형식 필수: 반드시 아래 JSON 포맷으로만 응답하십시오.
     
     {
@@ -44,6 +45,14 @@ SYSTEM_PROMPT = {
         - 해킹 시도가 명백함: +50
         - 플레이어가 신뢰를 얻는 행동을 함 (사번 제시 등): -5
 
+    4. **언어:** 오직 '자연스러운 한국어'만 사용하십시오.
+    5. **금지:** 한자(Chinese characters), 일본어(Kana), 영어 단어를 절대 섞어 쓰지 마십시오.
+    6. **형식:** 반드시 지정된 JSON 포맷으로만 응답하십시오.
+    7. **말투:** 번역투가 아닌, 한국인이 실제로 쓰는 구어체를 사용하십시오.
+    
+    예시:
+    (X) "시스템의 異常 징후를 감지했습니다."
+    (O) "시스템에서 이상 징후를 감지했습니다."
     절대 JSON 외의 다른 말을 덧붙이지 마십시오.
     """
 }
@@ -62,7 +71,8 @@ async def chat_endpoint(request: GameRequest):
         "model": MODEL_NAME,
         "messages": messages,
         "stream": False, 
-        "options": {"temperature": 0.7},
+        "options": {"temperature": 0.3,
+                    "repeat_penalty": 1.2},
         "format": "json" # ⭐ AI에게 JSON 포맷을 강제하는 옵션 (중요!)
     }
 
