@@ -4,6 +4,5 @@ httpx
 pydantic
 chromadb
 numpy
-matplotlib
-tenserflow
 pandas
+tensorflow
