@@ -6,3 +6,4 @@ chromadb
 numpy
 pandas
 tensorflow
+matplotlib
