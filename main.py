@@ -13,7 +13,10 @@ from scenarios import get_system_prompt
 
 # === 설정 ===
 OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL_NAME = "gemma2" 
+MODEL_NAME = "llama3.1"
+# 모델 명은 장치 별로 구분
+# 노트북은 llama3.1
+# 데스크탑은 mistral-nemo OR gemma2로 변경해서 사용
 
 # === 장기 기억(ChromaDB) 초기화 ===
 chroma_client = chromadb.PersistentClient(path="./memory_db")
