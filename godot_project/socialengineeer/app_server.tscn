@@ -4,8 +4,11 @@
 [ext_resource type="Script" path="res://app_server.gd" id="2_kf3ox"]
 
 [node name="App_Server" instance=ExtResource("1_lmety")]
-offset_right = 1151.0
+offset_top = 8.0
+offset_right = 1.0
 offset_bottom = 139.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("2_kf3ox")
 
 [node name="HTTPRequest" type="HTTPRequest" parent="." index="0"]

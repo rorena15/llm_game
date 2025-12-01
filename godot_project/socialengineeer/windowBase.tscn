@@ -4,8 +4,11 @@
 [ext_resource type="Theme" uid="uid://dy3h3cpcwslrs" path="res://Hacker_Theme.tres" id="2_sc5ha"]
 
 [node name="WindowBase" type="PanelContainer"]
-offset_right = 1154.0
-offset_bottom = 140.0
+anchors_preset = 10
+anchor_right = 1.0
+offset_right = -3.0
+offset_bottom = 153.0
+grow_horizontal = 2
 script = ExtResource("1_cnube")
 
 [node name="Layout" type="VBoxContainer" parent="."]

@@ -23,20 +23,29 @@ color = Color(0.237254, 0.0225852, 0.408345, 1)
 
 [node name="App_Board" parent="." instance=ExtResource("1_vpvrq")]
 layout_mode = 0
+anchors_preset = 0
+anchor_right = 0.0
 offset_left = -1.0
 offset_top = 217.0
 offset_right = 1151.0
 offset_bottom = 394.0
+grow_horizontal = 1
 
 [node name="App_Messenger" parent="." instance=ExtResource("2_emugc")]
 layout_mode = 0
+anchors_preset = 0
+anchor_right = 0.0
 offset_left = 1.0
 offset_top = 7.0
 offset_right = 1151.0
 offset_bottom = 221.0
+grow_horizontal = 1
 
 [node name="App_Server" parent="." instance=ExtResource("3_58k10")]
 layout_mode = 0
+anchors_preset = 0
+anchor_right = 0.0
 offset_top = 76.0
 offset_right = 1150.0
 offset_bottom = 216.0
+grow_horizontal = 1
