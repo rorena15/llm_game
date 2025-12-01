@@ -1,11 +1,13 @@
 extends Control
 
+@onready var suspicion_bar = $Layout/ContentArea/SuspicionBar # 경로를 실제 위치에 맞게 수정하세요!
 @onready var http_request = $ServerRequest
 @onready var chat_output = $VBoxContainer/ChatOutput
 @onready var user_input = $VBoxContainer/UserInput
 @onready var send_button = $VBoxContainer/SendButton
 
 const SERVER_URL = "http://127.0.0.1:8000/chat"
+var current_suspicion = 0
 
 func _ready():
 	send_button.pressed.connect(_on_send_button_pressed)
@@ -34,12 +36,22 @@ func _on_request_completed(result, response_code, _headers, body):
 	if result == HTTPRequest.RESULT_SUCCESS and response_code == 200:
 		var json = JSON.new()
 		if json.parse(body.get_string_from_utf8()) == OK:
-			var npc_reply = json.get_data().get("dialogue", "...")
+			var response_data = json.get_data()
+			
+			# 1. 대화 내용 가져오기
+			var npc_reply = response_data.get("dialogue", "...")
+			
+			# ⭐ [추가됨] 2. 의심 수치 변화량 가져오기 (기본값 0)
+			# JSON에 "suspicion_delta"가 있으면 가져오고, 없으면 0으로 처리
+			var delta = response_data.get("suspicion_delta", 0)
+			update_suspicion(delta) # 의심 업데이트 함수 실행
+			
+			# 3. 로그 출력
 			add_chat_log("NPC", npc_reply)
 	else:
 		add_chat_log("System", "통신 오류 발생")
 	
-	# 입력 잠금 해제 (이제 여기서 풀어줍니다)
+	# 입력 잠금 해제
 	user_input.editable = true
 	send_button.disabled = false
 	user_input.grab_focus()
@@ -91,3 +103,26 @@ func _on_meta_clicked(meta):
 		
 		# 전화선(Global)을 통해 전 세계(모든 윈도우)에 알립니다!
 		Global.clue_found.emit(data.type, data.value)
+
+func update_suspicion(delta):
+	# 의심 수치 더하기
+	current_suspicion += delta
+	
+	# 0 ~ 100 사이를 벗어나지 않게 고정 (clamp)
+	current_suspicion = clamp(current_suspicion, 0, 100)
+	
+	# UI 게이지 업데이트
+	if suspicion_bar:
+		suspicion_bar.value = current_suspicion
+		
+	print("현재 의심도: ", current_suspicion, " (변화량: ", delta, ")")
+	
+	# 게임 오버 체크 (100 이상이면)
+	if current_suspicion >= 100:
+		game_over()
+
+func game_over():
+	add_chat_log("System", "🚨 [경고] 의심 수치 초과! 연결이 강제 종료되었습니다.")
+	user_input.editable = false
+	send_button.disabled = true
+	# 여기에 붉은 화면 효과 등을 넣을 수 있습니다.

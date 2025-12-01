@@ -13,5 +13,10 @@ text = ""
 [node name="CloseButton" parent="Layout/TitleBar" index="1"]
 text = ""
 
-[node name="main" parent="Layout/ContentArea" index="0" instance=ExtResource("2_85kln")]
+[node name="SuspicionBar" type="ProgressBar" parent="Layout/ContentArea" index="0"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.986217, 0.108348, 7.70092e-07, 1)
+
+[node name="main" parent="Layout/ContentArea" index="1" instance=ExtResource("2_85kln")]
 layout_mode = 2

@@ -42,9 +42,10 @@ slot/0/draw_stylebox = true
 
 [node name="Label" type="Label" parent="Layout/ContentArea/GraphEdit/Server Node" index="1"]
 layout_mode = 2
-text = "데이터"
+text = "Server"
 
 [node name="password Node" type="GraphNode" parent="Layout/ContentArea/GraphEdit" index="2"]
+visible = false
 layout_mode = 0
 offset_left = 920.0
 offset_top = 27.0
