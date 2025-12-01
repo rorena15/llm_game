@@ -8,6 +8,8 @@ offset_right = 1151.0
 offset_bottom = 139.0
 script = ExtResource("2_kf3ox")
 
+[node name="HTTPRequest" type="HTTPRequest" parent="." index="0"]
+
 [node name="TitleLabel" parent="Layout/TitleBar" index="0"]
 text = ""
 

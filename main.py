@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime
 
 # ⭐ 시나리오 모듈 임포트
-from scenarios import get_system_prompt
+from scenarios import get_system_prompt, get_mission_metadata
 
 # === 설정 ===
 OLLAMA_URL = "http://localhost:11434/api/chat"
@@ -56,6 +56,12 @@ def retrieve_memory(query, n_results=3):
     memories = results['documents'][0]
     return "\n".join([f"- {m}" for m in memories])
 
+# === [추가] 미션 정보 조회 엔드포인트 ===
+@app.get("/mission/{scenario_id}")
+async def get_mission_info(scenario_id: str):
+    """Godot이 현재 미션의 정답과 목표를 받아가는 곳"""
+    return get_mission_metadata(scenario_id)
+
 # === 메인 엔드포인트 ===
 @app.post("/chat", response_model=GameResponse)
 async def chat_endpoint(request: GameRequest):
@@ -74,41 +80,27 @@ async def chat_endpoint(request: GameRequest):
         {"role": "user", "content": request.player_input}
     ]
 
-    payload = {
-        "model": MODEL_NAME,
-        "messages": messages,
-        "stream": False,
-        "format": "json",
-        "options": {
-            "temperature": 0.6,
-            "repeat_penalty": 1.2
-            }
-    }
+    payload = {"model": MODEL_NAME,
+                "messages": messages,
+                "stream": False, 
+                "format": "json", 
+                "options": {"temperature": 0.7
+                            }
+                } # 창의성 약간 높임
 
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(OLLAMA_URL, json=payload, timeout=30.0)
             response.raise_for_status()
-            
             ollama_data = response.json()
-            input_tokens = ollama_data.get("prompt_eval_count", 0) # 입력 토큰
-            output_tokens = ollama_data.get("eval_count", 0)       # 출력(대답) 토큰
-            print(f"💰 토큰 사용량 - 입력: {input_tokens} / 출력: {output_tokens} (총: {input_tokens + output_tokens})")
-            
             raw_content = ollama_data.get("message", {}).get("content", "")
             
-            # 3. 이번 대화(User) 저장
             add_memory(f"플레이어: {request.player_input}", "player")
 
             try:
-                # 4. JSON 파싱
                 ai_json = json.loads(raw_content)
                 original_dialogue = ai_json.get("dialogue", "...")
-                
-                # 5. 이번 대화(NPC) 저장
                 add_memory(f"NPC: {original_dialogue}", "npc")
-
-                # 6. 한자/일본어 제거 (Regex Cleaning)
                 cleaned_dialogue = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s.,?!'\"~()]", "", original_dialogue)
 
                 return GameResponse(
@@ -116,14 +108,10 @@ async def chat_endpoint(request: GameRequest):
                     suspicion_delta=ai_json.get("suspicion_delta", 0),
                     action=ai_json.get("action", "NONE")
                 )
-
             except json.JSONDecodeError:
-                print("⚠️ JSON 파싱 실패, 원본 반환")
                 cleaned_raw = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s.,?!'\"~()]", "", raw_content)
                 return GameResponse(dialogue=cleaned_raw, suspicion_delta=0)
-
         except Exception as e:
-            print(f"❌ 오류: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
