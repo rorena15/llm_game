@@ -3,7 +3,7 @@ extends PanelContainer
 # 창을 드래그 중인지 확인하는 변수
 var dragging = false
 var drag_start_position = Vector2()
-
+	
 @onready var title_bar = $Layout/TitleBar
 @onready var close_button = $Layout/TitleBar/CloseButton
 

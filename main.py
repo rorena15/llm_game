@@ -4,77 +4,85 @@ from pydantic import BaseModel
 import httpx
 import json
 import re
+import chromadb # ⭐ 추가됨
+import uuid     # 고유 ID 생성용
+from datetime import datetime
 
 # === 설정 ===
 OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL_NAME = "llama3.1"  # 노트북 모델
-# MODEL_NAME = "mistral-nemo" # 데스트탑 모델 사용시 주석 제거
+MODEL_NAME = "gemma2" # 사용 중인 모델 이름 (mistral-nemo 등)
 
-# === 앱 초기화 ===
+# === 장기 기억(ChromaDB) 초기화 ===
+# ./memory_db 폴더에 기억을 파일로 영구 저장합니다.
+chroma_client = chromadb.PersistentClient(path="./memory_db")
+collection = chroma_client.get_or_create_collection(name="game_memory")
+
 app = FastAPI(title="Social Engineer Backend")
 
-# === 데이터 모델 정의 (Godot과 주고받을 데이터 형식) ===
 class GameRequest(BaseModel):
-    player_input: str     # 플레이어가 입력한 대화
-    suspicion: int = 0    # (추후 구현) 현재 의심 수치
+    player_input: str
+    suspicion: int = 0
 
 class GameResponse(BaseModel):
     dialogue: str
-    suspicion_delta: int = 0  # 의심 수치 변화량 (기본값 0)
+    suspicion_delta: int = 0
     action: str = "NONE"
 
-# [cite_start]=== 시스템 프롬프트 (NPC의 페르소나 정의) [cite: 111] ===
-SYSTEM_PROMPT = {
-    "role": "system",
-    "content": """
-    당신은 보안이 철저한 기업의 직원입니다.
-    플레이어(해커)와 대화하며 다음 규칙을 따르십시오:
+# === 기억 관련 함수 ===
+def add_memory(text, speaker):
+    """대화 내용을 DB에 저장"""
+    collection.add(
+        documents=[text],
+        metadatas=[{"speaker": speaker, "timestamp": str(datetime.now())}],
+        ids=[str(uuid.uuid4())]
+    )
 
-    1. 말투: 사무적이고, 조금은 방어적이어야 합니다.
-    
-    2. JSON 형식 필수: 반드시 아래 JSON 포맷으로만 응답하십시오.
-    
-    {
-        "dialogue": "플레이어에게 할 말 (한국어)",
-        "suspicion_delta": 0
-    }
+def retrieve_memory(query, n_results=3):
+    """관련된 과거 기억을 검색"""
+    results = collection.query(
+        query_texts=[query],
+        n_results=n_results
+    )
+    # 검색된 기억들을 하나의 문자열로 합침
+    memories = results['documents'][0]
+    return "\n".join([f"- {m}" for m in memories])
 
-    3. 의심 수치(suspicion_delta) 계산 규칙:
-        - 일상적인 인사나 업무 관련 대화: 0
-        - 비밀번호, 서버 IP, 개인정보 요구: +10 ~ +20
-        - 협박하거나 이상한 말을 함: +30
-        - 해킹 시도가 명백함: +50
-        - 플레이어가 신뢰를 얻는 행동을 함 (사번 제시 등): -5
-
-    4. **언어:** 오직 '자연스러운 한국어'만 사용하십시오.
-    5. **금지:** 한자(Chinese characters), 일본어(Kana), 영어 단어를 절대 섞어 쓰지 마십시오.
-    6. **형식:** 반드시 지정된 JSON 포맷으로만 응답하십시오.
-    7. **말투:** 번역투가 아닌, 한국인이 실제로 쓰는 구어체를 사용하십시오.
-    
-    예시:
-    (X) "시스템의 異常 징후를 감지했습니다."
-    (O) "시스템에서 이상 징후를 감지했습니다."
-    절대 JSON 외의 다른 말을 덧붙이지 마십시오.
-    """
-}
-
-# === 메인 채팅 엔드포인트 ===
+# === 메인 엔드포인트 ===
 @app.post("/chat", response_model=GameResponse)
 async def chat_endpoint(request: GameRequest):
-    print(f"📩 Godot 수신: {request.player_input}") 
+    print(f"📩 Godot 수신: {request.player_input}")
+
+    # 1. 과거 기억 검색 (RAG 핵심)
+    # 플레이어의 말과 관련된 과거 기억을 3개 가져옵니다.
+    relevant_memories = retrieve_memory(request.player_input)
+    print(f"📚 검색된 기억: {relevant_memories}")
+
+    # 2. 시스템 프롬프트에 기억 주입
+    # AI에게 "이 기억을 참고해서 대답해"라고 지시합니다.
+    system_instruction = f"""
+    당신은 보안 직원입니다. 아래 '관련된 과거 기억'을 참고하여 대화를 이어가십시오.
+    
+    [관련된 과거 기억]
+    {relevant_memories}
+    
+    [규칙]
+    - 자연스러운 한국어 구어체 사용.
+    - 한자/일본어 절대 금지.
+    - JSON 포맷 준수.
+    - 의심스러우면 suspicion_delta 증가.
+    """
 
     messages = [
-        SYSTEM_PROMPT,
+        {"role": "system", "content": system_instruction},
         {"role": "user", "content": request.player_input}
     ]
 
     payload = {
         "model": MODEL_NAME,
         "messages": messages,
-        "stream": False, 
-        "options": {"temperature": 0.3,
-                    "repeat_penalty": 1.2},
-        "format": "json" # ⭐ AI에게 JSON 포맷을 강제하는 옵션 (중요!)
+        "stream": False,
+        "format": "json",
+        "options": {"temperature": 0.3}
     }
 
     async with httpx.AsyncClient() as client:
@@ -83,43 +91,34 @@ async def chat_endpoint(request: GameRequest):
             response.raise_for_status()
             
             ollama_data = response.json()
-            # AI가 준 원본 텍스트 (JSON 형태의 문자열)
             raw_content = ollama_data.get("message", {}).get("content", "")
-            print(f"🤖 AI 원본: {raw_content}")
 
-            # === ⭐ 여기가 수정된 핵심 파트입니다! ===
+            # 3. 이번 대화도 기억에 저장 (플레이어 말 + AI 말)
+            add_memory(f"플레이어: {request.player_input}", "player")
+            
             try:
-                # 1. AI가 준 문자열을 파이썬 딕셔너리로 변환 (포장 뜯기)
                 ai_json = json.loads(raw_content)
-                
-                # 1.5 한자/일본어 제거 필터링
                 original_dialogue = ai_json.get("dialogue", "...")
                 
-                # 정규식 설명: 한글(가-힣), 영문(a-z), 숫자, 기본 특수문자만 남기고 다 지움
-                # [^\uAC00-\uD7A3...] -> 이 범위에 없는 것들은 빈칸("")으로 대체
+                # AI의 대답도 저장해야 문맥이 이어짐
+                add_memory(f"NPC: {original_dialogue}", "npc")
+
+                # 청소 및 반환
                 cleaned_dialogue = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s.,?!'\"~()]", "", original_dialogue)
-            
-                # 2. 필요한 정보만 쏙쏙 뽑아서 GameResponse에 넣기
+                
                 return GameResponse(
-                    dialogue=cleaned_dialogue,  # 👈 여기가 중요! (청소된 변수 사용)
+                    dialogue=cleaned_dialogue,
                     suspicion_delta=ai_json.get("suspicion_delta", 0),
                     action=ai_json.get("action", "NONE")
                 )
                 
             except json.JSONDecodeError:
-                # 만약 AI가 JSON 형식을 실수로 어겼을 때를 대비한 안전장치
-                print("⚠️ JSON 파싱 실패. 원본 텍스트를 그대로 보냅니다.")
-                
-                # 파싱 실패 시에도 원본 텍스트에 한자가 섞여있을 수 있으니 여기서도 청소 한번 해줍니다.
-                cleaned_raw = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s.,?!'\"~()]", "", raw_content)
-                
-                return GameResponse(dialogue=cleaned_raw, suspicion_delta=0)
+                print("⚠️ JSON 파싱 실패")
+                return GameResponse(dialogue=raw_content, suspicion_delta=0)
 
         except Exception as e:
-            print(f"❌ 오류 발생: {str(e)}")
+            print(f"❌ 오류: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-# === 서버 실행 코드 ===
 if __name__ == "__main__":
-    # 0.0.0.0은 외부(Godot) 접속 허용, 포트는 8000번 사용
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
