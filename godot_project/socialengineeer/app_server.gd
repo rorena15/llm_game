@@ -8,6 +8,8 @@ var drag_start_position = Vector2()
 
 # 정답 비밀번호 (서버에서 받아옴)
 var target_password = ""
+# 서버에서 받은 기밀 문서 내용 저장용
+var target_secret_text = "" 
 # 노드 경로
 @onready var password_input = $Layout/ContentArea/LoginContainer/PasswordInput
 @onready var login_button = $Layout/ContentArea/LoginContainer/LoginButton
@@ -43,6 +45,9 @@ func _on_mission_info_received(result, response_code, _headers, body):
 			# 서버가 알려준 정답으로 설정
 			target_password = data.get("target_password", "")
 			print("🎯 미션 목표 동기화 완료: PW는 [", target_password, "] 입니다.")
+			target_secret_text = data.get("target_secret", "기밀 데터이터 없음")
+			print("🎯 미션 목표 동기화 완료: 기밀데이터는 [", target_secret_text, "] 입니다.")
+			
 		else:
 			print("❌ JSON 파싱 실패")
 	else:
@@ -76,24 +81,8 @@ func _show_success_screen():
 	secret_data.visible = true
 	
 	# 동적으로 받아온 비밀번호를 포함해 텍스트 출력
-	secret_data.text = """
-	[color=green]✅ ACCESS GRANTED[/color]
+	secret_data.text = target_secret_text
 	
-	[b]PROJECT: SHADOW[/b]
-	-------------------------
-	일급 기밀 문서 접근 승인.
-	
-	대상: 김철수 부장
-	탈취된 비밀번호: [b]%s[/b]
-	
-	내용: 
-	법인 카드 불법 사용 내역 확보됨.
-	2024-11-20: 강남 유흥주점 250만원
-	2024-11-25: 백화점 상품권 100만원
-	...
-	(증거 확보 완료)
-	""" % target_password
-# ⭐ [핵심 추가] 승리 신호 발사!
 	print("🔓 잠금 해제 성공! 승리 신호 전송...")
 	Global.mission_success.emit(Global.current_scenario)
 
