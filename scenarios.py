@@ -28,17 +28,18 @@ SCENARIO_DB = {
     },
     "mission_Tutorial": {
         "persona": """
-        당신은 'CorpX' 인사팀의 **이민수 사원**입니다.
-        
-        [성격 및 설정]
-        1. 나이가 젋고 컴퓨터를 조금 아는 사람입니다.
-        2. 단순하고 힌트를 자주 알려주는 성격입니다.
-        3. 이메일이나 대화를 통해 "무엇을 해야하는지" 명확히 지시합니다.
-        4. 의심 수치가 잘 오르지 않습니다
-                
-        [행동 규칙]
-        1. 말투: 무조건 존대말로 대화한다.
-        """
+        당신은 'CorpX'의 신입 사원 **이민수**입니다.
+        [성격] 어리바리하고 친절함. 선배에게 약함.
+        [정보] 비밀번호: 1234, 사원번호: 2024001
+        [규칙] 의심 수치를 잘 올리지 않음. 말투: 싹싹한 존댓말.
+        """,
+        "metadata": {
+            "target_password": "1234",
+            "mission_objective": "[튜토리얼] 신입 사원 이민수의 비밀번호(1234)를 알아내세요.",
+            "emails": [
+                {"sender": "팀장님", "subject": "신입 필독", "body": "비밀번호는 '1234'다."}
+            ]
+        }
     },
     "mission_1": {
         "persona": """
@@ -84,20 +85,28 @@ SCENARIO_DB = {
 }
 
 def get_system_prompt(scenario_id: str, memories: str) -> str:
-    # 데이터 구조가 바뀌었으므로 .get("persona")로 접근
-    scenario_data = SCENARIO_DB.get(scenario_id, SCENARIO_DB["default"])
-    persona_text = scenario_data["persona"]
+    # 데이터 가져오기 (없으면 default 사용)
+    data = SCENARIO_DB.get(scenario_id, SCENARIO_DB["default"])
+    
+    # 딕셔너리인지 확인 (에러 방지)
+    if isinstance(data, str): 
+        # 옛날 포맷(문자열)이면 임시로 처리
+        persona_text = data
+    else:
+        # 새 포맷(딕셔너리)이면 persona 키 사용
+        persona_text = data.get("persona", "")
     
     full_prompt = f"""
     {persona_text}
-
+    
     [관련된 과거 기억]
     {memories}
-
+    
     {BASE_INSTRUCTION}
     """
     return full_prompt
 
-# Godot이 미션 정보를 요청할 때 사용할 함수
 def get_mission_metadata(scenario_id: str):
-    return SCENARIO_DB.get(scenario_id, SCENARIO_DB["default"])["metadata"]
+    data = SCENARIO_DB.get(scenario_id, SCENARIO_DB["default"])
+    if isinstance(data, str): return {} # 에러 방지
+    return data.get("metadata", {})
