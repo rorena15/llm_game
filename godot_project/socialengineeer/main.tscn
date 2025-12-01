@@ -38,3 +38,34 @@ layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.0
 text = "전송"
+
+[node name="GameOverOverlay" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.270588, 0, 0, 1)
+
+[node name="Label" type="Label" parent="GameOverOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 65
+text = "CONNECTION TERMINATED"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RetryButton" type="Button" parent="GameOverOverlay"]
+layout_mode = 0
+offset_left = 427.321
+offset_top = 401.0
+offset_right = 727.321
+offset_bottom = 486.0
+theme_override_font_sizes/font_size = 30
+text = "시스템 재부팅 (Retry)"

@@ -12,19 +12,20 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="ColorRect" type="ColorRect" parent="."]
-layout_mode = 0
-offset_left = 2.0
-offset_top = 2.0
-offset_right = 1154.0
-offset_bottom = 648.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0.237254, 0.0225852, 0.408345, 1)
 
 [node name="App_Board" parent="." instance=ExtResource("1_vpvrq")]
 layout_mode = 0
-offset_left = 5.0
-offset_top = 235.0
-offset_right = 1155.0
-offset_bottom = 449.0
+offset_left = 11.0
+offset_top = 214.0
+offset_right = 1149.0
+offset_bottom = 373.0
 
 [node name="App_Messenger" parent="." instance=ExtResource("2_emugc")]
 layout_mode = 0

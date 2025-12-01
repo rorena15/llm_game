@@ -1,6 +1,8 @@
 extends Control
 
-@onready var suspicion_bar = $SuspicionBar # 경로를 실제 위치에 맞게 수정하세요!
+@onready var game_over_overlay = $GameOverOverlay # 게임 오버 화면
+@onready var retry_button = $GameOverOverlay/RetryButton # 재시작 버튼
+@onready var suspicion_bar = $SuspicionBar #의심도 진척
 @onready var http_request = $ServerRequest
 @onready var chat_output = $VBoxContainer/ChatOutput
 @onready var user_input = $VBoxContainer/UserInput
@@ -18,6 +20,7 @@ func _ready():
 	chat_output.meta_clicked.connect(_on_meta_clicked)
 	
 	add_chat_log("System", "서버 연결 준비 완료. 메시지를 입력하세요.")
+	retry_button.pressed.connect(_on_retry_button_pressed)
 
 func _on_send_button_pressed():
 	var text = user_input.text.strip_edges()
@@ -122,7 +125,18 @@ func update_suspicion(delta):
 		game_over()
 
 func game_over():
-	add_chat_log("System", "🚨 [경고] 의심 수치 초과! 연결이 강제 종료되었습니다.")
+	# 1. 채팅 로그에 시스템 메시지 출력
+	add_chat_log("System", "🚨 [CRITICAL] 보안 프로토콜 위반 감지. 접속을 차단합니다.")
+	
+	# 2. 조작 불능 상태 만들기
 	user_input.editable = false
 	send_button.disabled = true
-	# 여기에 붉은 화면 효과 등을 넣을 수 있습니다.
+	
+	# 3. 빨간 화면 띄우기 (연극 시작!)
+	game_over_overlay.visible = true
+	
+	# (선택 사항) 깜빡거리는 효과 등을 주면 더 멋집니다.
+
+func _on_retry_button_pressed():
+	# 현재 씬(Main)을 처음부터 다시 로딩 (완전 초기화)
+	get_tree().reload_current_scene()

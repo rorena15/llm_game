@@ -10,6 +10,13 @@ script = ExtResource("2_ve0w2")
 text = ""
 
 [node name="CloseButton" parent="Layout/TitleBar" index="1"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -41.0
+offset_right = 0.0
+grow_horizontal = 0
 text = ""
 
 [node name="GraphEdit" type="GraphEdit" parent="Layout/ContentArea" index="0"]
