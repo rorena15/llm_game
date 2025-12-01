@@ -29,6 +29,8 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="SendButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.0
+text = "전송"

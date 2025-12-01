@@ -23,9 +23,8 @@ text = "시스템 로그"
 
 [node name="CloseButton" type="Button" parent="Layout/TitleBar"]
 layout_mode = 2
-offset_left = 1116.0
-offset_top = 3.0
-offset_right = 1153.0
+offset_left = 1108.0
+offset_right = 1149.0
 offset_bottom = 34.0
 size_flags_horizontal = 8
 size_flags_vertical = 0
