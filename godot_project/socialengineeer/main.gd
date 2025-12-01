@@ -1,6 +1,6 @@
 extends Control
 
-@onready var suspicion_bar = $Layout/ContentArea/SuspicionBar # 경로를 실제 위치에 맞게 수정하세요!
+@onready var suspicion_bar = $SuspicionBar # 경로를 실제 위치에 맞게 수정하세요!
 @onready var http_request = $ServerRequest
 @onready var chat_output = $VBoxContainer/ChatOutput
 @onready var user_input = $VBoxContainer/UserInput

@@ -13,10 +13,12 @@ text = ""
 [node name="CloseButton" parent="Layout/TitleBar" index="1"]
 text = ""
 
-[node name="SuspicionBar" type="ProgressBar" parent="Layout/ContentArea" index="0"]
+[node name="main" parent="Layout/ContentArea" index="0" instance=ExtResource("2_85kln")]
+layout_mode = 2
+
+[node name="SuspicionBar" type="ProgressBar" parent="Layout/ContentArea/main" index="2"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+offset_right = 1150.0
+offset_bottom = 27.0
 theme_override_colors/font_color = Color(0.986217, 0.108348, 7.70092e-07, 1)
-
-[node name="main" parent="Layout/ContentArea" index="1" instance=ExtResource("2_85kln")]
-layout_mode = 2
