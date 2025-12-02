@@ -43,9 +43,9 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 1.0
-offset_top = -90.0
+offset_top = -123.0
 offset_right = 1.0
-offset_bottom = -62.0
+offset_bottom = -95.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "Tutorial : 신입 교육"
@@ -56,30 +56,25 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -1.0
-offset_top = -60.0
-offset_right = -1.0
-offset_bottom = -32.0
+offset_top = -90.0
+offset_bottom = -62.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "MISSION 01: 인사팀의 비밀
 "
 
 [node name="Btn_Mission2" type="Button" parent="ColorRect"]
-visible = false
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -2.0
-offset_top = -61.0
-offset_right = -2.0
-offset_bottom = -33.0
+offset_top = -59.0
+offset_bottom = -31.0
 grow_horizontal = 2
 grow_vertical = 0
 disabled = true
-text = "MISSION 02: (Locked)"
+text = "MISSION 02: SNS의 비밀"
 
 [node name="Btn_Mission3" type="Button" parent="ColorRect"]
 visible = false
@@ -112,7 +107,6 @@ grow_horizontal = 2
 grow_vertical = 0
 disabled = true
 text = "MISSION 04: (Locked)"
-flat = true
 
 [node name="Btn_Quit" type="Button" parent="ColorRect"]
 layout_mode = 1

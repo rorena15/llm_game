@@ -1,0 +1,44 @@
+[gd_scene load_steps=3 format=3 uid="uid://c22i63hper18u"]
+
+[ext_resource type="PackedScene" uid="uid://c374y3ra8r1nl" path="res://app_email.tscn" id="1_2j45p"]
+[ext_resource type="Script" path="res://app_browser.gd" id="2_5wnop"]
+
+[node name="App_browser" instance=ExtResource("1_2j45p")]
+script = ExtResource("2_5wnop")
+
+[node name="TitleBar" parent="Layout" index="0"]
+mouse_filter = 1
+
+[node name="HSplitContainer" parent="Layout/ContentArea" index="0"]
+visible = false
+
+[node name="EmailList" parent="Layout/ContentArea/HSplitContainer" index="0"]
+visible = false
+
+[node name="EmailDetail" parent="Layout/ContentArea/HSplitContainer" index="1"]
+visible = false
+
+[node name="SubjectLabel" parent="Layout/ContentArea/HSplitContainer/EmailDetail" index="0"]
+visible = false
+
+[node name="BodyLabel" parent="Layout/ContentArea/HSplitContainer/EmailDetail" index="1"]
+visible = false
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Layout/ContentArea" index="1"]
+layout_mode = 2
+
+[node name="LineEdit_URL" type="LineEdit" parent="Layout/ContentArea/HBoxContainer" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+placeholder_text = "www.instargram.com"
+
+[node name="Button_Go" type="Button" parent="Layout/ContentArea/HBoxContainer" index="1"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+text = "Go"
+
+[node name="RichTextLabel_Content" type="RichTextLabel" parent="Layout/ContentArea" index="2"]
+layout_mode = 2
+bbcode_enabled = true

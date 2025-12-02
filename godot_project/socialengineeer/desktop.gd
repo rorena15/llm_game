@@ -1,5 +1,7 @@
 extends Control
 
+# 브라우저 변수
+var app_browser_scene = preload("res://app_browser.tscn")
 # 승리 화면 UI 경로
 @onready var victory_layer = $VictoryLayer
 @onready var btn_return = $VictoryLayer/ColorRect/VBoxContainer/Btn_Return
@@ -15,7 +17,8 @@ var app_email_scene = preload("res://app_email.tscn")
 @onready var btn_board = $TaskbarLayer/Taskbar/AppContainer/Btn_Board
 @onready var btn_server = $TaskbarLayer/Taskbar/AppContainer/Btn_Server
 @onready var btn_email = $TaskbarLayer/Taskbar/AppContainer/Btn_Email
-
+#태스크바의 브라우저 버튼 (에디터에서 노드 할당 필요)
+@onready var btn_browser = $TaskbarLayer/Taskbar/AppContainer/Btn_Browser
 # 브리핑 UI 노드
 @onready var briefing_layer = $BriefingLayer
 @onready var title_label = $BriefingLayer/BriefingPopup/VBoxContainer/TitleLabel
@@ -40,6 +43,8 @@ func _ready():
 	# 게임 시작 시 브리핑 설정
 	victory_layer.visible = false
 	setup_briefing()
+	if btn_browser:
+		btn_browser.pressed.connect(open_app.bind(app_browser_scene))
 
 func setup_briefing():
 	# 1. 일시정지 먼저 걸기 (데이터 로딩 중 플레이 방지)
@@ -76,6 +81,9 @@ func _on_briefing_received(result, response_code, _headers, body):
 		if json.parse(body.get_string_from_utf8()) == OK:
 			var data = json.get_data()
 			
+			#받아온 전체 데이터를 전역 변수에 저장
+			Global.mission_data = data
+			
 			# ⭐ 서버 데이터로 UI 업데이트
 			title_label.text = data.get("title", "제목 없음")
 			desc_label.text = data.get("briefing", "내용 없음")
@@ -92,6 +100,11 @@ func _on_start_button_pressed():
 	# 팝업 숨기고 게임 재개
 	briefing_layer.visible = false
 	get_tree().paused = false
+	
+	# 미션 2일 경우만 브라우저 버튼 활성화
+	var current_id = Global.current_scenario
+	if current_id != "mission_2" :
+		btn_browser.visible = false
 
 # 앱을 여는 공통 함수
 func open_app(app_scene: PackedScene):

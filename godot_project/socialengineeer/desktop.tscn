@@ -72,6 +72,11 @@ text = "서버접속"
 layout_mode = 2
 text = "이메일"
 
+[node name="Btn_Browser" type="Button" parent="TaskbarLayer/Taskbar/AppContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 27
+text = "🌍"
+
 [node name="App_Messenger" parent="." instance=ExtResource("2_emugc")]
 layout_mode = 1
 anchor_left = 0.000780031
@@ -89,6 +94,7 @@ environment = SubResource("Environment_lrdr6")
 
 [node name="BriefingLayer" type="CanvasLayer" parent="."]
 process_mode = 3
+visible = false
 
 [node name="BriefingPopup" type="PanelContainer" parent="BriefingLayer"]
 anchors_preset = 15
