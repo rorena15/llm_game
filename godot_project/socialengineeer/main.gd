@@ -85,26 +85,51 @@ func add_chat_log(sender: String, message: String):
 	if sender == "Player": color = "#569CD6"
 	elif sender == "NPC": color = "#CE9178"
 	elif sender == "System": color = "gray"
-	# === ⭐ [수정됨] 힌트 자동 링크 걸기 ===
-	# 1. 정답(비밀번호) 감지
-	if target_password != "" and target_password in message:
-		message = _make_link(message, target_password, "password")
-	# 2. 튜토리얼용 사원번호 (2024001) 감지
-	if "2024001" in message:
-		message = _make_link(message, "2024001", "id")
-	# 3. 튜토리얼용 연도 (2024) 감지
-	if "2024" in message:
-		message = _make_link(message, "2024", "hint")
-	# 4. 서버 감지
-	if "Server" in message or "서버" in message:
-		message = message.replace("Server", '[url={"type":"server", "value":"Database Server"}]Server[/url]')
-		message = message.replace("서버", '[url={"type":"server", "value":"Database Server"}]서버[/url]')
 	
+	# 1. 바꿀 대상들을 순서대로 정의 (길고 구체적인 것부터 먼저!)
+	# 구조: [ [검사할 단어, 타입] ]
+	var replacements = []
+	# 정답(비밀번호) 감지
+	if target_password != "":
+		replacements.append([target_password, "password"])
+	# 튜토리얼용 사원번호
+	replacements.append(["2024001", "id"])
+	# 튜토리얼용 연도 (짧은 단어는 나중에)
+	replacements.append(["2024", "hint"])
+	# 서버 단어
+	replacements.append(["Server", "server"])
+	replacements.append(["서버", "server"])
+
+	# 2. 임시 저장소
+	var markers = {}
+	var index = 0
+	# 3. 텍스트를 "임시 마커"로 변경 (태그가 깨지지 않게 숨김)
+	for item in replacements:
+		var keyword = item[0]
+		var type = item[1]
+		if keyword in message:
+			# 나중에 바꿀 BBCode를 미리 만들어둠
+			var bbcode = '[url={"type":"%s", "value":"%s"}]%s[/url]' % [type, keyword, keyword]
+			var marker = "{{LINK_%d}}" % index
+			# 실제 텍스트에서는 {{LINK_0}} 처럼 변경해서 숨겨둠
+			# replace 대신 정규식을 쓰면 더 좋지만, 지금은 순서대로 하면 해결됨
+			if keyword in message:
+				message = message.replace(keyword, marker)
+				markers[marker] = bbcode
+				index += 1
+	# 4. 숨겨둔 마커를 진짜 BBCode로 복원
+	for marker in markers:
+		message = message.replace(marker, markers[marker])
+	# === 출력 ===
 	chat_output.append_text("\n[color=%s]%s:[/color] %s" % [color, sender, message])
-	
-	# 타자기 연출
+	# 타자기 연출 (기존 유지)
 	var total_chars = chat_output.get_parsed_text().length()
 	chat_output.visible_characters = total_chars - message.length()
+	for i in range(message.length() + 1):
+		chat_output.visible_characters += 1
+		# 속도가 너무 느리면 0.01로 줄이세요
+		await get_tree().create_timer(0.01).timeout 
+	chat_output.visible_ratio = 1.0
 	
 	for i in range(message.length() + 1):
 		chat_output.visible_characters += 1
