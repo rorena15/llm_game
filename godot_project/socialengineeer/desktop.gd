@@ -86,6 +86,7 @@ func _on_briefing_received(result, response_code, _headers, body):
 			
 			#받아온 전체 데이터를 전역 변수에 저장
 			Global.mission_data = data
+			Global.npc_name = data.get("npc_name", "Unknown Target")
 			
 			# ⭐ 서버 데이터로 UI 업데이트
 			title_label.text = data.get("title", "제목 없음")
@@ -98,6 +99,7 @@ func _on_briefing_received(result, response_code, _headers, body):
 			desc_label.text = "데이터 파싱 실패"
 	else:
 		desc_label.text = "서버 연결 실패. (Python 서버를 확인하세요)"
+		
 
 func _on_start_button_pressed():
 	# 팝업 숨기고 게임 재개

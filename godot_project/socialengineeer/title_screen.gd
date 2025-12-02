@@ -5,6 +5,7 @@ extends Control
 @onready var btn_mission2 = $ColorRect/Btn_Mission2
 @onready var btn_quit = $ColorRect/Btn_Quit
 @onready var http_request = $HTTPRequest # 씬에 추가 필요!
+@onready var name_input = $player_name/nameinput
 
 # 게임 화면 씬 미리 로드
 var desktop_scene = preload("res://desktop.tscn")
@@ -53,6 +54,12 @@ func _on_mission_2_pressed():
 	_start_game("mission_2")
 	
 func _start_game(scenario_id):
+	var input_name = name_input.text.strip_edges()
+	if input_name != "":
+		Global.player_name = input_name
+	else:
+		Global.player_name = "Hacker" # 입력 안 했을 때 기본 이름
+
 	# Global에 현재 시나리오 저장 (나중에 앱들이 이걸 참조)
 	Global.current_scenario = scenario_id
 	# 씬 전환

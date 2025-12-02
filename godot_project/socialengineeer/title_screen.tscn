@@ -119,3 +119,23 @@ offset_top = -28.0
 grow_horizontal = 2
 grow_vertical = 0
 text = "시스템 종료"
+
+[node name="player_name" type="Label" parent="."]
+layout_mode = 1
+offset_right = 97.0
+offset_bottom = 20.0
+text = "플레이어 이름"
+
+[node name="nameinput" type="LineEdit" parent="player_name"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = 6.0
+offset_right = 237.0
+offset_bottom = 38.0
+grow_horizontal = 2
+grow_vertical = 0
+placeholder_text = "Code Name"

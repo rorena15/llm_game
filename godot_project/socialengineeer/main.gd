@@ -33,7 +33,7 @@ func _on_send_button_pressed():
 	var text = user_input.text.strip_edges()
 	if text == "": return
 	
-	add_chat_log("Player", text)
+	add_chat_log(Global.player_name, text)
 	user_input.text = ""
 	user_input.editable = false
 	send_button.disabled = true
@@ -66,7 +66,7 @@ func _on_request_completed(result, response_code, _headers, body):
 				var npc_reply = response_data.get("dialogue", "...")
 				var delta = response_data.get("suspicion_delta", 0)
 				update_suspicion(delta)
-				add_chat_log("NPC", npc_reply)
+				add_chat_log(Global.npc_name, npc_reply)
 				
 				# 입력 잠금 해제 (채팅일 때만 해제)
 				user_input.editable = true
