@@ -37,6 +37,7 @@ SCENARIO_DB = {
         [규칙] 의심 수치를 잘 올리지 않음. 말투: 싹싹한 존댓말.
         """,
         "metadata": {
+            "npc_name": "이민수 사원",
             "target_password": "12024CorpX",
             # ⭐ [추가] 브리핑 화면에 띄울 제목과 내용
             "title": "TUTORIAL: 신입 사원 교육",
@@ -87,6 +88,7 @@ SCENARIO_DB = {
         [규칙] 비밀번호를 대놓고 물으면 화냄. 말투: 하하게체.
         """,
         "metadata": {
+            "npc_name": "김철수 부장",
             "target_password": "blue_sky_2024",
             "title": "MISSION 01: 그림자 인사 (Shadow HR)",
             "briefing": """[center]
@@ -158,6 +160,7 @@ SCENARIO_DB = {
         - 남친 얘기 나오면 10분은 떠들 수 있음
         """,
         "metadata": {
+            "npc_name": "박지현 대리",
             "target_password": "MyPuppy_Rex2023!",
             "title": "MISSION 02: 인스타 스토킹 (Insta Stalker)",
             "briefing": """[center]
@@ -222,6 +225,7 @@ SCENARIO_DB = {
         - "우리 딸"이라는 말 들으면 의심 수치 -50
         """,
         "metadata": {
+            "npc_name": "최수진 과장",
             "target_password": "sujin0707!!",
             "title": "MISSION 03: 엄마의 약점 (Mother's Weakness)",
             "briefing": """[center]
