@@ -9,8 +9,8 @@ void fragment() {
 	vec2 uv = SCREEN_UV;
 	uv -= 0.5;
 	uv *= 1.01; // 줌인도 살짝만
-	uv.x *= 1.0 + pow(abs(uv.y) / 9.0, 2.0);
-	uv.y *= 1.0 + pow(abs(uv.x) / 9.0, 2.0);
+	uv.x *= 1.0 + pow(abs(uv.y) / 6.0, 2.0);
+	uv.y *= 1.0 + pow(abs(uv.x) / 6.0, 2.0);
 	uv += 0.5;
 	
 	// 화면 밖 검은색 처리

@@ -182,7 +182,6 @@ SCENARIO_DB = {
 ------------------------------------------------
 [b][스토리 하이라이트: 💡Hint][/b]
 "아 맞다 비밀번호!! 자꾸 까먹어서 여기 박제함 ㅋㅋ"
-[img]res://Assets/Images/dog_photo.png[/img]
 "우리 [color=red]Rex[/color] 이름 + 데려온 연도([color=red]2023[/color]) + 느낌표([color=red]![/color])"
 절대 까먹지 말자 박지현!!!""",
                 

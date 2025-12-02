@@ -77,6 +77,11 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 27
 text = "🌍"
 
+[node name="Btn_main" type="Button" parent="TaskbarLayer/Taskbar/AppContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "메인 화면"
+
 [node name="App_Messenger" parent="." instance=ExtResource("2_emugc")]
 layout_mode = 1
 anchor_left = 0.000780031
@@ -94,7 +99,6 @@ environment = SubResource("Environment_lrdr6")
 
 [node name="BriefingLayer" type="CanvasLayer" parent="."]
 process_mode = 3
-visible = false
 
 [node name="BriefingPopup" type="PanelContainer" parent="BriefingLayer"]
 anchors_preset = 15
@@ -127,7 +131,6 @@ text = "작전 개시 (Start)"
 [node name="ScreenEffects" type="CanvasLayer" parent="."]
 
 [node name="ColorRect" type="ColorRect" parent="ScreenEffects"]
-visible = false
 material = SubResource("ShaderMaterial_dougu")
 anchors_preset = 15
 anchor_right = 1.0
@@ -141,7 +144,6 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="VictoryLayer" type="CanvasLayer" parent="."]
-visible = false
 
 [node name="ColorRect" type="ColorRect" parent="VictoryLayer"]
 anchors_preset = 15

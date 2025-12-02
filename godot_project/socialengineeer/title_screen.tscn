@@ -60,6 +60,7 @@ offset_top = -90.0
 offset_bottom = -62.0
 grow_horizontal = 2
 grow_vertical = 0
+disabled = true
 text = "MISSION 01: 인사팀의 비밀
 "
 

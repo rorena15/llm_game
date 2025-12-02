@@ -17,8 +17,9 @@ var app_email_scene = preload("res://app_email.tscn")
 @onready var btn_board = $TaskbarLayer/Taskbar/AppContainer/Btn_Board
 @onready var btn_server = $TaskbarLayer/Taskbar/AppContainer/Btn_Server
 @onready var btn_email = $TaskbarLayer/Taskbar/AppContainer/Btn_Email
-#태스크바의 브라우저 버튼 (에디터에서 노드 할당 필요)
 @onready var btn_browser = $TaskbarLayer/Taskbar/AppContainer/Btn_Browser
+@onready var btn_quit = $TaskbarLayer/Taskbar/AppContainer/Btn_main
+
 # 브리핑 UI 노드
 @onready var briefing_layer = $BriefingLayer
 @onready var title_label = $BriefingLayer/BriefingPopup/VBoxContainer/TitleLabel
@@ -31,6 +32,7 @@ var spawn_pos = Vector2(50, 50)
 
 func _ready():
 	# 버튼 연결
+	btn_quit.pressed.connect(_on_return_pressed)
 	btn_messenger.pressed.connect(open_app.bind(app_messenger_scene))
 	btn_board.pressed.connect(open_app.bind(app_board_scene))
 	btn_server.pressed.connect(open_app.bind(app_server_scene))
