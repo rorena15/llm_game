@@ -271,6 +271,7 @@ ERP: sujin0707!!
         - "대표님" 언급하면 의심 수치 +10
         """,
         "metadata": {
+            "npc_name": "정우진 대리",
             "target_password": "72stroke_19580315",
             "title": "MISSION 04: 비서의 복수 (Secretary's Revenge)",
             "briefing": """[center]
