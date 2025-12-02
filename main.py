@@ -6,22 +6,50 @@ import json
 import re
 import chromadb
 import uuid
-import random # ⭐ 랜덤 모듈 추가 필수!
+import random
+import os
 from datetime import datetime
+import google.generativeai as genai
 from scenarios import get_system_prompt, get_mission_metadata
 
-# === 설정 ===
-OLLAMA_URL = "http://localhost:11434/api/chat"
-# MODEL_NAME = "mistral-nemo"  #<- 데스크탑용 ai
-MODEL_NAME = "llama3.1" #<- 노트북용 ai
+# === 1. 설정 파일 로드 ===
+try:
+    with open("config.json", "r", encoding="utf-8") as f:
+        config = json.load(f)
+    print(f"⚙️ 설정 로드 완료: 모드=[{config['ai_mode']}]")
+except FileNotFoundError:
+    print("❌ config.json 파일을 찾을 수 없습니다! 기본값(local)으로 시작합니다.")
+    config = {"ai_mode": "local", "local_model_name": "mistral", "google_api_key": ""}
 
-# === DB 초기화 ===
+# === 2. AI 초기화 ===
+AI_MODE = config.get("ai_mode", "local").lower()
+
+# [Cloud 설정]
+if AI_MODE == "cloud":
+    api_key = config.get("google_api_key", "")
+    if not api_key or "여기에" in api_key:
+        print("⚠️ 경고: Google API 키가 설정되지 않았습니다. config.json을 확인하세요.")
+    else:
+        genai.configure(api_key=api_key)
+        # JSON 모드 강제 설정 (매우 중요)
+        gemini_model = genai.GenerativeModel(
+            config.get("cloud_model_name", "gemini-1.5-flash"),
+            generation_config={"response_mime_type": "application/json"}
+        )
+        print("☁️ Cloud AI (Gemini) 모드로 대기 중...")
+
+# [Local 설정]
+else:
+    OLLAMA_URL = "http://localhost:11434/api/chat"
+    LOCAL_MODEL = config.get("local_model_name", "mistral")
+    print(f"🏠 Local AI ({LOCAL_MODEL}) 모드로 대기 중... (Ollama 켜져 있나요?)")
+
+
+# === 3. DB 및 앱 설정 ===
 try:
     chroma_client = chromadb.PersistentClient(path="./memory_db")
     collection = chroma_client.get_or_create_collection(name="game_memory")
-    print("✅ ChromaDB 연결 성공")
-except Exception as e:
-    print(f"❌ ChromaDB 초기화 실패: {e}")
+except Exception:
     collection = None
 
 app = FastAPI(title="Social Engineer Backend")
@@ -36,7 +64,7 @@ class GameResponse(BaseModel):
     suspicion_delta: int = 0
     action: str = "NONE"
 
-# === 함수 ===
+# === 유틸리티 함수 ===
 def add_memory(text, speaker):
     if collection:
         collection.add(
@@ -50,103 +78,81 @@ def retrieve_memory(query, n_results=3):
     try:
         results = collection.query(query_texts=[query], n_results=n_results)
         if not results['documents']: return ""
-        memories = results['documents'][0]
-        return "\n".join([f"- {m}" for m in memories])
+        return "\n".join([f"- {m}" for m in results['documents'][0]])
     except Exception:
         return ""
 
 @app.get("/mission/{scenario_id}")
 async def get_mission_info(scenario_id: str):
-    # 1. 시나리오 데이터 가져오기
     metadata = get_mission_metadata(scenario_id)
-    
-    # 2. 기밀 문서 리스트 가져오기
     docs = metadata.get("secret_documents", [])
-    
-    # 3. 랜덤 선택 로직
-    selected_secret = "기밀 문서가 없습니다."
-    if docs:
-        selected_secret = random.choice(docs) # 리스트 중 하나 뽑기
-        
-    # 4. Godot에 보낼 데이터 구성 (기존 데이터 복사 + 뽑힌 비밀 추가)
+    selected_secret = random.choice(docs) if docs else "기밀 문서 없음"
     response_data = metadata.copy()
-    response_data["target_secret"] = selected_secret # 뽑힌 걸 'target_secret'에 담음
-    
-    # 원본 리스트는 굳이 Godot에 보낼 필요 없으니 삭제 (선택 사항)
-    if "secret_documents" in response_data:
-        del response_data["secret_documents"]
-        
+    response_data["target_secret"] = selected_secret
+    if "secret_documents" in response_data: del response_data["secret_documents"]
     return response_data
 
-# === 채팅 엔드포인트 (안전장치 강화됨) ===
+# === 4. 하이브리드 채팅 엔드포인트 ===
 @app.post("/chat", response_model=GameResponse)
 async def chat_endpoint(request: GameRequest):
-    print(f"📩 수신: {request.player_input} (Scenario: {request.scenario_id})")
+    print(f"📩 Input: {request.player_input} (Mode: {AI_MODE})")
 
-    # ⭐ 모든 과정을 try로 감싸서 에러 원인을 출력하게 함
     try:
-        # 1. 기억 검색
-        relevant_memories = retrieve_memory(request.player_input)
+        memories = retrieve_memory(request.player_input)
+        system_instruction = get_system_prompt(request.scenario_id, memories)
         
-        # 2. 프롬프트 생성 (여기서 에러날 확률 높음)
-        system_instruction = get_system_prompt(request.scenario_id, relevant_memories)
+        # --- [A] CLOUD MODE (Gemini) ---
+        if AI_MODE == "cloud":
+            chat = gemini_model.start_chat(history=[
+                {"role": "user", "parts": [f"System:\n{system_instruction}"]}
+            ])
+            response = await chat.send_message_async(request.player_input)
+            raw_content = response.text
+            print(f"☁️ Gemini 응답: {raw_content}")
 
-        messages = [
-            {"role": "system", "content": system_instruction},
-            {"role": "user", "content": request.player_input}
-        ]
+        # --- [B] LOCAL MODE (Ollama) ---
+        else:
+            messages = [
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": request.player_input}
+            ]
+            payload = {
+                "model": LOCAL_MODEL,
+                "messages": messages,
+                "stream": False,
+                "format": "json",
+                "options": {"temperature": 0.7}
+            }
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(OLLAMA_URL, json=payload, timeout=45.0)
+                resp.raise_for_status()
+                raw_content = resp.json().get("message", {}).get("content", "")
+                print(f"🏠 Local 응답: {raw_content}")
 
-        payload = {
-            "model": MODEL_NAME,
-            "messages": messages,
-            "stream": False,
-            "format": "json",
-            "options": {"temperature": 0.7}
-        }
+        # --- 공통 처리 (JSON 파싱 및 저장) ---
+        add_memory(f"User: {request.player_input}", "player")
+        
+        try:
+            ai_json = json.loads(raw_content)
+            dialogue = ai_json.get("dialogue", "...")
+            add_memory(f"NPC: {dialogue}", "npc")
+            
+            # 특수문자 청소 (선택 사항)
+            dialogue = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s.,?!'\"~()]", "", dialogue)
 
-        # 3. AI 통신
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.post(OLLAMA_URL, json=payload, timeout=30.0)
-                response.raise_for_status()
-                ollama_data = response.json()
-                raw_content = ollama_data.get("message", {}).get("content", "")
-                
-                # 로그에 토큰 사용량 표시
-                tokens = ollama_data.get("eval_count", 0)
-                print(f"🤖 AI 응답 완료 (토큰: {tokens})")
-
-                add_memory(f"플레이어: {request.player_input}", "player")
-
-                # JSON 파싱 및 청소
-                try:
-                    ai_json = json.loads(raw_content)
-                    original_dialogue = ai_json.get("dialogue", "...")
-                    
-                    add_memory(f"NPC: {original_dialogue}", "npc")
-                    
-                    cleaned_dialogue = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s.,?!'\"~()]", "", original_dialogue)
-
-                    return GameResponse(
-                        dialogue=cleaned_dialogue,
-                        suspicion_delta=ai_json.get("suspicion_delta", 0),
-                        action=ai_json.get("action", "NONE")
-                    )
-                except json.JSONDecodeError:
-                    print("⚠️ AI가 JSON 형식을 어겼습니다. 원본 반환.")
-                    cleaned_raw = re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s.,?!'\"~()]", "", raw_content)
-                    return GameResponse(dialogue=cleaned_raw, suspicion_delta=0)
-
-            except httpx.ConnectError:
-                print("❌ Ollama 연결 실패! (Ollama가 켜져 있나요?)")
-                return GameResponse(dialogue="[시스템 오류] AI 서버에 연결할 수 없습니다.", suspicion_delta=0)
+            return GameResponse(
+                dialogue=dialogue,
+                suspicion_delta=ai_json.get("suspicion_delta", 0),
+                action=ai_json.get("action", "NONE")
+            )
+        except json.JSONDecodeError:
+            print("⚠️ JSON 파싱 실패, 원본 반환")
+            return GameResponse(dialogue=raw_content, suspicion_delta=0)
 
     except Exception as e:
-        # ⭐ 여기가 핵심! 에러 내용을 정확히 출력해 줌
-        print(f"❌ 치명적 오류 발생: {str(e)}")
-        import traceback
-        traceback.print_exc() # 상세 위치 출력
-        raise HTTPException(status_code=500, detail=f"Server Error: {str(e)}")
+        print(f"❌ Error: {str(e)}")
+        error_msg = "[인터넷 연결 불안정]" if AI_MODE == "cloud" else "[AI 서버 응답 없음]"
+        return GameResponse(dialogue=error_msg, suspicion_delta=0)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

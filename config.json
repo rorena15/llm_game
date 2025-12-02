@@ -1,0 +1,6 @@
+{
+    "ai_mode": "cloud", 
+    "google_api_key": "여기에_구글_API_키를_입력하세요",
+    "local_model_name": "llama3.1",
+    "cloud_model_name": "gemini-1.5-flash"
+}
