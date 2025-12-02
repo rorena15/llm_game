@@ -10,7 +10,10 @@ extends Control
 var desktop_scene = preload("res://desktop.tscn")
 
 func _ready():
+	#미션 1 버튼 클릭시 호출
 	btn_mission1.pressed.connect(_on_mission_1_pressed)
+	#미션 2 버튼 클릭시 호출
+	btn_mission2.pressed.connect(_on_mission_2_pressed)
 	btn_mission_Tutorial.pressed.connect(_on_mission_Tutorial_pressed)
 	btn_quit.pressed.connect(get_tree().quit)
 	_update_buttons()

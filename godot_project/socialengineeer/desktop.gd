@@ -43,6 +43,7 @@ func _ready():
 	# 게임 시작 시 브리핑 설정
 	victory_layer.visible = false
 	setup_briefing()
+	
 	if btn_browser:
 		btn_browser.pressed.connect(open_app.bind(app_browser_scene))
 

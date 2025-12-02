@@ -1,9 +1,9 @@
 extends PanelContainer
 
 # === UI 노드 경로 (씬에 이 이름대로 노드가 있어야 함) ===
-@onready var url_input = $Layout/ContentArea/HBoxContainer/LineEdit_URL
-@onready var btn_go = $Layout/ContentArea/HBoxContainer/Button_Go
-@onready var web_view = $Layout/ContentArea/RichTextLabel_Content
+@onready var url_input = $Layout/ContentArea/VBoxContainer/HBoxContainer/LineEdit_URL
+@onready var btn_go = $Layout/ContentArea/VBoxContainer/HBoxContainer/Button_Go
+@onready var web_view = $Layout/ContentArea/VBoxContainer/RichTextLabel_Content
 @onready var title_bar = $Layout/TitleBar
 
 # === 창 이동 변수 (app_email.gd 참고) ===
