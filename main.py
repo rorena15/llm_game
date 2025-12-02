@@ -12,7 +12,8 @@ from scenarios import get_system_prompt, get_mission_metadata
 
 # === 설정 ===
 OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL_NAME = "mistral-nemo" 
+# MODEL_NAME = "mistral-nemo"  #<- 데스크탑용 ai
+MODEL_NAME = "llama3.1" #<- 노트북용 ai
 
 # === DB 초기화 ===
 try:
