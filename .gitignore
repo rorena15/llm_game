@@ -1,1 +1,4 @@
 config.json
+memory_db/chroma.sqlite3
+memory_db/21eada11-c3ef-476a-8f96-97f4cd0e73ff/data_level0.bin
+memory_db/21eada11-c3ef-476a-8f96-97f4cd0e73ff/length.bin
