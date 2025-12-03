@@ -6,8 +6,9 @@ extends Control
 @onready var btn_mission3 = $ColorRect/Btn_Mission3
 @onready var btn_mission4 = $ColorRect/Btn_Mission4
 @onready var btn_quit = $ColorRect/Btn_Quit
-@onready var http_request = $HTTPRequest # 씬에 추가 필요!
+@onready var http_request = $HTTPRequest
 @onready var name_input = $player_name/nameinput
+@onready var name_label = $player_name/player_rname
 
 # 게임 화면 씬 미리 로드
 var desktop_scene = preload("res://desktop.tscn")
@@ -25,6 +26,8 @@ func _ready():
 	btn_mission_Tutorial.pressed.connect(_on_mission_Tutorial_pressed)
 	btn_quit.pressed.connect(get_tree().quit)
 	_update_buttons()
+	
+	name_input.text_submitted.connect(_on_name_submitted)
 
 func _update_buttons():
 	# 1. 일단 튜토리얼은 항상 열어둠
@@ -78,6 +81,28 @@ func _on_mission_4_pressed():
 	print("🚀 미션 4 시작 요청...")
 	# 2. 게임 화면으로 전환
 	_start_game("mission_4")
+	
+func _on_name_submitted(new_text):
+	# 1. 앞뒤 공백 제거
+	var final_name = new_text.strip_edges()
+	
+	# 2. 이름이 비어있으면 기본값 설정
+	if final_name == "":
+		final_name = "Hacker"
+	
+	# 3. Global 변수에 즉시 저장 (게임 시작 시 사용됨)
+	Global.player_name = final_name
+	
+	# 4. 라벨 텍스트 변경 (화면에 표시)
+	# 예: "플레이어 이름" -> "Agent: Shadow"
+	name_label.text = final_name
+	
+	# 5.입력창의 포커스를 해제하여 버튼을 누르기 쉽게 함
+	name_input.release_focus()
+	print("✅ 플레이어 이름 확정: ", final_name)
+	
+	# 6. 라벨에 남아있는 이름을 삭제
+	name_input.text = ""   # 또는 name_input.clear()
 	
 func _start_game(scenario_id):
 	var input_name = name_input.text.strip_edges()

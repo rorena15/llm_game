@@ -124,7 +124,7 @@ text = "시스템 종료"
 layout_mode = 1
 offset_right = 97.0
 offset_bottom = 20.0
-text = "플레이어 이름"
+text = "플레이어 이름 :"
 
 [node name="nameinput" type="LineEdit" parent="player_name"]
 layout_mode = 1
@@ -139,3 +139,14 @@ offset_bottom = 38.0
 grow_horizontal = 2
 grow_vertical = 0
 placeholder_text = "Code Name"
+
+[node name="player_rname" type="Label" parent="player_name"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 8.0
+offset_top = 3.0
+offset_right = 166.0
+offset_bottom = 23.0
+grow_horizontal = 0
