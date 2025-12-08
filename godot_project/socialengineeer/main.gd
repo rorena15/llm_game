@@ -82,56 +82,57 @@ func _on_request_completed(result, response_code, _headers, body):
 
 func add_chat_log(sender: String, message: String):
 	var color = "white"
-	if sender == "Player": color = "#569CD6"
-	elif sender == "NPC": color = "#CE9178"
+	if sender == Global.player_name: color = "#569CD6" # [cite: 52]
+	elif sender == Global.npc_name: color = "#CE9178"
 	elif sender == "System": color = "gray"
 	
-	# === [태그 깨짐 방지 로직 (지난번 코드 유지)] ===
+	# 1. 치환할 키워드 정의 (순서 중요하지 않음, 아래에서 정렬함)
 	var replacements = []
 	if target_password != "": replacements.append([target_password, "password"])
+	
+	# 시나리오별 특수 키워드 추가
 	replacements.append(["2024001", "id"])
-	replacements.append(["2024", "hint"])
+	replacements.append(["2024", "hint"]) 
+	replacements.append(["12024CorpX", "password"]) # 튜토리얼 비번
 	replacements.append(["Server", "server"])
 	replacements.append(["서버", "server"])
-	
+
+	# ⭐ [핵심 1] 긴 단어부터 먼저 처리하도록 정렬 (길이 내림차순)
+	replacements.sort_custom(func(a, b): return a[0].length() > b[0].length())
+
+	# 2. 임시 마커로 치환 (중복 방지)
 	var markers = {}
 	var index = 0
 	
 	for item in replacements:
 		var keyword = item[0]
 		var type = item[1]
+		
 		if keyword in message:
+			# 최종적으로 보여줄 BBCode 미리 생성
 			var bbcode = '[url={"type":"%s", "value":"%s"}]%s[/url]' % [type, keyword, keyword]
-			var marker = "{{LINK_%d}}" % index
-			if keyword in message:
-				message = message.replace(keyword, marker)
-				markers[marker] = bbcode
-				index += 1
+			var marker = "★LINK_%d★" % index # 절대 겹치지 않을 특수 문자 사용
+			
+			# 메시지 내의 키워드를 마커로 변경
+			message = message.replace(keyword, marker)
+			markers[marker] = bbcode
+			index += 1
 	
+	# 3. 마커를 다시 BBCode로 복원
 	for marker in markers:
 		message = message.replace(marker, markers[marker])
-		
-	# === ⭐ [핵심 수정] 타자기 이펙트 로직 ===
-	
-	# 1. 텍스트 추가 전, 현재까지 표시된 글자 수를 저장
+
+	# 4. 출력 및 타자기 효과
 	var prev_char_count = chat_output.get_parsed_text().length()
-	
-	# 2. 텍스트 추가
 	chat_output.append_text("\n[color=%s]%s:[/color] %s" % [color, sender, message])
 	
-	# 3. 추가 후 전체 글자 수 계산
 	var total_char_count = chat_output.get_parsed_text().length()
-	
-	# 4. 방금 추가된 텍스트만 숨김 처리 (이전 텍스트는 그대로 유지됨)
 	chat_output.visible_characters = prev_char_count
 	
-	# 5. 이전 글자 수부터 새 글자 수까지만 루프 (새 내용만 타자 침)
 	while chat_output.visible_characters < total_char_count:
 		chat_output.visible_characters += 1
-		 #(선택 사항) 스크롤을 항상 아래로 유지
 		chat_output.scroll_to_line(chat_output.get_line_count() - 1)
-		
-		await get_tree().create_timer(0.03).timeout
+		await get_tree().create_timer(0.03).timeout # 타자 속도
 
 func _make_link(text, keyword, type):
 	var bbcode = '[url={"type":"%s", "value":"%s"}]%s[/url]' % [type, keyword, keyword]
