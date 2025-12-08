@@ -140,6 +140,8 @@ func add_chat_log(sender: String, message: String):
 		chat_output.scroll_to_line(chat_output.get_line_count() - 1)
 		await get_tree().create_timer(0.03).timeout # 타자 속도
 		
+	AudioManager.stop_typing()
+		
 func _make_link(text, keyword, type):
 	var bbcode = '[url={"type":"%s", "value":"%s"}]%s[/url]' % [type, keyword, keyword]
 	return text.replace(keyword, bbcode)
@@ -186,7 +188,7 @@ func game_over():
 	add_chat_log("System", "🚨 [CRITICAL] 보안 프로토콜 위반 감지. 접속을 차단합니다.")
 	user_input.editable = false
 	send_button.disabled = true
-	game_over_overlay.visible = true
+	Global.game_over_triggered.emit()
 
 func _on_retry_button_pressed():
 	get_tree().reload_current_scene()

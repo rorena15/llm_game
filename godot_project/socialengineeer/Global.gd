@@ -3,6 +3,7 @@ var current_scenario = "mission_Tutorial"
 var server_pid = -1
 var player_name = "Unknown Hacker" # 기본값
 var npc_name = "Target"
+signal game_over_triggered
 
 @warning_ignore("unused_signal")
 signal clue_found(type, value)

@@ -51,3 +51,8 @@ func _play_bgm():
 		bgm_player.stream = bgm_ambience
 		bgm_player.volume_db = -15.0 # 배경음은 시끄럽지 않게 낮춤
 		bgm_player.play()
+
+#5. 키보드 사운드 강제 종료
+func stop_typing():
+	if typing_player.playing:
+		typing_player.stop()

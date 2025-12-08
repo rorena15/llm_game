@@ -5,6 +5,9 @@ var app_browser_scene = preload("res://app_browser.tscn")
 # 승리 화면 UI 경로
 @onready var victory_layer = $VictoryLayer
 @onready var btn_return = $VictoryLayer/ColorRect/VBoxContainer/Btn_Return
+# 실패 화면 UI 경로
+@onready var game_over_layer = $GameOverLayer
+@onready var btn_retry = $GameOverLayer/ColorRect/VBoxContainer/Btn_Retry
 
 #경고 화면 UI 경로
 @onready var alert_overlay = $ScreenEffects/AlertOverlay
@@ -44,6 +47,9 @@ func _ready():
 	start_button.pressed.connect(_on_start_button_pressed)
 	Global.mission_success.connect(_on_mission_success)
 	btn_return.pressed.connect(_on_return_pressed)
+	game_over_layer.visible = false
+	Global.game_over_triggered.connect(_on_game_over)
+	btn_retry.pressed.connect(_on_retry_pressed)
 	if http_request:
 		http_request.process_mode = Node.PROCESS_MODE_ALWAYS
 	# 게임 시작 시 브리핑 설정
@@ -154,3 +160,22 @@ func set_red_alert(is_on: bool):
 		tween.tween_property(alert_overlay, "color:a", 0.0, 0.8) # 깜빡임
 	else:
 		alert_overlay.color.a = 0
+		
+func _on_game_over():
+	print("💀 시스템 다운: 게임 오버")
+	
+	# 1. 붉은 화면 띄우기
+	game_over_layer.visible = true
+	game_over_layer.process_mode = Node.PROCESS_MODE_ALWAYS # 멈춰도 작동하게
+	
+	# 2. 실패 효과음 (AudioManager가 있다면)
+	# AudioManager.play_result(false)
+	
+	# 3. 게임 멈춤
+	get_tree().paused = true
+	
+# 재시도 버튼 함수
+func _on_retry_pressed():
+	get_tree().paused = false
+	# 현재 씬(Desktop)을 다시 로드하여 처음부터 시작
+	get_tree().reload_current_scene()
