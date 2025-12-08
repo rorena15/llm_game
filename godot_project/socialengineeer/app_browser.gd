@@ -34,16 +34,25 @@ func _ready():
 func _on_navigate():
 	var input_url = url_input.text.strip_edges()
 	
+	# [개선된 로직] URL 정규화 (유연한 입력 처리)
+	# 1. http:// 또는 https:// 제거
+	input_url = input_url.replace("http://", "").replace("https://", "")
+	# 2. 소문자로 변환 (InstarGram.com -> instargram.com)
+	input_url = input_url.to_lower()
+	# 3. 끝에 붙은 슬래시 제거 (com/ -> com)
+	if input_url.ends_with("/"):
+		input_url = input_url.left(-1)
+	
 	# 로딩 연출
 	web_view.text = "[center]Connecting...[/center]"
 	await get_tree().create_timer(0.3).timeout
 	
+	# 저장된 데이터와 비교
 	if website_data.has(input_url):
-		# 사이트 내용 표시 (BBCode 지원)
 		web_view.text = website_data[input_url]
 	else:
-		# 404 에러
-		web_view.text = "[center][color=red]❌ 404 Not Found[/color]\n\n해당 URL을 찾을 수 없습니다.[/center]"
+		# 404 에러 (빨간색으로 강조)
+		web_view.text = "[center][color=red][size=24]❌ 404 Not Found[/size][/color]\n\nURL을 찾을 수 없습니다.\n(%s)[/center]" % input_url
 
 # === 창 드래그 로직 (기존 앱들과 동일) ===
 func _on_title_bar_gui_input(event):

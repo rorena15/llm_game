@@ -13,7 +13,10 @@ const SERVER_URL = "http://127.0.0.1:8000/chat"
 var current_suspicion = 0
 # ⭐ 핵심: 서버에서 받아올 비밀번호를 저장할 변수 (비어있음)
 var target_password = ""
-
+# Desktop 씬의 배경 경로
+var bg_rect = get_node_or_null("/root/Desktop/Background")
+#경고 상태 추적
+var is_alarm_mode = false
 func _ready():
 	send_button.pressed.connect(_on_send_button_pressed)
 	http_request.request_completed.connect(_on_request_completed)
@@ -82,7 +85,7 @@ func _on_request_completed(result, response_code, _headers, body):
 
 func add_chat_log(sender: String, message: String):
 	var color = "white"
-	if sender == Global.player_name: color = "#569CD6" # [cite: 52]
+	if sender == Global.player_name: color = "#569CD6" # [cite: 52]3
 	elif sender == Global.npc_name: color = "#CE9178"
 	elif sender == "System": color = "gray"
 	
@@ -126,14 +129,19 @@ func add_chat_log(sender: String, message: String):
 	var prev_char_count = chat_output.get_parsed_text().length()
 	chat_output.append_text("\n[color=%s]%s:[/color] %s" % [color, sender, message])
 	
+	if sender != Global.player_name and sender != "System":
+		AudioManager.play_alert()
+		
 	var total_char_count = chat_output.get_parsed_text().length()
 	chat_output.visible_characters = prev_char_count
 	
 	while chat_output.visible_characters < total_char_count:
 		chat_output.visible_characters += 1
+		if chat_output.visible_characters % 2 == 0:
+			AudioManager.play_typing()
 		chat_output.scroll_to_line(chat_output.get_line_count() - 1)
 		await get_tree().create_timer(0.03).timeout # 타자 속도
-
+		
 func _make_link(text, keyword, type):
 	var bbcode = '[url={"type":"%s", "value":"%s"}]%s[/url]' % [type, keyword, keyword]
 	return text.replace(keyword, bbcode)
@@ -155,11 +163,26 @@ func update_suspicion(delta):
 	current_suspicion = clamp(current_suspicion, 0, 100)
 	
 	if suspicion_bar:
-			var tween = create_tween()
-			tween.tween_property(suspicion_bar, "value", current_suspicion, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-		
+		var tween = create_tween()
+		tween.tween_property(suspicion_bar, "value", current_suspicion, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	
 	print("현재 의심도: ", current_suspicion, " (변화량: ", delta, ")")
 	
+	# === [추가된 연출 로직] ===
+	
+	# 1. 의심도가 올랐을 때 화면 흔들기 (Screen Shake)
+	if delta > 0:
+		_trigger_screen_shake()
+		# 의심도가 오르는 소리 (실패음 활용)
+		AudioManager.play_result(false) 
+	
+	# 2. 80% 이상이면 경고 모드 발동 (Red Alert)
+	if current_suspicion >= 80 and not is_alarm_mode:
+		_set_alarm_mode(true)
+	elif current_suspicion < 80 and is_alarm_mode:
+		_set_alarm_mode(false)
+		
+	# 3. 게임 오버 체크
 	if current_suspicion >= 100:
 		game_over()
 
@@ -171,3 +194,39 @@ func game_over():
 
 func _on_retry_button_pressed():
 	get_tree().reload_current_scene()
+
+func _set_alarm_mode(on: bool):
+	is_alarm_mode = on
+	
+	# 전체 화면을 덮는 CanvasLayer나 ColorRect가 필요합니다. 
+	# 현재 씬 구조상 'ScreenEffects/ColorRect'를 찾거나 새로 만들어야 합니다.
+	# 여기서는 간단히 배경색을 조정하는 방식을 예시로 듭니다.
+	
+	var bg_rect = get_node_or_null("/root/Desktop/Background") # Desktop 씬의 배경 경로
+	if on:
+		print("🚨 경고: 보안 프로토콜 위반 임박!")
+		# 배경음악을 끄고 경고음 재생 (구현 필요 시 AudioManager에 loop 기능 추가 필요)
+		# 일단은 알림음으로 대체
+		AudioManager.play_alert()
+		
+		# 붉은 점멸 효과 (Tween Loop)
+		if bg_rect:
+			var tween = create_tween().set_loops()
+			tween.tween_property(bg_rect, "modulate", Color(1, 0.5, 0.5), 0.5) # 붉게
+			tween.tween_property(bg_rect, "modulate", Color(1, 1, 1), 0.5) # 원래대로
+	else:
+		print("✅ 경고 해제")
+		if bg_rect:
+			bg_rect.modulate = Color(1, 1, 1) # 색상 초기화
+			# 실행 중인 모든 Tween 중단이 필요할 수 있음 (간단히는 modulate 강제 복구)
+
+func _trigger_screen_shake():
+	# 윈도우 창 전체를 흔드는 연출
+	var original_pos = position
+	var tween = create_tween()
+	
+	for i in range(5):
+		var offset = Vector2(randf_range(-5, 5), randf_range(-5, 5))
+		tween.tween_property(self, "position", original_pos + offset, 0.05)
+	
+	tween.tween_property(self, "position", original_pos, 0.05)

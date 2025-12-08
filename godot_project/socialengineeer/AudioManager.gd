@@ -1,18 +1,19 @@
 extends Node
 
-# [설정] 리소스 경로 (나중에 실제 파일 경로로 수정 필요)
-# 소리가 없어도 에러가 나지 않도록 null 체크를 포함했습니다.
-var sfx_typing = preload("res://assets/sfx/keyboard_tap.wav") if FileAccess.file_exists("res://assets/sfx/KeyBoard_typing.mp3") else null
-var sfx_alert = preload("res://assets/sfx/notification.wav") if FileAccess.file_exists("res://assets/sfx/notification.mp3") else null
-var sfx_success = preload("res://assets/sfx/access_granted.wav") if FileAccess.file_exists("res://assets/sfx/access_granted.mp3") else null
-var sfx_fail = preload("res://assets/sfx/error_buzz.wav") if FileAccess.file_exists("res://assets/sfx/error.mp3") else null
-
+# [설정] 리소스 경로
+# 소리가 없어도 에러가 나지 않도록 null 체크를 포함.
+var sfx_typing = preload("res://assets/sfx/KeyBoard_typing.mp3") if FileAccess.file_exists("res://assets/sfx/KeyBoard_typing.mp3") else null
+var sfx_alert = preload("res://assets/sfx/notification.mp3") if FileAccess.file_exists("res://assets/sfx/notification.mp3") else null
+var sfx_success = preload("res://assets/sfx/access_granted.mp3") if FileAccess.file_exists("res://assets/sfx/access_granted.mp3") else null
+var sfx_fail = preload("res://assets/sfx/error.mp3") if FileAccess.file_exists("res://assets/sfx/error.mp3") else null
+var bgm_ambience = load("res://assets/sfx/bgm.mp3") if FileAccess.file_exists("res://assets/sfx/bgm.mp3") else null
 # 오디오 플레이어 노드들
 var typing_player: AudioStreamPlayer
 var sfx_player: AudioStreamPlayer
+var bgm_player: AudioStreamPlayer
 
 func _ready():
-	# 플레이어 동적 생성 (씬에 일일이 추가할 필요 없음)
+	# 플레이어 동적 생성
 	typing_player = AudioStreamPlayer.new()
 	typing_player.max_polyphony = 3 # 빠른 타자 소리가 겹쳐서 들리게
 	add_child(typing_player)
@@ -43,3 +44,10 @@ func play_result(is_success: bool):
 	elif not is_success and sfx_fail:
 		sfx_player.stream = sfx_fail
 		sfx_player.play()
+		
+# 4. 배경음
+func _play_bgm():
+	if bgm_ambience:
+		bgm_player.stream = bgm_ambience
+		bgm_player.volume_db = -15.0 # 배경음은 시끄럽지 않게 낮춤
+		bgm_player.play()

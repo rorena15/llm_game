@@ -6,6 +6,8 @@ var app_browser_scene = preload("res://app_browser.tscn")
 @onready var victory_layer = $VictoryLayer
 @onready var btn_return = $VictoryLayer/ColorRect/VBoxContainer/Btn_Return
 
+#경고 화면 UI 경로
+@onready var alert_overlay = $ScreenEffects/AlertOverlay
 # 앱 씬 미리 로드
 var app_messenger_scene = preload("res://app_messenger.tscn")
 var app_board_scene = preload("res://app_board.tscn")
@@ -29,6 +31,8 @@ var app_email_scene = preload("res://app_email.tscn")
 
 # 윈도우 생성 위치
 var spawn_pos = Vector2(50, 50)
+
+
 
 func _ready():
 	# 버튼 연결
@@ -142,3 +146,11 @@ func _on_return_pressed():
 	get_tree().paused = false
 	# 타이틀 화면 씬 경로가 맞는지 확인하세요!
 	get_tree().change_scene_to_file("res://title_screen.tscn")
+	
+func set_red_alert(is_on: bool):
+	if is_on:
+		var tween = create_tween().set_loops()
+		tween.tween_property(alert_overlay, "color:a", 0.3, 0.8) # 투명도 0 -> 0.3
+		tween.tween_property(alert_overlay, "color:a", 0.0, 0.8) # 깜빡임
+	else:
+		alert_overlay.color.a = 0
