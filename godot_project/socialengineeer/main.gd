@@ -10,13 +10,18 @@ extends Control
 
 const SERVER_URL = "http://127.0.0.1:8000/chat"
 
+# 의심도 0으로 초기 선언
 var current_suspicion = 0
+
 # ⭐ 핵심: 서버에서 받아올 비밀번호를 저장할 변수 (비어있음)
 var target_password = ""
-# Desktop 씬의 배경 경로
-var bg_rect = get_node_or_null("/root/Desktop/Background")
+
 #경고 상태 추적
 var is_alarm_mode = false
+
+# Desktop 씬의 배경 경로
+var bg_rect = get_node_or_null("/root/Desktop/ScreenEffects/AlertOverlay")
+
 func _ready():
 	send_button.pressed.connect(_on_send_button_pressed)
 	http_request.request_completed.connect(_on_request_completed)
@@ -24,10 +29,7 @@ func _ready():
 	chat_output.meta_clicked.connect(_on_meta_clicked)
 	retry_button.pressed.connect(_on_retry_button_pressed)
 	
-	#add_chat_log("System", "서버 로그인 완료.")
-	
-	# ⭐ 1. 게임 시작 시 서버에 미션 정보(정답) 요청
-	# 기존 채팅용 HTTPRequest 노드를 재사용합니다.
+	# 1. 게임 시작 시 서버에 미션 정보(정답) 요청
 	var mission_url = "http://127.0.0.1:8000/mission/" + Global.current_scenario
 	print("📡 미션 정보 요청: ", mission_url)
 	http_request.request(mission_url)
@@ -41,7 +43,7 @@ func _on_send_button_pressed():
 	user_input.editable = false
 	send_button.disabled = true
 	
-	# ⭐ 시나리오 ID도 명시적으로 보냄 (확장성 고려)
+	# 시나리오 ID도 명시적으로 보냄 (확장성 고려)
 	var data = {
 		"player_input": text, 
 		"suspicion": 0,
@@ -55,15 +57,12 @@ func _on_request_completed(result, response_code, _headers, body):
 		var json = JSON.new()
 		if json.parse(body.get_string_from_utf8()) == OK:
 			var response_data = json.get_data()
-			
-			# ⭐ 2. 응답 종류 구분하기
-			
+			# 2. 응답 종류 구분하기
 			# [경우 A] 미션 정보가 도착한 경우 (target_password 키가 있음)
 			if response_data.has("target_password"):
 				target_password = response_data["target_password"]
 				print("✅ [Main] 비밀번호 동기화 완료: ", target_password)
 				return # 채팅 처리는 하지 않고 종료
-			
 			# [경우 B] 채팅 응답이 도착한 경우 (dialogue 키가 있음)
 			if response_data.has("dialogue"):
 				var npc_reply = response_data.get("dialogue", "...")
@@ -76,7 +75,6 @@ func _on_request_completed(result, response_code, _headers, body):
 				send_button.disabled = false
 				user_input.grab_focus()
 				return
-
 	else:
 		add_chat_log("System", "통신 오류 발생")
 		# 오류 시에도 입력은 풀어줘야 함
@@ -197,12 +195,6 @@ func _on_retry_button_pressed():
 
 func _set_alarm_mode(on: bool):
 	is_alarm_mode = on
-	
-	# 전체 화면을 덮는 CanvasLayer나 ColorRect가 필요합니다. 
-	# 현재 씬 구조상 'ScreenEffects/ColorRect'를 찾거나 새로 만들어야 합니다.
-	# 여기서는 간단히 배경색을 조정하는 방식을 예시로 듭니다.
-	
-	var bg_rect = get_node_or_null("/root/Desktop/Background") # Desktop 씬의 배경 경로
 	if on:
 		print("🚨 경고: 보안 프로토콜 위반 임박!")
 		# 배경음악을 끄고 경고음 재생 (구현 필요 시 AudioManager에 loop 기능 추가 필요)
