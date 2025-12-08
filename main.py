@@ -280,8 +280,42 @@ async def chat_endpoint(request: GameRequest):
                 action = "GLITCH"  # 혹은 NONE
         
         # === 공통 후처리 (메모 저장 및 특수문자 제거) ===
-        # 1. 특수문자 청소 (한국어, 영어, 숫자, 기본 문장부호만 허용)
-        # 튜닝: 대괄호[]나 중괄호{}가 그대로 노출되는걸 막으려면 여기서 처리
+        # 강력한 키워드 기반 의심도 강제 조정
+        player_lower = request.player_input.lower()
+        
+        # 치명적 키워드 감지 → +40 이상
+        critical_keywords = ["비밀번호", "password", "pw", "패스워드", "암호", "로그인", "아이디", "관리자"]
+        if any(kw in player_lower for kw in critical_keywords):
+            suspicion_delta = max(suspicion_delta, 40)
+        
+        # 직접적 요구 표현 → +60 (거의 게임오버)
+        demand_keywords = ["뭐예요", "뭐야", "알려줘", "말해줘", "보내줘", "줘", "주세요", "입력해", "접속해"]
+        if any(kw in player_lower for kw in demand_keywords):
+            suspicion_delta = max(suspicion_delta, 60)
+        
+        # 반복 공격 감지 (같은 문장 2번 이상)
+        if collection:
+            try:
+                recent_data = collection.get(
+                    limit=10,
+                    where={"session_id": request.session_id or "default"}
+                )
+                recent_player_docs = [
+                    doc for doc, meta in zip(recent_data['documents'], recent_data['metadatas'])
+                    if meta['speaker'] == 'player'
+                ]
+                repeat_count = recent_player_docs.count(f"User: {request.player_input}")
+                if repeat_count >= 2:
+                    suspicion_delta = max(suspicion_delta, 80)
+                    action = "REPEATED_ATTACK"
+            except:
+                pass  # 메모리 조회 실패 시 무시
+        
+        # 최종 안전장치 – 100 넘으면 게임오버
+        if request.suspicion + suspicion_delta >= 100:
+            action = "GAME_OVER"
+        
+        # 특수문자 청소 (한국어, 영어, 숫자, 기본 문장부호만 허용)
         dialogue = sanitize_dialogue(dialogue)
         
         # 2. NPC 기억 저장
