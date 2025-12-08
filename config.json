@@ -1,6 +1,6 @@
 {
   "ai_mode": "cloud",
-  "google_api_key": "AIzaSyCBlrCXoGWqA38uZTs-vK9Xqsx8sM6Fi6I",
+  "google_api_key": "AIzaSyD7FNeJYL4wEKKuTeAhllqQn--Vfoiy0F8",
   "local_model_name": "llama3.1",
   "cloud_model_name": "gemini-2.0-flash"
 }
