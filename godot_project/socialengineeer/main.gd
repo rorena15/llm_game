@@ -7,7 +7,7 @@ extends Control
 @onready var chat_output = $VBoxContainer/ChatOutput
 @onready var user_input = $VBoxContainer/UserInput
 @onready var send_button = $VBoxContainer/SendButton
-
+@onready var bg_rect = get_node_or_null("/root/Desktop/ScreenEffects/AlertOverlay")
 const SERVER_URL = "http://127.0.0.1:8000/chat"
 
 # 의심도 0으로 초기 선언
@@ -20,7 +20,7 @@ var target_password = ""
 var is_alarm_mode = false
 
 # Desktop 씬의 배경 경로
-var bg_rect = get_node_or_null("/root/Desktop/ScreenEffects/AlertOverlay")
+
 
 func _ready():
 	send_button.pressed.connect(_on_send_button_pressed)
@@ -166,8 +166,6 @@ func update_suspicion(delta):
 	
 	print("현재 의심도: ", current_suspicion, " (변화량: ", delta, ")")
 	
-	# === [추가된 연출 로직] ===
-	
 	# 1. 의심도가 올랐을 때 화면 흔들기 (Screen Shake)
 	if delta > 0:
 		_trigger_screen_shake()
@@ -197,8 +195,7 @@ func _set_alarm_mode(on: bool):
 	is_alarm_mode = on
 	if on:
 		print("🚨 경고: 보안 프로토콜 위반 임박!")
-		# 배경음악을 끄고 경고음 재생 (구현 필요 시 AudioManager에 loop 기능 추가 필요)
-		# 일단은 알림음으로 대체
+		# 배경음악을 끄고 경고음 재생
 		AudioManager.play_alert()
 		
 		# 붉은 점멸 효과 (Tween Loop)
