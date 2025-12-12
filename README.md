@@ -74,4 +74,5 @@ graph LR
 3. [x] Sound Manager: 타자 소리 및 환경음 구현
 4. [ ] Steam Release: 스팀 상점 페이지 오픈 예정
 5. [ ] DLC Content:추가 시나리오 업데이트📜<br>
-**LicenseThis project is licensed under the MIT License - see the LICENSE file for details.Developed by [Rorena15] Powered by Godot Engine & Generative AI**
+**LicenseThis project is licensed under the MIT License - see the LICENSE file for details.<br>
+Developed by [Rorena15] Powered by Godot Engine & Generative AI**
