@@ -61,11 +61,14 @@ graph LR
 #### [Option 1] 플레이어 (Release 버전)Releases 페이지에서 최신 SocialEngineer_v1.0.zip을 다운로드합니다.
   - 압축을 풀고 SocialEngineer.exe를 실행합니다.
   - 주의: 게임 실행 시 백그라운드에서 AI 서버가 자동으로 시작됩니다.
-#### [Option 2] 개발자 (Source Code)<br>
-  - 서버 설정 (Python)Bashcd server<br>
+    #### 현재 Releas 버전이 제작되지 않아 Option 1은 추천하지 않습니다
+#### [Option 2] 개발자 (Source Code)
+  - 서버 설정 (Python)Bashcd server
       - pip install -r requirements.txt<br>
-        #로컬 LLM 사용 시 Ollama 설치 및 'mistral' 모델 pull 필요
-        #ollama pull mistral
+        #config.json 파일 내부에 google api key입력시 클라우드 모델을 사용<br>
+        #llama3.1입력시 로컬 llm사용<br>
+        #로컬 LLM 사용 시 Ollama 설치 및 'mistral' 모델 pull 필요<br>
+        #ollama pull mistral<br>
       - python main.py
   - 클라이언트 실행 (Godot)Godot 4.3 버전을 설치합니다.project.godot 파일을 열고 실행(F5)합니다.
 ## 🗺️ Roadmap
