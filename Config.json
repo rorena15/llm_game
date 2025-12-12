@@ -1,0 +1,6 @@
+{
+  "ai_mode": "local",
+  "local_model_name": "mistral",
+  "cloud_model_name": "gemini-1.5-flash",
+  "google_api_key": "<enter-the-your-google-api-key>"
+}
