@@ -1,9 +1,6 @@
 fastapi
-uvicorn[standard]
-httpx
+uvicorn
 pydantic
+httpx
 chromadb
-numpy
-pandas
-tensorflow
-matplotlib
+google-generativeai
