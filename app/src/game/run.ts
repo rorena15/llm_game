@@ -1,7 +1,9 @@
 // 미션 한 판의 상태. 화면(창)과 떨어져 있어서 창을 닫았다 열어도 남는다
 import { useSyncExternalStore } from 'react'
 import type { Llm } from '../engine/llm'
-import { Session } from '../engine/session'
+import { ALARM_AT } from '../engine/rules'
+import { ScriptedSession } from '../engine/scripted'
+import { Session, type Talker } from '../engine/session'
 import type { FactSpec, InferenceSpec, Scenario, TurnResult } from '../engine/types'
 
 export const LOGIN_FAIL_SUSPICION = 10
@@ -25,6 +27,15 @@ export interface ChatMsg {
 
 export type RunStatus = 'playing' | 'cleared' | 'failed'
 
+/** 화면 위에 잠깐 뜨는 알림 */
+export interface Notice {
+  id: number
+  kind: 'clue' | 'fact' | 'inference' | 'hint' | 'warn'
+  title: string
+  text: string
+}
+export const NOTICE_MS = 4000
+
 export interface Link {
   a: string
   b: string
@@ -35,7 +46,7 @@ export type LinkResult = { ok: false; reason: 'wrong' | 'dup' | 'self' } | { ok:
 
 export class MissionRun {
   readonly scenario: Scenario
-  readonly session: Session
+  readonly session: Talker
   readonly startedAt = Date.now()
   cards: Card[] = []
   links: Link[] = []
@@ -47,13 +58,17 @@ export class MissionRun {
   retries = 0
   status: RunStatus = 'playing'
   busy = false
+  notices: Notice[] = []
+  /** 보드에서 아직 보지 않은 카드 수 */
+  unseen = 0
   private nextMsg = 0
+  private nextNotice = 0
   private version = 0
   private listeners = new Set<() => void>()
 
   constructor(scenario: Scenario, llm: Llm) {
     this.scenario = scenario
-    this.session = new Session(scenario, llm)
+    this.session = scenario.script ? new ScriptedSession(scenario) : new Session(scenario, llm)
   }
 
   subscribe = (fn: () => void) => {
@@ -77,7 +92,29 @@ export class MissionRun {
   private addCard(card: Card) {
     if (this.hasCard(card.id)) return false
     this.cards = [...this.cards, card]
+    this.unseen++
+    const title = card.kind === 'clue' ? '단서 수집' : card.kind === 'fact' ? '대화에서 단서 발견' : '추론 완성'
+    this.notify(card.kind, title, card.label)
     return true
+  }
+
+  notify(kind: Notice['kind'], title: string, text: string) {
+    const n = { id: this.nextNotice++, kind, title, text }
+    this.notices = [...this.notices, n]
+    setTimeout(() => this.dismiss(n.id), NOTICE_MS)
+  }
+
+  dismiss(id: number) {
+    if (!this.notices.some((n) => n.id === id)) return
+    this.notices = this.notices.filter((n) => n.id !== id)
+    this.emit()
+  }
+
+  /** 보드를 열어 봤을 때 */
+  markSeen() {
+    if (!this.unseen) return
+    this.unseen = 0
+    this.emit()
   }
 
   /** 문서 속 단서를 눌렀을 때 */
@@ -105,7 +142,10 @@ export class MissionRun {
       const leverageCards = this.scenario.inferences
         .filter((i) => i.leverage && this.hasCard(i.id))
         .map((i) => ({ id: i.id, label: i.label }))
+      const before = this.suspicion
       const r = await this.session.turn(text, { leverageCards })
+      if (before < ALARM_AT && r.state.suspicion >= ALARM_AT && !r.gameOver)
+        this.notify('warn', '경계 위험', `${this.scenario.npc.name}이(가) 의심하기 시작했습니다`)
       const j = r.judgment
       this.push({
         from: 'npc',
@@ -137,6 +177,7 @@ export class MissionRun {
       return true
     }
     this.loginFails++
+    this.notify('warn', '접속 거부', `보안 경계 +${LOGIN_FAIL_SUSPICION}`)
     if (this.session.penalize(LOGIN_FAIL_SUSPICION)) this.fail()
     this.emit()
     return false
@@ -198,6 +239,7 @@ export class MissionRun {
         // 새 추론 카드를 재료와 이어 둔다 (보드에 선으로 보이게)
         for (const r of inf.requires) this.links = [...this.links, { a: r, b: inf.id }]
         made.push(inf)
+        if (inf.unlocks?.length) this.notify('hint', '로그인 힌트 열림', '사내망 접속 화면에서 확인하세요')
         grew = true
       }
     }
@@ -221,6 +263,14 @@ export class MissionRun {
       }
     }
     return ids.every((id) => seen.has(id))
+  }
+
+  /** 튜토리얼 안내: 단계마다 끝났는지 */
+  get guide(): { text: string; done: boolean }[] {
+    return (this.scenario.guide ?? []).map((g) => ({
+      text: g.text,
+      done: g.login ? this.status === 'cleared' : (g.cards ?? []).every((id) => this.hasCard(id)),
+    }))
   }
 
   /** 비밀번호 조합 규칙(final 추론)을 완성했나 */

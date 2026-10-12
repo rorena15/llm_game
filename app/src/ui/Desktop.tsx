@@ -36,6 +36,18 @@ export function Desktop({ run, playerName, debug, onQuit }: Props) {
   useRun(run)
   const [wins, setWins] = useState<OpenWin[]>([{ id: 'email', pos: APPS.email.at, z: 1 }])
   const [now, setNow] = useState(() => new Date())
+  // 경계가 오르면 막대를 잠깐 흔든다
+  const [prevS, setPrevS] = useState(run.suspicion)
+  const [bump, setBump] = useState(false)
+  if (run.suspicion !== prevS) {
+    setPrevS(run.suspicion)
+    if (run.suspicion > prevS) setBump(true)
+  }
+  useEffect(() => {
+    if (!bump) return
+    const t = setTimeout(() => setBump(false), 600)
+    return () => clearTimeout(t)
+  }, [bump])
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 15_000)
     return () => clearInterval(t)
@@ -102,10 +114,11 @@ export function Desktop({ run, playerName, debug, onQuit }: Props) {
           {ORDER.map((id) => (
             <button key={id} className={wins.some((w) => w.id === id) ? 'on' : ''} onClick={() => open(id)}>
               {APPS[id].icon} {APPS[id].title}
+              {id === 'board' && run.unseen > 0 && <span className="badge">{run.unseen}</span>}
             </button>
           ))}
         </div>
-        <div className="suspicion" title={`의심도 ${s}`}>
+        <div className={`suspicion${bump ? ' bump' : ''}`} title={`의심도 ${s}`}>
           <span>보안 경계</span>
           <div className="bar">
             <div className="fill" style={{ width: `${s}%` }} />
@@ -113,6 +126,31 @@ export function Desktop({ run, playerName, debug, onQuit }: Props) {
         </div>
         <time>{now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</time>
       </footer>
+
+      <div className="notices">
+        {run.notices.map((n) => (
+          <div key={n.id} className={`notice ${n.kind}`} onClick={() => (n.kind === 'warn' ? null : open('board'))}>
+            <b>{n.title}</b>
+            <span>{n.text}</span>
+          </div>
+        ))}
+      </div>
+
+      {run.guide.length > 0 && (
+        <aside className="guide">
+          <h3>안내</h3>
+          <ol>
+            {run.guide.map((g, i) => {
+              const current = !g.done && run.guide.slice(0, i).every((x) => x.done)
+              return (
+                <li key={i} className={g.done ? 'done' : current ? 'now' : ''}>
+                  {g.text}
+                </li>
+              )
+            })}
+          </ol>
+        </aside>
+      )}
 
       {run.status === 'failed' && (
         <div className="overlay">

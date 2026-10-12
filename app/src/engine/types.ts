@@ -72,6 +72,24 @@ export interface Email {
   body: string
 }
 
+/** 튜토리얼: 모델 없이 낱말로 고르는 정해진 대사 */
+export interface ScriptRule {
+  /** 이 중 하나라도 들어 있으면 */
+  keywords: string[]
+  reply: string
+  /** 이 대사로 공개되는 사실 */
+  fact?: string
+  suspicion?: number
+}
+
+export interface GuideStep {
+  text: string
+  /** 이 카드를 모두 가지면 끝난 단계 */
+  cards?: string[]
+  /** 로그인 성공이 조건 */
+  login?: boolean
+}
+
 /** 시나리오 파일 그대로 (자리 표시 {{key}} 포함) */
 export interface ScenarioSpec {
   id: string
@@ -88,6 +106,10 @@ export interface ScenarioSpec {
   emails: Email[]
   websites: Record<string, string>
   secretDocuments: string[]
+  /** 있으면 모델 대신 이 정해진 대사로 대화한다 (튜토리얼) */
+  script?: { rules: ScriptRule[]; default: string[] }
+  /** 있으면 데스크톱에 단계 안내 창을 띄운다 */
+  guide?: GuideStep[]
 }
 
 /** 변형을 적용해 자리 표시를 채운 시나리오 */

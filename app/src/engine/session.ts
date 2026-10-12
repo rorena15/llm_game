@@ -24,7 +24,15 @@ export function newState(): SessionState {
   return { suspicion: 0, rapport: 0, maxSuspicion: 0, revealed: [], history: [] }
 }
 
-export class Session {
+/** 대화 상대. AI 세션과 튜토리얼의 정해진 대사 세션이 같은 꼴을 가진다 */
+export interface Talker {
+  state: SessionState
+  turn(playerText: string, ctx?: TurnContext): Promise<TurnResult>
+  penalize(amount: number): boolean
+  retryKeepClues(): void
+}
+
+export class Session implements Talker {
   state: SessionState
   readonly scenario: Scenario
   private llm: Llm

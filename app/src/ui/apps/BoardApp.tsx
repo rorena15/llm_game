@@ -47,6 +47,9 @@ export function BoardApp({ run }: { run: MissionRun }) {
     return () => clearTimeout(t)
   }, [toast])
 
+  // 보드가 열려 있으면 새 카드는 본 것으로
+  useEffect(() => run.markSeen(), [run, run.cards.length])
+
   const finals = useMemo(() => new Set(run.scenario.inferences.filter((i) => i.final).map((i) => i.id)), [run.scenario])
   const [nodes, setNodes] = useState<CardNode[]>([])
 
@@ -105,7 +108,6 @@ export function BoardApp({ run }: { run: MissionRun }) {
             if (r.reason === 'wrong') setToast({ text: '연관 없음', bad: true })
             return
           }
-          if (r.made.length) setToast({ text: `추론: ${r.made.map((i) => i.label).join(', ')}`, bad: false })
         }}
         colorMode="dark"
         fitView

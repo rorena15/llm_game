@@ -664,3 +664,157 @@ button:disabled {
   color: #fff;
   background: var(--danger);
 }
+
+/* 튜토리얼 안내 */
+.guide {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 800;
+  width: 300px;
+  padding: 12px 14px;
+  background: #050b07ee;
+  border: 1px solid var(--warn);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.guide h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--warn);
+}
+.guide ol {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: var(--dim);
+}
+.guide li.now {
+  color: var(--text);
+}
+.guide li.done {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* 알림 */
+.notices {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  z-index: 950;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  pointer-events: none;
+}
+.notice {
+  min-width: 260px;
+  display: grid;
+  gap: 2px;
+  padding: 10px 18px;
+  background: #050b07f2;
+  border: 1px solid var(--accent);
+  border-left-width: 4px;
+  border-radius: 4px;
+  box-shadow: 0 0 24px #38d47a44;
+  pointer-events: auto;
+  cursor: pointer;
+  animation:
+    notice-in 0.35s ease-out,
+    notice-out 0.4s ease-in 3.6s forwards;
+}
+.notice b {
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+.notice span {
+  font-size: 15px;
+}
+.notice.fact {
+  border-color: var(--npc);
+  box-shadow: 0 0 24px #e8b27a44;
+}
+.notice.fact b {
+  color: var(--npc);
+}
+.notice.inference,
+.notice.hint {
+  border-color: var(--warn);
+  box-shadow: 0 0 32px #e8d24a66;
+}
+.notice.inference b,
+.notice.hint b {
+  color: var(--warn);
+}
+.notice.inference {
+  animation:
+    notice-in 0.35s ease-out,
+    glow 0.6s ease-in-out 0.35s 2 alternate,
+    notice-out 0.4s ease-in 3.6s forwards;
+}
+.notice.warn {
+  border-color: var(--danger);
+  box-shadow: 0 0 24px #ff5a5a55;
+  cursor: default;
+}
+.notice.warn b {
+  color: var(--danger);
+}
+@keyframes notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.96);
+  }
+}
+@keyframes notice-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+@keyframes glow {
+  to {
+    box-shadow: 0 0 48px #e8d24aaa;
+  }
+}
+
+/* 보드 배지, 경계 막대 흔들림 */
+.taskbar .tasks button {
+  position: relative;
+}
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  min-width: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--bg);
+  background: var(--warn);
+  border-radius: 9px;
+  animation: pulse 1s ease-in-out infinite alternate;
+}
+@keyframes pulse {
+  to {
+    box-shadow: 0 0 10px var(--warn);
+  }
+}
+.suspicion.bump .bar {
+  animation: shake 0.5s;
+  border-color: var(--danger);
+}
+@keyframes shake {
+  20%,
+  60% {
+    transform: translateX(-3px);
+  }
+  40%,
+  80% {
+    transform: translateX(3px);
+  }
+}
