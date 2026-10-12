@@ -14,7 +14,7 @@ const REPEAT = /(^|\s)([가-힣A-Za-z]{1,})\s+\2(?=[가-힣\s.,!?]|$)/
 const BANMAL_END = /(야|어|아|지|냐|니|거든|잖아|해|돼|래|군|구나|다|라|봐|와|줘|게|네|걸|데|까|나|자|더라)$/
 
 /** 하게체 인물이 쓰면 안 되는 해체(반말) 끝. "~네", "~게", "~가", "~지"는 하게체에도 있어 뺀다 */
-const HAGE_BANMAL_END = /(어|아|야|해|돼|봐|줘|래|라|려|거든|잖아)$/
+const HAGE_BANMAL_END = /(어|아|야|해|돼|봐|줘|래|라|려|냐|니|구나|거든|잖아)$/
 
 const norm = (s: string) => s.toLowerCase().replace(/[\s_\-.!]/g, '')
 
@@ -43,6 +43,11 @@ export function speechViolations(text: string, speech: Speech): string[] {
   }
   return bad
 }
+
+/** 말투·반복 실패는 가볍다: 재생성이 다 실패하면 이것만 걸린 대사는 그대로 쓴다.
+ *  누출·외국어·공개 누락·길이는 무겁다: 절대 내보내지 않는다 */
+export const SOFT_FAILS = new Set(['speech', 'repeat'])
+export const isSoftOnly = (fails: string[]) => fails.every((f) => SOFT_FAILS.has(f))
 
 export interface GuardInput {
   text: string

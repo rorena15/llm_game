@@ -27,7 +27,8 @@ export interface NpcSpec {
   /** tactic별 약점 배율. 1보다 크면 잘 먹힌다 */
   weak: Partial<Record<Tactic, number>>
   rules: { keyword: string; suspicion?: number; rapport?: number }[]
-  fallbackLines: string[]
+  /** 재생성이 다 실패했을 때 쓰는 대사. 엔진 지시별로, 없는 지시는 normal을 쓴다 */
+  fallbackLines: { normal: string[] } & Partial<Record<Directive, string[]>>
 }
 
 export interface ClueSpec {

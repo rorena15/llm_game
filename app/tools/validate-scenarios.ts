@@ -23,7 +23,7 @@ function checkSpec(spec: ScenarioSpec): string[] {
   spec.clues.forEach((c) => add(c.id, 'clue'))
   spec.inferences.forEach((i) => add(i.id, 'inference'))
 
-  if (!spec.npc.fallbackLines.length) e.push('npc.fallbackLines 비어 있음')
+  if (!spec.npc.fallbackLines?.normal?.length) e.push('npc.fallbackLines.normal 비어 있음')
   for (const t of Object.keys(spec.npc.weak)) if (!TACTICS.includes(t as Tactic)) e.push(`npc.weak 알 수 없는 tactic: ${t}`)
   for (const f of spec.facts) {
     if (f.level === 'guarded' && !f.keys?.length) e.push(`guarded 사실에 keys 없음: ${f.id}`)

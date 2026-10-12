@@ -1,5 +1,5 @@
 // 한 미션의 대화 세션. 판정 → 엔진 → 대사 → guard → 재생성 (§5.4)
-import { guard } from './guard'
+import { guard, isSoftOnly } from './guard'
 import type { Llm } from './llm'
 import {
   cleanDialogue,
@@ -73,6 +73,7 @@ export class Session {
     let attempts = 0
     let usedFallback = false
     const guardFailures: string[] = []
+    let softOnly = ''
     while (attempts <= MAX_RETRIES) {
       attempts++
       const raw = await this.llm.chat(msgs, { temperature: 0.7, maxTokens: 160 })
@@ -82,16 +83,21 @@ export class Session {
         dialogue = text
         break
       }
+      if (!softOnly && isSoftOnly(fails)) softOnly = text
       guardFailures.push(...fails)
     }
+    // 말투만 어긋난 대사는 대체 대사보다 낫다 (특히 공개 턴을 잃지 않게)
+    if (!dialogue && softOnly) dialogue = softOnly
 
     let decision = d
     if (!dialogue) {
-      // 대체 대사로는 사실을 공개할 수 없으니 공개도 취소한다
       usedFallback = true
-      const lines = sc.npc.fallbackLines
+      // 대체 대사로는 사실을 공개할 수 없으니 공개를 취소하고 얼버무림 대사로
+      const key = d.directive === 'reveal' ? 'evade' : d.directive
+      const fb = sc.npc.fallbackLines
+      const lines = fb[key]?.length ? fb[key] : fb.normal
       dialogue = lines[Math.floor(this.rand() * lines.length)] ?? '...'
-      decision = { ...d, reveal: null }
+      decision = { ...d, reveal: null, directive: key }
     }
 
     const next = applyDecision(this.state, decision)

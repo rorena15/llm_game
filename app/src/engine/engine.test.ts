@@ -130,7 +130,19 @@ describe('session', () => {
     expect(r.usedFallback).toBe(true)
     expect(r.revealedNow).toEqual([])
     expect(s.state.revealed).toEqual([])
-    expect(r.dialogue).toBe(sc.npc.fallbackLines[0])
+    expect(r.dialogue).toBe(sc.npc.fallbackLines.evade![0]) // 공개 지시가 실패하면 얼버무림 대사
+    expect(r.directive).toBe('evade')
+  })
+  it('keeps a reveal line whose only fault is speech level', async () => {
+    const llm = fakeLlm(
+      ['{"tactic":"empathy","topic":"first_meet","meta":false,"fit":2,"leverage":null}'],
+      ['그날 파란 하늘 아래 걸었어.', '그날 파란 하늘 아래 걸었어.', 'Sure'],
+    )
+    const s = new Session(sc, llm, { suspicion: 0, rapport: 40, maxSuspicion: 0, revealed: [], history: [] })
+    const r = await s.turn('사모님과의 첫 만남이 궁금합니다, 부장님.')
+    expect(r.usedFallback).toBe(false)
+    expect(r.dialogue).toBe('그날 파란 하늘 아래 걸었어.')
+    expect(r.revealedNow.map((f) => f.id)).toEqual(['first_meet'])
   })
   it('reveals and records when the line passes', async () => {
     const llm = fakeLlm(
