@@ -1,1 +1,17 @@
-config.json
+# legacy (Godot + Python)
+legacy/config.json
+__pycache__/
+*.pyc
+
+# 대화 기록 덤프 (비밀번호 포함)
+memory_dump.txt
+
+# app
+node_modules/
+dist/
+*.local
+.vite/
+
+# 모델·학습 산출물
+*.gguf
+train/out/

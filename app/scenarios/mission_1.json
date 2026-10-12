@@ -1,0 +1,72 @@
+{
+  "id": "mission_1",
+  "title": "MISSION 01: 그림자 인사",
+  "difficulty": 1,
+  "briefing": "타겟: 인사팀 김철수 부장\n난이도: ★☆☆☆☆\n\n목표: 김 부장의 사내망 계정 비밀번호\n\n특이사항:\n- 기계치이며 권위적이다.\n- 치켜세워 주거나 급하다고 매달리면 약하다.\n- 대놓고 비밀번호를 물으면 화를 낸다.",
+  "npc": {
+    "name": "김철수 부장",
+    "speech": "hage",
+    "persona": "CorpX 인사팀 부장, 20년차. 권위적이고 아랫사람을 '자네'라고 부른다. 컴퓨터에 서툴러 비밀번호를 자주 잊는다. 칭찬과 아부에 약하고, 누가 급하다고 매달리면 우쭐해서 도와주려 한다. 요즘 아내와 사이가 예전 같지 않아 마음이 쓰인다.",
+    "weak": { "flatter": 1.8, "rush": 1.5, "empathy": 1.0, "pretext": 1.0, "ask": 0.5, "chat": 1.0, "hostile": 0.5 },
+    "rules": [{ "keyword": "감사팀", "suspicion": 10 }],
+    "fallbackLines": ["음? 다시 말해 보게.", "내가 지금 좀 바쁘네. 나중에 얘기하지.", "허허, 그게 무슨 소린가."]
+  },
+  "facts": [
+    { "id": "role", "level": "free", "label": "김 부장의 직책", "text": "나는 인사팀 부장이고 이 회사에서 20년을 일했다." },
+    { "id": "techbad", "level": "free", "label": "컴퓨터 실력", "text": "나는 컴퓨터가 영 어렵고, 비밀번호를 자주 잊어버린다." },
+    { "id": "wife", "level": "free", "label": "아내", "text": "요즘 아내와 사이가 예전 같지 않아 신경이 쓰인다." },
+    {
+      "id": "first_meet",
+      "level": "guarded",
+      "label": "아내와 처음 만난 날",
+      "text": "아내를 처음 만난 날, 둘이 {{sky_ko}} 아래를 오래 걸었다. 그 뒤로 중요한 건 다 그 말로 정한다.",
+      "when": { "rapportMin": 35, "suspicionMax": 60 },
+      "keys": ["{{sky_ko}}", "{{sky_en}}"]
+    },
+    { "id": "pw", "level": "secret", "label": "비밀번호", "text": "{{password}}" }
+  ],
+  "password": {
+    "pieces": [
+      { "key": "phrase", "sources": ["first_meet"] },
+      { "key": "format_year", "sources": ["policy"] }
+    ]
+  },
+  "variants": [
+    { "id": "a", "values": { "sky_ko": "파란 하늘", "sky_en": "blue_sky", "year": "2024", "password": "blue_sky_2024", "mask": "●●●●_●●●_2024", "hint2": "b●●●_s●●_2024" }, "password": "blue_sky_2024" },
+    { "id": "b", "values": { "sky_ko": "하얀 눈", "sky_en": "white_snow", "year": "2025", "password": "white_snow_2025", "mask": "●●●●●_●●●●_2025", "hint2": "w●●●●_s●●●_2025" }, "password": "white_snow_2025" },
+    { "id": "c", "values": { "sky_ko": "붉은 노을", "sky_en": "red_sunset", "year": "2024", "password": "red_sunset_2024", "mask": "●●●_●●●●●●_2024", "hint2": "r●●_s●●●●●_2024" }, "password": "red_sunset_2024" }
+  ],
+  "clues": [
+    { "id": "wife_mail", "source": "email:0", "label": "아내의 메일", "text": "아내가 처음 만난 날을 그리워한다", "keyword": "처음 만난 날" },
+    { "id": "policy", "source": "email:1", "label": "비밀번호 정책", "text": "영문 소문자 단어를 밑줄로 잇고 끝에 {{year}}", "keyword": "밑줄" },
+    { "id": "memo", "source": "email:2", "label": "김 부장의 혼잣말 메일", "text": "비밀번호를 아내와의 추억이 담긴 말로 정했다", "keyword": "그 말" }
+  ],
+  "inferences": [
+    {
+      "id": "inf_memory",
+      "label": "비밀번호는 아내와의 추억",
+      "requires": ["wife_mail", "memo"],
+      "yields": "김 부장은 아내와 처음 만난 날의 말을 비밀번호에 썼다. 아내 이야기로 접근해 볼 만하다.",
+      "unlocks": ["login_hint_1"],
+      "leverage": true
+    },
+    {
+      "id": "inf_final",
+      "label": "조합 완성",
+      "requires": ["inf_memory", "first_meet", "policy"],
+      "yields": "'{{sky_ko}}'를 영문 소문자로 밑줄로 잇고, 끝에 _{{year}}",
+      "unlocks": ["login_hint_2"],
+      "final": true
+    }
+  ],
+  "loginHints": { "login_hint_1": "{{mask}}", "login_hint_2": "{{hint2}}" },
+  "emails": [
+    { "sender": "아내", "subject": "여보, 주말에", "body": "요즘 우리 너무 바빴지. 우리 처음 만난 날 기억나? 그날처럼 둘이 오래 걷고 싶어." },
+    { "sender": "보안팀", "subject": "[공지] {{year}}년 비밀번호 정책", "body": "{{year}}년부터 사내망 비밀번호는 영문 소문자 단어를 밑줄(_)로 잇고, 끝에 _{{year}}를 붙여 주십시오. 예: green_tea_{{year}}" },
+    { "sender": "김철수", "subject": "RE: 비밀번호 변경 완료", "body": "또 바꾸라고 해서 바꿨네. 이번엔 안 잊어버리게 우리 부부 그 말로 했지. 허허." }
+  ],
+  "websites": {},
+  "secretDocuments": [
+    "[b]CONFIDENTIAL: 법인 카드 내역[/b]\n대상: 김철수 부장\n2024-11-20 강남 유흥주점 - 250만원 (접대비 처리)\n2024-11-25 백화점 상품권 - 100만원 (용도 불명)"
+  ]
+}
