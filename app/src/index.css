@@ -1,68 +1,213 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --bg: #0b0f0c;
+  --panel: #111813;
+  --line: #1f3326;
+  --text: #cfe8d4;
+  --dim: #6f8f78;
+  --accent: #38d47a;
+  --player: #6fb3ff;
+  --npc: #e8b27a;
+  --danger: #ff5a5a;
+  font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
   min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  background: var(--bg);
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  font: inherit;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+.stage {
+  display: flex;
+  gap: 16px;
+  padding: 24px;
+  height: 100vh;
+}
+
+/* 메신저 */
+.messenger {
+  flex: 1;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+.messenger.alarm {
+  border-color: var(--danger);
+  animation: alarm 1s ease-in-out infinite alternate;
+}
+@keyframes alarm {
+  to {
+    box-shadow: 0 0 24px #ff5a5a55;
   }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+}
+
+.messenger-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.npc-name {
+  color: var(--npc);
+  font-weight: 700;
+}
+.suspicion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--dim);
+}
+.suspicion .bar {
+  width: 160px;
+  height: 8px;
+  background: #0006;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.suspicion .fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #e8d24a 60%, var(--danger));
+  background-size: 160px 100%;
+  transition: width 0.5s ease-out;
+}
+
+.log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.msg {
+  max-width: 80%;
+}
+.msg p {
+  margin: 2px 0 0;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.msg .who {
+  font-size: 12px;
+  color: var(--dim);
+}
+.msg.player {
+  align-self: flex-end;
+  text-align: right;
+}
+.msg.player p {
+  color: var(--player);
+}
+.msg.npc p {
+  color: var(--npc);
+}
+.msg.system {
+  align-self: center;
+  color: var(--danger);
+  font-size: 13px;
+}
+.msg.pending {
+  color: var(--dim);
+  font-size: 13px;
+}
+.clue-chip {
+  margin-top: 6px;
+  padding: 3px 10px;
+  font-size: 12px;
+  color: var(--bg);
+  background: var(--accent);
+  border: 0;
+  border-radius: 10px;
+}
+
+.debug {
+  padding: 4px 14px;
+  font: 12px ui-monospace, monospace;
+  color: var(--dim);
+  border-top: 1px dashed var(--line);
+}
+
+.input,
+.over {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--line);
+}
+.input input {
+  flex: 1;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--text);
+  background: #0008;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  outline: none;
+}
+.input input:focus {
+  border-color: var(--accent);
+}
+.input button,
+.over button {
+  padding: 0 16px;
+  color: var(--bg);
+  background: var(--accent);
+  border: 0;
+  border-radius: 4px;
+}
+.over button {
+  padding: 10px 16px;
+  margin: 0 auto;
+}
+.input button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* 단서 (보드는 {board}에서) */
+.clues {
+  width: 260px;
+  padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow-y: auto;
+}
+.clues h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--dim);
+}
+.clues .empty {
+  color: var(--dim);
+  font-size: 13px;
+}
+.card {
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+}
+.card p {
+  margin: 4px 0 0;
+  font-size: 13px;
 }

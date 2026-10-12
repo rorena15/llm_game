@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useMemo, useState } from 'react'
+import { applyVariant, pickVariant } from './engine/scenario'
+import type { FactSpec } from './engine/types'
+import { llm, SCENARIOS } from './game/scenarios'
+import { Messenger } from './ui/Messenger'
 
-function App() {
-  const [count, setCount] = useState(0)
+// 1단계: 메신저 하나만 띄운다. 데스크톱·창 관리는 {ui}에서
+export default function App() {
+  const scenario = useMemo(() => {
+    const spec = SCENARIOS.mission_1
+    return applyVariant(spec, pickVariant(spec))
+  }, [])
+  const [clues, setClues] = useState<FactSpec[]>([])
+  const debug = new URLSearchParams(location.search).has('debug')
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <main className="stage">
+      <Messenger
+        scenario={scenario}
+        llm={llm}
+        playerName="나"
+        debug={debug}
+        onClue={(f) => setClues((cs) => (cs.some((c) => c.id === f.id) ? cs : [...cs, f]))}
+      />
+      <aside className="clues">
+        <h2>수집한 단서</h2>
+        {clues.length === 0 && <p className="empty">아직 없음</p>}
+        {clues.map((c) => (
+          <div key={c.id} className="card">
+            <b>{c.label}</b>
+            <p>{c.text}</p>
+          </div>
+        ))}
+        {debug && <p className="empty">변형 {scenario.variantId}</p>}
+      </aside>
+    </main>
   )
 }
-
-export default App
