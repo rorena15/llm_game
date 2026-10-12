@@ -36,11 +36,12 @@ legacy/              Godot + Python 프로토타입 (이식이 끝나면 삭제)
 필요한 것: Node.js 24, Rust (Tauri용), [Ollama](https://ollama.com).
 
 ```sh
-cd app
-npm install
-npm run tauri dev     # 데스크톱 창으로 실행 (Vite 개발 서버도 함께 뜸)
-npm run dev           # 브라우저로만 실행: http://localhost:5173
+cd app && npm install && cd ..   # 처음 한 번
+npm run dev           # 데스크톱 창으로 실행 (Vite 개발 서버도 함께 뜸)
+npm run web           # 브라우저로만 실행: http://localhost:5173
 ```
+
+최상위의 `package.json`은 `app/`으로 넘겨 주는 바로 가기입니다. `app/` 안에서는 `npm run tauri dev`, `npm run dev`로 같은 일을 합니다.
 
 주소 끝에 `?debug`를 붙이면 매 턴의 판정·수치와 정답이 보입니다.
 

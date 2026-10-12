@@ -1,0 +1,13 @@
+{
+  "name": "social-engineer-root",
+  "private": true,
+  "description": "바로 가기: 실제 앱은 app/ 에 있다",
+  "scripts": {
+    "dev": "npm --prefix app run tauri dev",
+    "web": "npm --prefix app run dev",
+    "test": "npm --prefix app test",
+    "validate": "npm --prefix app run validate",
+    "lint": "npm --prefix app run lint",
+    "build": "npm --prefix app run build"
+  }
+}
