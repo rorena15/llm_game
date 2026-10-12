@@ -613,3 +613,54 @@ button:disabled {
   background: #000c;
   border: 1px solid var(--line);
 }
+
+/* 수사보드: React Flow */
+.board.flow {
+  position: relative;
+  padding: 0;
+  background: #0c1510;
+}
+.board.flow .react-flow {
+  --xy-background-color: #0c1510;
+  --xy-edge-stroke: var(--accent);
+  --xy-edge-stroke-width: 2;
+  --xy-handle-background-color: var(--accent);
+  --xy-handle-border-color: var(--bg);
+}
+.board.flow .card {
+  width: 190px;
+  cursor: grab;
+}
+.board.flow .card.final {
+  border-color: var(--warn);
+  box-shadow: 0 0 16px #e8d24a55;
+}
+.board.flow .react-flow__handle {
+  width: 10px;
+  height: 10px;
+}
+.board-help {
+  position: absolute;
+  left: 10px;
+  bottom: 6px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--dim);
+  pointer-events: none;
+}
+.toast {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--bg);
+  background: var(--warn);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.toast.bad {
+  color: #fff;
+  background: var(--danger);
+}

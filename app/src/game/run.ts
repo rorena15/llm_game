@@ -2,7 +2,7 @@
 import { useSyncExternalStore } from 'react'
 import type { Llm } from '../engine/llm'
 import { Session } from '../engine/session'
-import type { FactSpec, Scenario, TurnResult } from '../engine/types'
+import type { FactSpec, InferenceSpec, Scenario, TurnResult } from '../engine/types'
 
 export const LOGIN_FAIL_SUSPICION = 10
 
@@ -25,11 +25,23 @@ export interface ChatMsg {
 
 export type RunStatus = 'playing' | 'cleared' | 'failed'
 
+export interface Link {
+  a: string
+  b: string
+}
+
+/** 보드에서 두 카드를 이은 결과 */
+export type LinkResult = { ok: false; reason: 'wrong' | 'dup' | 'self' } | { ok: true; made: InferenceSpec[] }
+
 export class MissionRun {
   readonly scenario: Scenario
   readonly session: Session
   readonly startedAt = Date.now()
   cards: Card[] = []
+  links: Link[] = []
+  wrongLinks = 0
+  /** 보드 카드 위치 */
+  positions: Record<string, { x: number; y: number }> = {}
   chat: ChatMsg[] = []
   loginFails = 0
   retries = 0
@@ -90,7 +102,10 @@ export class MissionRun {
     this.busy = true
     this.emit()
     try {
-      const r = await this.session.turn(text)
+      const leverageCards = this.scenario.inferences
+        .filter((i) => i.leverage && this.hasCard(i.id))
+        .map((i) => ({ id: i.id, label: i.label }))
+      const r = await this.session.turn(text, { leverageCards })
       const j = r.judgment
       this.push({
         from: 'npc',
@@ -139,6 +154,72 @@ export class MissionRun {
     this.retries++
     this.status = 'playing'
     this.emit()
+  }
+
+  /** 두 카드를 잇는다. 같은 추론의 재료끼리만 이어진다 (§6.2) */
+  link(a: string, b: string): LinkResult {
+    if (a === b) return { ok: false, reason: 'self' }
+    if (this.links.some((l) => (l.a === a && l.b === b) || (l.a === b && l.b === a))) return { ok: false, reason: 'dup' }
+    const related = this.scenario.inferences.some((i) => i.requires.includes(a) && i.requires.includes(b))
+    // 추론 카드와 그 재료를 잇는 것도 허용 (이미 만든 추론을 다시 확인할 때)
+    const ownMaterial = this.scenario.inferences.some(
+      (i) => (i.id === a && i.requires.includes(b)) || (i.id === b && i.requires.includes(a)),
+    )
+    if (!related && !ownMaterial) {
+      this.wrongLinks++
+      this.emit()
+      return { ok: false, reason: 'wrong' }
+    }
+    this.links = [...this.links, { a, b }]
+    const made = this.resolveInferences()
+    this.emit()
+    return { ok: true, made }
+  }
+
+  unlink(a: string, b: string) {
+    this.links = this.links.filter((l) => !((l.a === a && l.b === b) || (l.a === b && l.b === a)))
+    this.emit()
+  }
+
+  setPosition(id: string, pos: { x: number; y: number }) {
+    this.positions = { ...this.positions, [id]: pos }
+  }
+
+  /** 재료가 모두 같은 덩어리로 이어진 추론을 만든다. 새로 만든 추론 카드도 재료가 될 수 있어 반복 */
+  private resolveInferences(): InferenceSpec[] {
+    const made: InferenceSpec[] = []
+    let grew = true
+    while (grew) {
+      grew = false
+      for (const inf of this.scenario.inferences) {
+        if (this.hasCard(inf.id) || !inf.requires.every((r) => this.hasCard(r))) continue
+        if (!this.connected(inf.requires)) continue
+        this.addCard({ id: inf.id, kind: 'inference', label: inf.label, text: inf.yields })
+        // 새 추론 카드를 재료와 이어 둔다 (보드에 선으로 보이게)
+        for (const r of inf.requires) this.links = [...this.links, { a: r, b: inf.id }]
+        made.push(inf)
+        grew = true
+      }
+    }
+    return made
+  }
+
+  /** ids가 모두 선으로 한 덩어리인가 */
+  private connected(ids: string[]): boolean {
+    const adj = new Map<string, string[]>()
+    for (const { a, b } of this.links) {
+      adj.set(a, [...(adj.get(a) ?? []), b])
+      adj.set(b, [...(adj.get(b) ?? []), a])
+    }
+    const seen = new Set([ids[0]])
+    const stack = [ids[0]]
+    while (stack.length) for (const n of adj.get(stack.pop()!) ?? []) if (!seen.has(n)) (seen.add(n), stack.push(n))
+    return ids.every((id) => seen.has(id))
+  }
+
+  /** 비밀번호 조합 규칙(final 추론)을 완성했나 */
+  get solved() {
+    return this.scenario.inferences.some((i) => i.final && this.hasCard(i.id))
   }
 
   /** 로그인 화면에 보일 힌트 (추론으로 열림, {board}) */
