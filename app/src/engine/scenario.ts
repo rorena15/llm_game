@@ -24,7 +24,8 @@ export function pickVariant(spec: ScenarioSpec, previous?: string, rand = Math.r
 }
 
 export function applyVariant(spec: ScenarioSpec, variant: VariantSpec): Scenario {
-  const { variants: _variants, ...rest } = spec
+  const rest: Omit<ScenarioSpec, 'variants'> & { variants?: unknown } = { ...spec }
+  delete rest.variants
   const filled = fillDeep(rest, variant.values)
   return { ...filled, variantId: variant.id, passwordValue: variant.password }
 }

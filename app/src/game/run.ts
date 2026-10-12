@@ -213,7 +213,13 @@ export class MissionRun {
     }
     const seen = new Set([ids[0]])
     const stack = [ids[0]]
-    while (stack.length) for (const n of adj.get(stack.pop()!) ?? []) if (!seen.has(n)) (seen.add(n), stack.push(n))
+    while (stack.length) {
+      for (const n of adj.get(stack.pop()!) ?? []) {
+        if (seen.has(n)) continue
+        seen.add(n)
+        stack.push(n)
+      }
+    }
     return ids.every((id) => seen.has(id))
   }
 
