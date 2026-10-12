@@ -1,5 +1,5 @@
 // 한 미션의 대화 세션. 판정 → 엔진 → 대사 → guard → 재생성 (§5.4)
-import { guard, isSoftOnly } from './guard'
+import { guard, isMissingOnly, isSoftOnly } from './guard'
 import type { Llm } from './llm'
 import {
   cleanDialogue,
@@ -73,7 +73,9 @@ export class Session {
     let attempts = 0
     let usedFallback = false
     const guardFailures: string[] = []
+    const rejected: { text: string; fails: string[] }[] = []
     let softOnly = ''
+    let missingOnly = ''
     while (attempts <= MAX_RETRIES) {
       attempts++
       const raw = await this.llm.chat(msgs, { temperature: 0.7, maxTokens: 160 })
@@ -84,12 +86,21 @@ export class Session {
         break
       }
       if (!softOnly && isSoftOnly(fails)) softOnly = text
+      if (!missingOnly && isMissingOnly(fails)) missingOnly = text
       guardFailures.push(...fails)
+      rejected.push({ text, fails })
     }
-    // 말투만 어긋난 대사는 대체 대사보다 낫다 (특히 공개 턴을 잃지 않게)
-    if (!dialogue && softOnly) dialogue = softOnly
+    // 공개 턴은 말투만 어긋난 대사라도 쓴다 (게임 진행을 잃지 않게).
+    // 다른 턴은 대체 대사가 낫다: 말투가 무너진 대사는 대개 인물이 무너진 대사다
+    const softAccepted = !dialogue && !!softOnly && d.directive === 'reveal'
+    if (softAccepted) dialogue = softOnly
 
     let decision = d
+    if (!dialogue && missingOnly) {
+      // 모델이 공개할 흐름이 아니라고 본 대사. 자연스러우니 쓰고 공개만 취소
+      dialogue = missingOnly
+      decision = { ...d, reveal: null, directive: 'normal' }
+    }
     if (!dialogue) {
       usedFallback = true
       // 대체 대사로는 사실을 공개할 수 없으니 공개를 취소하고 얼버무림 대사로
@@ -113,7 +124,9 @@ export class Session {
       revealedNow: decision.reveal ? [decision.reveal] : [],
       attempts,
       usedFallback,
+      softAccepted,
       guardFailures,
+      rejected,
       gameOver: next.suspicion >= GAME_OVER_AT,
       state: next,
     }

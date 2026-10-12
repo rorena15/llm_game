@@ -131,7 +131,11 @@ export interface TurnResult {
   revealedNow: FactSpec[]
   attempts: number
   usedFallback: boolean
+  /** 말투만 틀린 대사를 그대로 썼다 */
+  softAccepted: boolean
   guardFailures: string[]
+  /** guard에 걸린 대사들 (평가·디버그용) */
+  rejected: { text: string; fails: string[] }[]
   gameOver: boolean
   state: SessionState
 }

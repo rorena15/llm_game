@@ -13,9 +13,6 @@ const REPEAT = /(^|\s)([가-힣A-Za-z]{1,})\s+\2(?=[가-힣\s.,!?]|$)/
 /** 반말 문장 끝. 존댓말 끝(요·니다·니까·죠)은 먼저 걸러진다 */
 const BANMAL_END = /(야|어|아|지|냐|니|거든|잖아|해|돼|래|군|구나|다|라|봐|와|줘|게|네|걸|데|까|나|자|더라)$/
 
-/** 하게체 인물이 쓰면 안 되는 해체(반말) 끝. "~네", "~게", "~가", "~지"는 하게체에도 있어 뺀다 */
-const HAGE_BANMAL_END = /(어|아|야|해|돼|봐|줘|래|라|려|냐|니|구나|거든|잖아)$/
-
 const norm = (s: string) => s.toLowerCase().replace(/[\s_\-.!]/g, '')
 
 function containsKey(text: string, key: string): boolean {
@@ -37,8 +34,6 @@ export function speechViolations(text: string, speech: Speech): string[] {
       bad.push(s)
     } else if ((speech === 'hage' || speech === 'banmal') && /(요|니다)$/.test(s)) {
       bad.push(s)
-    } else if (speech === 'hage' && HAGE_BANMAL_END.test(s)) {
-      bad.push(s)
     }
   }
   return bad
@@ -48,6 +43,8 @@ export function speechViolations(text: string, speech: Speech): string[] {
  *  누출·외국어·공개 누락·길이는 무겁다: 절대 내보내지 않는다 */
 export const SOFT_FAILS = new Set(['speech', 'repeat'])
 export const isSoftOnly = (fails: string[]) => fails.every((f) => SOFT_FAILS.has(f))
+/** 공개하라는 내용만 빠진 대사: 대사는 쓰고 공개는 다음으로 미룬다 */
+export const isMissingOnly = (fails: string[]) => fails.length > 0 && fails.every((f) => f.startsWith('missing:'))
 
 export interface GuardInput {
   text: string

@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "validate": "tsx tools/validate-scenarios.ts",
     "test": "vitest run",
-    "chat": "tsx tools/chat-cli.ts"
+    "chat": "tsx tools/chat-cli.ts",
+    "eval": "tsx tools/eval-run.ts"
   },
   "dependencies": {
     "react": "^19.1.0",

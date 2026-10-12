@@ -88,7 +88,8 @@ describe('guard', () => {
   it('checks speech level', () => {
     expect(speechViolations('자네 왔는가? 앉게.', 'hage')).toEqual([])
     expect(speechViolations('네, 알겠습니다.', 'hage')).not.toEqual([])
-    expect(speechViolations('고마워. 나는 컴퓨터를 잘 몰라.', 'hage')).not.toEqual([])
+    expect(speechViolations('참 젊었지. 그 말을 떠올리곤 했어.', 'hage')).toEqual([]) // 하게체 인물의 반말 섞기는 자연스럽다
+    expect(speechViolations('안녕하세요. 반갑네요.', 'hage')).not.toEqual([])
     expect(speechViolations('고맙네. 나는 컴퓨터를 잘 모르지.', 'hage')).toEqual([])
     expect(speechViolations('아! 그건 몰라요.', 'haeyo')).toEqual([])
     expect(speechViolations('그건 몰라. 왜 물어봐?', 'haeyo')).not.toEqual([])
@@ -143,6 +144,18 @@ describe('session', () => {
     expect(r.usedFallback).toBe(false)
     expect(r.dialogue).toBe('그날 파란 하늘 아래 걸었어.')
     expect(r.revealedNow.map((f) => f.id)).toEqual(['first_meet'])
+  })
+  it('keeps a natural line that skipped the reveal, and defers the reveal', async () => {
+    const llm = fakeLlm(
+      ['{"tactic":"empathy","topic":"first_meet","meta":false,"fit":2,"leverage":null}'],
+      ['그래, 나도 결혼했네. 요즘 아내랑 예전 같지 않네.', '그렇다네.', '그렇다네.'],
+    )
+    const s = new Session(sc, llm, { suspicion: 0, rapport: 40, maxSuspicion: 0, revealed: [], history: [] })
+    const r = await s.turn('자네 결혼하지 않았었나?')
+    expect(r.usedFallback).toBe(false)
+    expect(r.dialogue).toBe('그래, 나도 결혼했네. 요즘 아내랑 예전 같지 않네.')
+    expect(r.revealedNow).toEqual([])
+    expect(s.state.revealed).toEqual([])
   })
   it('reveals and records when the line passes', async () => {
     const llm = fakeLlm(

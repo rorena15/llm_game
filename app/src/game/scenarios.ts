@@ -10,5 +10,5 @@ export const SCENARIOS: Record<string, ScenarioSpec> = Object.fromEntries(
 
 export const llm = new OpenAICompatLlm(
   import.meta.env.VITE_LLM_URL ?? 'http://localhost:11434',
-  import.meta.env.VITE_LLM_MODEL ?? 'se-kanana-2.1b',
+  import.meta.env.VITE_LLM_MODEL ?? 'se-kanana-8b',
 )
