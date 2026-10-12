@@ -1,38 +1,42 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { applyVariant, pickVariant } from './engine/scenario'
-import type { FactSpec } from './engine/types'
+import { MissionRun, useRun } from './game/run'
 import { llm, SCENARIOS } from './game/scenarios'
-import { Messenger } from './ui/Messenger'
+import { Desktop } from './ui/Desktop'
+import { BriefingScreen, ResultScreen, TitleScreen } from './ui/Screens'
 
-// 1단계: 메신저 하나만 띄운다. 데스크톱·창 관리는 {ui}에서
+type Screen = { name: 'title' } | { name: 'briefing'; id: string } | { name: 'play'; run: MissionRun }
+
+const debug = new URLSearchParams(location.search).has('debug')
+const PLAYER = '나'
+
 export default function App() {
-  const scenario = useMemo(() => {
-    const spec = SCENARIOS.mission_1
-    return applyVariant(spec, pickVariant(spec))
-  }, [])
-  const [clues, setClues] = useState<FactSpec[]>([])
-  const debug = new URLSearchParams(location.search).has('debug')
+  const [screen, setScreen] = useState<Screen>({ name: 'title' })
+  const missions = Object.values(SCENARIOS).sort((a, b) => a.difficulty - b.difficulty)
 
-  return (
-    <main className="stage">
-      <Messenger
-        scenario={scenario}
-        llm={llm}
-        playerName="나"
-        debug={debug}
-        onClue={(f) => setClues((cs) => (cs.some((c) => c.id === f.id) ? cs : [...cs, f]))}
+  if (screen.name === 'title') return <TitleScreen missions={missions} onPick={(id) => setScreen({ name: 'briefing', id })} />
+
+  if (screen.name === 'briefing') {
+    const spec = SCENARIOS[screen.id]
+    return (
+      <BriefingScreen
+        spec={spec}
+        onBack={() => setScreen({ name: 'title' })}
+        onStart={() => setScreen({ name: 'play', run: new MissionRun(applyVariant(spec, pickVariant(spec)), llm) })}
       />
-      <aside className="clues">
-        <h2>수집한 단서</h2>
-        {clues.length === 0 && <p className="empty">아직 없음</p>}
-        {clues.map((c) => (
-          <div key={c.id} className="card">
-            <b>{c.label}</b>
-            <p>{c.text}</p>
-          </div>
-        ))}
-        {debug && <p className="empty">변형 {scenario.variantId}</p>}
-      </aside>
-    </main>
+    )
+  }
+
+  return <Play run={screen.run} onQuit={() => setScreen({ name: 'title' })} />
+}
+
+function Play({ run, onQuit }: { run: MissionRun; onQuit: () => void }) {
+  useRun(run)
+  if (run.status === 'cleared') return <ResultScreen run={run} onBack={onQuit} />
+  return (
+    <>
+      <Desktop run={run} playerName={PLAYER} debug={debug} onQuit={onQuit} />
+      {debug && <div className="debug-badge">변형 {run.scenario.variantId} · 비밀번호 {run.scenario.passwordValue}</div>}
+    </>
   )
 }

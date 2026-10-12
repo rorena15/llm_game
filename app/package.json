@@ -11,14 +11,17 @@
     "validate": "tsx tools/validate-scenarios.ts",
     "test": "vitest run",
     "chat": "tsx tools/chat-cli.ts",
-    "eval": "tsx tools/eval-run.ts"
+    "eval": "tsx tools/eval-run.ts",
+    "tauri": "tauri"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.8.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@tauri-apps/cli": "^2.8.4",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",

@@ -132,6 +132,13 @@ export class Session {
     }
   }
 
+  /** 대화 밖에서 생긴 의심 (로그인 실패 등). 의심도 100이면 true */
+  penalize(amount: number): boolean {
+    const suspicion = Math.min(GAME_OVER_AT, Math.max(0, this.state.suspicion + amount))
+    this.state = { ...this.state, suspicion, maxSuspicion: Math.max(this.state.maxSuspicion, suspicion) }
+    return suspicion >= GAME_OVER_AT
+  }
+
   /** "이어서 다시": 대화·의심·친밀만 초기화 (§6.4). 공개된 사실 카드는 보드 쪽에 남는다 */
   retryKeepClues() {
     this.state = { ...newState(), revealed: this.state.revealed }
