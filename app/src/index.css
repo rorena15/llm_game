@@ -440,7 +440,55 @@ button:disabled {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 130px 210px 1fr;
+}
+.mail-folders {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 6px;
+  border-right: 1px solid var(--line);
+  background: #0006;
+}
+.mail-folders input {
+  margin-bottom: 6px;
+  padding: 5px 7px;
+  font-size: 12px;
+  color: var(--text);
+  background: #0008;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  outline: none;
+}
+.mail-folders button {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 8px;
+  font-size: 13px;
+  text-align: left;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: 3px;
+}
+.mail-folders button.on {
+  background: #38d47a22;
+}
+.mail-folders span {
+  color: var(--dim);
+  font-size: 12px;
+}
+.mail-folders span b {
+  color: var(--accent);
+}
+.mail-list li.empty {
+  color: var(--dim);
+  cursor: default;
+}
+.mail-list li time,
+.mail-body time {
+  color: var(--dim);
+  font-size: 11px;
 }
 .mail-list {
   margin: 0;
@@ -499,6 +547,15 @@ button:disabled {
   border-color: var(--accent);
 }
 
+.link-word {
+  padding: 0;
+  color: var(--player);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 /* 브라우저 */
 .browser {
   flex: 1;
@@ -511,6 +568,22 @@ button:disabled {
   gap: 6px;
   padding: 8px;
   border-bottom: 1px solid var(--line);
+}
+.urlbar .nav {
+  flex: none;
+  padding: 4px 9px;
+  color: var(--text);
+  background: #0008;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+.urlbar .nav.on {
+  border-color: var(--accent);
+}
+.history {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
 }
 .page {
   flex: 1;

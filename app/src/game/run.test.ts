@@ -101,3 +101,23 @@ describe('every mission and variant can be solved on the board', () => {
         expect(run.tryLogin(sc.passwordValue)).toBe(true)
       })
 })
+
+describe('browser and mail state', () => {
+  it('keeps history, drops forward pages on a new visit, and asks to open the browser', () => {
+    const run = new MissionRun(sc, noLlm)
+    run.navigate('https://WWW.corpx.com/')
+    run.navigate('www.corpx.com/people')
+    run.navigate('www.corpx.com/people')
+    expect(run.browser).toEqual({ history: ['www.corpx.com', 'www.corpx.com/people'], index: 1 })
+    run.goBack()
+    run.navigate('www.corpx.com/about')
+    expect(run.browser.history).toEqual(['www.corpx.com', 'www.corpx.com/about'])
+    run.goForward()
+    expect(run.browser.index).toBe(1)
+    const before = run.browserRequest
+    run.openUrl('www.corpx.com/notice')
+    expect(run.browserRequest).toBe(before + 1)
+    run.markRead(2)
+    expect(run.readMails.has(2)).toBe(true)
+  })
+})

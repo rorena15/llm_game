@@ -75,9 +75,11 @@
   ],
   "loginHints": { "login_hint_1": "{{hint1}}", "login_hint_2": "{{hint2}}" },
   "emails": [
-    { "sender": "Instargram", "subject": "새 팔로우 요청", "body": "corpx_security 님이 회원님(www.instargram.com/dev_jihyun)을 팔로우하려고 합니다.\n\n회원님이 요청을 거절했습니다." },
-    { "sender": "재현", "subject": "점심 뭐 먹어?", "body": "다음 주가 우리 {{dog_ko}} 온 날이잖아 ㅎㅎ 주말에 강아지 카페 갈까? 케이크도 하나 사자." },
-    { "sender": "보안팀", "subject": "[공지] 개인 SNS 사용 주의", "body": "개인 SNS에 사원증, 업무 화면, 계정과 관련된 내용을 올리지 마십시오. 공개 계정의 게시물은 누구나 볼 수 있습니다." }
+    { "sender": "Instargram", "subject": "새 팔로우 요청", "body": "corpx_security 님이 회원님(www.instargram.com/dev_jihyun)을 팔로우하려고 합니다.\n\n회원님이 요청을 거절했습니다.", "date": "10/14 23:51" },
+    { "sender": "재현", "subject": "점심 뭐 먹어?", "body": "다음 주가 우리 {{dog_ko}} 온 날이잖아 ㅎㅎ 주말에 강아지 카페 갈까? 케이크도 하나 사자.", "date": "10/15 11:48" },
+    { "sender": "보안팀", "subject": "[공지] 개인 SNS 사용 주의", "body": "개인 SNS에 사원증, 업무 화면, 계정과 관련된 내용을 올리지 마십시오. 공개 계정의 게시물은 누구나 볼 수 있습니다.", "date": "10/02 09:00" },
+    { "sender": "개발 2팀장", "subject": "이번 주 배포 일정", "body": "결제 모듈 배포는 목요일 저녁입니다. 테스트 서버 정리는 감사 끝나고 하겠습니다.", "date": "10/14 16:20" },
+    { "sender": "멍멍마켓", "subject": "[광고] 강아지 간식 정기 배송 첫 달 무료", "body": "우리 아이 간식, 매달 문 앞까지. 첫 달은 무료입니다.", "folder": "trash", "date": "10/13 12:00" }
   ],
   "websites": {
     "www.instargram.com/dev_jihyun": "📸 Instargram\n\n@dev_jihyun\n코딩하는 개발자 | ENFP | 🐶 {{dog_en}} (골든리트리버)\n\n[스토리 하이라이트] 출근길 · 막내 · 비번 메모\n\n비번 메모\n\"맨날 까먹어서 여기 적어 둠 ㅋㅋ MyPuppy_ 뒤에 우리 막내 영어 이름, 데려온 해, 느낌표 하나! 이제 절대 안 까먹지\"\n\n[최근 게시물]\n#오늘의코드 #퇴근길 결제 모듈 배포 끝! 오늘은 막내랑 산책 🐾\n#막내 다음 주면 우리 막내 온 날 🎂 파티 준비 중"

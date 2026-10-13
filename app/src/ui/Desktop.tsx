@@ -13,7 +13,7 @@ import { Window, type WinPos } from './Window'
 type AppId = 'messenger' | 'email' | 'browser' | 'board' | 'server'
 
 const APPS: Record<AppId, { title: string; icon: string; w: number; h: number; at: WinPos }> = {
-  email: { title: '메일', icon: '✉', w: 640, h: 420, at: { x: 140, y: 40 } },
+  email: { title: '메일', icon: '✉', w: 780, h: 440, at: { x: 130, y: 40 } },
   messenger: { title: '사내 메신저', icon: '💬', w: 460, h: 560, at: { x: 520, y: 70 } },
   browser: { title: '브라우저', icon: '🌐', w: 620, h: 440, at: { x: 180, y: 110 } },
   board: { title: '수사보드', icon: '📌', w: 640, h: 460, at: { x: 220, y: 90 } },
@@ -25,6 +25,12 @@ interface OpenWin {
   id: AppId
   pos: WinPos
   z: number
+}
+
+/** 창을 맨 앞으로. 닫혀 있으면 연다 */
+function raise(ws: OpenWin[], id: AppId): OpenWin[] {
+  const z = Math.max(0, ...ws.map((w) => w.z)) + 1
+  return ws.some((w) => w.id === id) ? ws.map((w) => (w.id === id ? { ...w, z } : w)) : [...ws, { id, pos: APPS[id].at, z }]
 }
 
 interface Props {
@@ -79,11 +85,14 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
   }, [])
 
   const top = () => Math.max(0, ...wins.map((w) => w.z)) + 1
-  const open = (id: AppId) =>
-    setWins((ws) => {
-      const z = Math.max(0, ...ws.map((w) => w.z)) + 1
-      return ws.some((w) => w.id === id) ? ws.map((w) => (w.id === id ? { ...w, z } : w)) : [...ws, { id, pos: APPS[id].at, z }]
-    })
+  const open = (id: AppId) => setWins((ws) => raise(ws, id))
+  // 메일 속 주소를 누르면 브라우저 창을 연다 (요청 번호가 바뀔 때만)
+  const browserReq = useRef(run.browserRequest)
+  useEffect(() => {
+    if (run.browserRequest === browserReq.current) return
+    browserReq.current = run.browserRequest
+    setWins((ws) => raise(ws, 'browser'))
+  }, [run.browserRequest])
   const focus = (id: AppId) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, z: top() } : w)))
   const close = (id: AppId) => setWins((ws) => ws.filter((w) => w.id !== id))
   const move = (id: AppId, pos: WinPos) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, pos } : w)))

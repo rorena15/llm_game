@@ -66,6 +66,12 @@ export class MissionRun {
   notices: Notice[] = []
   /** 보드에서 아직 보지 않은 카드 수 */
   unseen = 0
+  /** 읽은 메일 번호 (창을 닫았다 열어도 남게) */
+  readMails = new Set<number>([0])
+  /** 브라우저 방문 기록과 지금 위치 */
+  browser: { history: string[]; index: number } = { history: [], index: -1 }
+  /** 다른 창에서 브라우저를 열어 달라는 요청 (n이 바뀔 때마다 연다) */
+  browserRequest = 0
   private nextMsg = 0
   private nextNotice = 0
   private version = 0
@@ -119,6 +125,40 @@ export class MissionRun {
   markSeen() {
     if (!this.unseen) return
     this.unseen = 0
+    this.emit()
+  }
+
+  markRead(i: number) {
+    if (this.readMails.has(i)) return
+    this.readMails = new Set(this.readMails).add(i)
+    this.emit()
+  }
+
+  /** 브라우저 이동. 뒤로 간 상태에서 새로 가면 앞쪽 기록은 버린다 */
+  navigate(url: string) {
+    const key = normalizeUrl(url)
+    const { history, index } = this.browser
+    if (history[index] === key) return
+    this.browser = { history: [...history.slice(0, index + 1), key], index: index + 1 }
+    this.emit()
+  }
+
+  goBack() {
+    if (this.browser.index <= 0) return
+    this.browser = { ...this.browser, index: this.browser.index - 1 }
+    this.emit()
+  }
+
+  goForward() {
+    if (this.browser.index >= this.browser.history.length - 1) return
+    this.browser = { ...this.browser, index: this.browser.index + 1 }
+    this.emit()
+  }
+
+  /** 메일 등에서 주소를 눌렀을 때: 브라우저 창을 열고 그 주소로 */
+  openUrl(url: string) {
+    this.navigate(url)
+    this.browserRequest++
     this.emit()
   }
 
@@ -316,3 +356,11 @@ export function useRun(run: MissionRun) {
   useSyncExternalStore(run.subscribe, run.getVersion)
   return run
 }
+
+/** 주소 정리: http(s)://, 대소문자, 끝 슬래시 무시 */
+export const normalizeUrl = (u: string) =>
+  u
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/\/+$/, '')

@@ -66,10 +66,16 @@ export interface VariantSpec {
   password: string
 }
 
+export type MailFolder = 'inbox' | 'sent' | 'drafts' | 'trash'
+
 export interface Email {
   sender: string
   subject: string
   body: string
+  /** 없으면 받은편지함 */
+  folder?: MailFolder
+  /** 화면에 그대로 보이는 날짜 (예: "11/18 09:12") */
+  date?: string
 }
 
 /** 튜토리얼: 모델 없이 낱말로 고르는 정해진 대사 */
