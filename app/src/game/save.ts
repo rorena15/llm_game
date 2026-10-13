@@ -99,10 +99,19 @@ export class SaveStore {
 
   private update(id: string, patch: Partial<MissionRecord>) {
     this.data = { ...this.data, missions: { ...this.data.missions, [id]: { ...this.mission(id), ...patch } } }
+    this.persist()
+  }
+
+  private persist() {
     this.emit()
     // 쓰기는 차례대로. 앞 쓰기가 끝나기 전에 뒤 쓰기가 덮어쓰지 않게
     const text = JSON.stringify(this.data, null, 2)
     this.writing = this.writing.then(() => this.backend.write(text)).catch((e) => console.error('저장 실패', e))
+  }
+
+  setSetting(key: string, value: string | number | boolean) {
+    this.data = { ...this.data, settings: { ...this.data.settings, [key]: value } }
+    this.persist()
   }
 
   /** 미션을 새로 시작할 때 고른 변형 */

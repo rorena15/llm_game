@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ALARM_AT } from '../../engine/rules'
 import { useRun, type MissionRun } from '../../game/run'
+import { play } from '../../game/sound'
 
 const TYPE_MS = 28
 
@@ -25,7 +26,10 @@ export function MessengerApp({ run, playerName, debug }: { run: MissionRun; play
     if (!typing) return
     const msg = run.chat.find((m) => m.id === typing.id)
     if (!msg || typing.shown >= msg.text.length) return setTyping(null)
-    const t = setTimeout(() => setTyping({ ...typing, shown: typing.shown + 1 }), TYPE_MS)
+    const t = setTimeout(() => {
+      if (typing.shown % 2 === 0 && msg.text[typing.shown] !== ' ') play('key')
+      setTyping({ ...typing, shown: typing.shown + 1 })
+    }, TYPE_MS)
     return () => clearTimeout(t)
   }, [typing, run.chat])
 
@@ -77,6 +81,7 @@ export function MessengerApp({ run, playerName, debug }: { run: MissionRun; play
         }}
       >
         <input
+          onKeyDown={() => play('key')}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={playing ? '메시지 입력' : '접속이 끊겼습니다'}

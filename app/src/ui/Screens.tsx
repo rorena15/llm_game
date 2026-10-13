@@ -1,6 +1,8 @@
 import type { ScenarioSpec } from '../engine/types'
 import type { MissionRun } from '../game/run'
 import { useSave } from '../game/save'
+import { useEffect } from 'react'
+import { play } from '../game/sound'
 import { MailCard } from './Ending'
 
 const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n))
@@ -71,6 +73,7 @@ export function ResultScreen({ run, onBack, onEnding }: ResultProps) {
   const sc = run.scenario
   const mins = Math.max(1, Math.round(((run.clearedAt ?? Date.now()) - run.startedAt) / 60000))
   const grade = run.grade
+  useEffect(() => play('granted'), [])
   const turns = run.session.state.history.filter((l) => l.role === 'player').length
   return (
     <div className="screen result">

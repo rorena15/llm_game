@@ -925,3 +925,11 @@ button:disabled {
 .credits dd {
   margin: 2px 0 0;
 }
+
+.sound-toggle {
+  padding: 2px 6px;
+  background: transparent;
+  border: 0;
+  font-size: 15px;
+  cursor: pointer;
+}

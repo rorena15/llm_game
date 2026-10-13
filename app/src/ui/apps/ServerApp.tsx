@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { LOGIN_FAIL_SUSPICION, useRun, type MissionRun } from '../../game/run'
+import { play } from '../../game/sound'
 
 export function ServerApp({ run }: { run: MissionRun }) {
   useRun(run)
@@ -20,6 +21,7 @@ export function ServerApp({ run }: { run: MissionRun }) {
         }}
       >
         <input
+          onKeyDown={() => play('key')}
           type="text"
           value={pw}
           onChange={(e) => setPw(e.target.value)}

@@ -1,6 +1,8 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ALARM_AT } from '../engine/rules'
-import { useRun, type MissionRun } from '../game/run'
+import { useRun, type MissionRun, type Notice } from '../game/run'
+import { useSave } from '../game/save'
+import { play, setSoundOn, soundOn, startBgm, stopBgm, type Sfx } from '../game/sound'
 import { BoardApp } from './apps/BoardApp'
 import { BrowserApp } from './apps/BrowserApp'
 import { EmailApp } from './apps/EmailApp'
@@ -47,6 +49,25 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
     setPrevS(run.suspicion)
     if (run.suspicion > prevS) setBump(true)
   }
+  useSave()
+  useEffect(() => {
+    startBgm()
+    return stopBgm
+  }, [])
+  // 새 알림마다 소리, 경계가 위험 수위를 넘으면 경보
+  const last = run.notices[run.notices.length - 1]
+  const heard = useRef(last?.id ?? -1)
+  useEffect(() => {
+    if (!last || last.id <= heard.current) return
+    heard.current = last.id
+    play(NOTICE_SFX[last.kind])
+  }, [last])
+  const alarmed = run.suspicion >= ALARM_AT
+  const wasAlarmed = useRef(alarmed)
+  useEffect(() => {
+    if (alarmed && !wasAlarmed.current) play('alarm')
+    wasAlarmed.current = alarmed
+  }, [alarmed])
   useEffect(() => {
     if (!bump) return
     const t = setTimeout(() => setBump(false), 600)
@@ -128,6 +149,13 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
             <div className="fill" style={{ width: `${s}%` }} />
           </div>
         </div>
+        <button
+          className="sound-toggle"
+          title={soundOn() ? '소리 끄기' : '소리 켜기'}
+          onClick={() => setSoundOn(!soundOn())}
+        >
+          {soundOn() ? '🔊' : '🔇'}
+        </button>
         <time>{now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</time>
       </footer>
 
@@ -185,4 +213,12 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
       )}
     </div>
   )
+}
+
+const NOTICE_SFX: Record<Notice['kind'], Sfx> = {
+  clue: 'clue',
+  fact: 'clue',
+  inference: 'inference',
+  hint: 'notice',
+  warn: 'error',
 }
