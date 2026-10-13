@@ -96,6 +96,8 @@ export interface ScenarioSpec {
   title: string
   difficulty: number
   briefing: string
+  /** 브리핑 위에 보이는 의뢰 메일 (docs/이야기.md §4) */
+  request?: Email
   npc: NpcSpec
   facts: FactSpec[]
   password: { pieces: PasswordPiece[] }

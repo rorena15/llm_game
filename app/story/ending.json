@@ -1,0 +1,14 @@
+{
+  "afterMission": "mission_4",
+  "finalMail": { "sender": "K", "subject": "(작성 예정)", "body": "(작성 예정)" },
+  "reveal": ["(작성 예정)", "(작성 예정)", "(작성 예정)"],
+  "choices": [
+    { "id": "a", "label": "(작성 예정)", "desc": "(작성 예정)", "epilogue": ["(작성 예정)"] },
+    { "id": "b", "label": "(작성 예정)", "desc": "(작성 예정)", "epilogue": ["(작성 예정)"] }
+  ],
+  "credits": [
+    { "role": "제작", "names": ["rorena15"] },
+    { "role": "NPC 모델", "names": ["Kanana 1.5 (Kakao, Apache 2.0)"] },
+    { "role": "사용한 도구", "names": ["llama.cpp (MIT)", "Tauri (MIT / Apache 2.0)", "React Flow (MIT)"] }
+  ]
+}

@@ -1,6 +1,7 @@
 import type { ScenarioSpec } from '../engine/types'
 import type { MissionRun } from '../game/run'
 import { useSave } from '../game/save'
+import { MailCard } from './Ending'
 
 const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n))
 
@@ -45,6 +46,7 @@ export function BriefingScreen({ spec, onStart, onBack }: { spec: ScenarioSpec; 
   return (
     <div className="screen briefing">
       <div className="dialog">
+        {spec.request && <MailCard {...spec.request} />}
         <h2>{spec.title}</h2>
         <pre>{spec.briefing}</pre>
         <div className="actions">
@@ -58,7 +60,14 @@ export function BriefingScreen({ spec, onStart, onBack }: { spec: ScenarioSpec; 
   )
 }
 
-export function ResultScreen({ run, onBack }: { run: MissionRun; onBack: () => void }) {
+interface ResultProps {
+  run: MissionRun
+  onBack: () => void
+  /** 있으면 엔딩으로 이어지는 마지막 미션 */
+  onEnding?: () => void
+}
+
+export function ResultScreen({ run, onBack, onEnding }: ResultProps) {
   const sc = run.scenario
   const mins = Math.max(1, Math.round(((run.clearedAt ?? Date.now()) - run.startedAt) / 60000))
   const grade = run.grade
@@ -92,7 +101,10 @@ export function ResultScreen({ run, onBack }: { run: MissionRun; onBack: () => v
           <dd>{run.retries}회</dd>
         </dl>
         <div className="actions">
-          <button onClick={onBack}>미션 선택으로</button>
+          {onEnding && <button onClick={onEnding}>새 메일 확인</button>}
+          <button className={onEnding ? 'ghost' : ''} onClick={onBack}>
+            미션 선택으로
+          </button>
         </div>
       </div>
     </div>

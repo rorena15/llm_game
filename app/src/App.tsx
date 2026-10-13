@@ -3,10 +3,16 @@ import { applyVariant, pickVariant } from './engine/scenario'
 import { MissionRun, useRun } from './game/run'
 import { save, useSave } from './game/save'
 import { llm, SCENARIOS } from './game/scenarios'
+import { ENDING } from './game/story'
 import { Desktop } from './ui/Desktop'
+import { EndingScreen } from './ui/Ending'
 import { BriefingScreen, ResultScreen, TitleScreen } from './ui/Screens'
 
-type Screen = { name: 'title' } | { name: 'briefing'; id: string } | { name: 'play'; run: MissionRun }
+type Screen =
+  | { name: 'title' }
+  | { name: 'briefing'; id: string }
+  | { name: 'play'; run: MissionRun }
+  | { name: 'ending' }
 
 const debug = new URLSearchParams(location.search).has('debug')
 const PLAYER = '나'
@@ -40,23 +46,33 @@ export default function App() {
     )
   }
 
+  if (screen.name === 'ending') return <EndingScreen ending={ENDING} onDone={() => setScreen({ name: 'title' })} />
+
   return (
     <Play
       key={screen.run.startedAt}
       run={screen.run}
       onQuit={() => setScreen({ name: 'title' })}
       onRestart={() => setScreen({ name: 'play', run: startRun(screen.run.scenario.id) })}
+      onEnding={screen.run.scenario.id === ENDING.afterMission ? () => setScreen({ name: 'ending' }) : undefined}
     />
   )
 }
 
-function Play({ run, onQuit, onRestart }: { run: MissionRun; onQuit: () => void; onRestart: () => void }) {
+interface PlayProps {
+  run: MissionRun
+  onQuit: () => void
+  onRestart: () => void
+  onEnding?: () => void
+}
+
+function Play({ run, onQuit, onRestart, onEnding }: PlayProps) {
   useRun(run)
   const cleared = run.status === 'cleared'
   useEffect(() => {
     if (cleared) save.recordClear(run.scenario.id, run.grade, run.score)
   }, [cleared, run])
-  if (cleared) return <ResultScreen run={run} onBack={onQuit} />
+  if (cleared) return <ResultScreen run={run} onBack={onQuit} onEnding={onEnding} />
   return (
     <>
       <Desktop

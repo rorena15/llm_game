@@ -21,6 +21,7 @@ app/                 게임 (Tauri + React + TS)
   src/game/          미션 한 판의 상태(MissionRun), 시나리오·모델 연결
   src/ui/            데스크톱, 창, 앱 화면
   scenarios/         미션 데이터 (JSON, 변형 포함)
+  story/             엔딩 문구 (마지막 메일, 단서 연결, 선택, 후일담, 크레딧)
   eval/convos/       모델 평가용 대화 세트
   tools/             시나리오 검증, 대화 실행, 평가 실행 (Node)
   src-tauri/         데스크톱 앱 껍데기 (Rust)
@@ -85,6 +86,8 @@ ollama create se-kanana-8b -f Modelfile.kanana-8b
 - 미션마다 변형 3개 (값만 바뀌고 구조는 같음). 실패 후 "완전 초기화"하면 다른 변형으로 바뀐다.
 
 작성 뒤 `npm run validate`로 검사합니다.
+
+이야기 문구는 두 곳에 있습니다. 미션 앞의 의뢰 메일과 클리어 후 기밀 문서는 각 시나리오 파일의 `request`와 `secretDocuments`, 엔딩은 `app/story/ending.json`입니다. 줄거리는 [docs/이야기.md](docs/이야기.md)를 따릅니다. 아직 쓰지 않은 칸에는 "(작성 예정)"이 들어 있습니다.
 
 ## 라이선스
 
