@@ -6,6 +6,7 @@ import { llm, SCENARIOS } from './game/scenarios'
 import { ENDING } from './game/story'
 import { Desktop } from './ui/Desktop'
 import { EndingScreen } from './ui/Ending'
+import { LicenseScreen, SettingsScreen } from './ui/Settings'
 import { BriefingScreen, ResultScreen, TitleScreen } from './ui/Screens'
 
 type Screen =
@@ -13,6 +14,8 @@ type Screen =
   | { name: 'briefing'; id: string }
   | { name: 'play'; run: MissionRun }
   | { name: 'ending' }
+  | { name: 'settings' }
+  | { name: 'licenses' }
 
 const debug = new URLSearchParams(location.search).has('debug')
 const PLAYER = '나'
@@ -32,7 +35,12 @@ export default function App() {
 
   if (screen.name === 'title')
     return (
-      <TitleScreen missions={missions} unlockAll={debug} onPick={(id) => setScreen({ name: 'briefing', id })} />
+      <TitleScreen
+        missions={missions}
+        unlockAll={debug}
+        onPick={(id) => setScreen({ name: 'briefing', id })}
+        onSettings={() => setScreen({ name: 'settings' })}
+      />
     )
 
   if (screen.name === 'briefing') {
@@ -45,6 +53,12 @@ export default function App() {
       />
     )
   }
+
+  if (screen.name === 'settings')
+    return (
+      <SettingsScreen onBack={() => setScreen({ name: 'title' })} onLicenses={() => setScreen({ name: 'licenses' })} />
+    )
+  if (screen.name === 'licenses') return <LicenseScreen onBack={() => setScreen({ name: 'settings' })} />
 
   if (screen.name === 'ending') return <EndingScreen ending={ENDING} onDone={() => setScreen({ name: 'title' })} />
 

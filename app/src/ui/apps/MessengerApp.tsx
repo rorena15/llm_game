@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { ALARM_AT } from '../../engine/rules'
 import { useRun, type MissionRun } from '../../game/run'
+import { typeMs } from '../../game/settings'
 import { play } from '../../game/sound'
 import { HealthBanner } from '../Screens'
 
-const TYPE_MS = 28
 
 export function MessengerApp({ run, playerName, debug }: { run: MissionRun; playerName: string; debug: boolean }) {
   useRun(run)
@@ -26,11 +26,11 @@ export function MessengerApp({ run, playerName, debug }: { run: MissionRun; play
   useEffect(() => {
     if (!typing) return
     const msg = run.chat.find((m) => m.id === typing.id)
-    if (!msg || typing.shown >= msg.text.length) return setTyping(null)
+    if (!msg || typing.shown >= msg.text.length || typeMs() === 0) return setTyping(null)
     const t = setTimeout(() => {
       if (typing.shown % 2 === 0 && msg.text[typing.shown] !== ' ') play('key')
       setTyping({ ...typing, shown: typing.shown + 1 })
-    }, TYPE_MS)
+    }, typeMs())
     return () => clearTimeout(t)
   }, [typing, run.chat])
 

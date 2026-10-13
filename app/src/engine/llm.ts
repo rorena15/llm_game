@@ -24,6 +24,14 @@ export class OpenAICompatLlm implements Llm {
     this.model = model
   }
 
+  get modelName() {
+    return this.model
+  }
+
+  setModel(model: string) {
+    this.model = model
+  }
+
   /** 서버가 떠 있고 모델이 올라와 있는지 (OpenAI 호환 /v1/models, Ollama·llama-server 모두 지원) */
   async ping(timeoutMs = 3000): Promise<LlmHealth> {
     try {

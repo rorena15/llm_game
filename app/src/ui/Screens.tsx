@@ -14,10 +14,11 @@ interface TitleProps {
   /** 개발용: 잠긴 미션도 고를 수 있게 */
   unlockAll?: boolean
   onPick: (id: string) => void
+  onSettings: () => void
 }
 
 /** 미션은 난이도 순. 앞 미션을 깨야 다음이 열린다 (§2) */
-export function TitleScreen({ missions, unlockAll, onPick }: TitleProps) {
+export function TitleScreen({ missions, unlockAll, onPick, onSettings }: TitleProps) {
   const save = useSave()
   const latest = useNewVersion()
   return (
@@ -44,6 +45,9 @@ export function TitleScreen({ missions, unlockAll, onPick }: TitleProps) {
           )
         })}
       </ul>
+      <button className="ghost title-settings" onClick={onSettings}>
+        설정
+      </button>
       <small className="version">v{APP_VERSION}</small>
     </div>
   )

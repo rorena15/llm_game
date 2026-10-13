@@ -6,16 +6,18 @@ import { save } from './game/save'
 import { unlockAudio } from './game/sound'
 import { installErrorLog } from './game/log'
 import { checkHealth } from './game/health'
+import { applySettings } from './game/settings'
 
 unlockAudio()
 installErrorLog()
-void checkHealth()
 
 // 저장을 읽은 뒤 그린다 (미션 잠금·최고 등급이 처음부터 맞게)
-save.load().then(() =>
+save.load().then(() => {
+  applySettings()
+  void checkHealth()
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <App />
     </StrictMode>,
-  ),
-)
+  )
+})

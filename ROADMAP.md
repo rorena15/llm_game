@@ -43,7 +43,7 @@ stage: prototype
 - [x] {story} 미션을 잇는 의뢰 메일, 기밀 문서 정리, 엔딩 장면, 크레딧 ~L @decided(2026-10-12) @start(2026-10-13) @done(2026-10-13)
 
 ### 배포
-- [ ] {pack} 배포 묶음: llama-server(Vulkan·CPU) 동봉, 첫 실행 모델 다운로드, 설정 화면, 라이선스 화면 ~L @decided(2026-10-12)
+- [ ] {pack} 배포 묶음: llama-server(Vulkan·CPU) 동봉, 첫 실행 모델 다운로드, 설정 화면, 라이선스 화면 ~L @decided(2026-10-12) @start(2026-10-13)
 - [ ] {robust} 오류 대응: 모델 서버·다운로드 실패 안내, 사양 경고, 오류 로그와 신고 안내, 새 버전 알림 ~M @decided(2026-10-12) @start(2026-10-13)
 - [ ] {qa} 깨끗한 Windows에서 설치부터 엔딩까지, 모든 변형 직접 플레이 ~M @decided(2026-10-12)
 - [ ] {playtest} 외부 플레이테스터 3명 이상, 막힌 지점 수정 ~M @decided(2026-10-12)
