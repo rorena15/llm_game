@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "validate": "tsx tools/validate-scenarios.ts",
+    "story": "tsx tools/story-sync.ts",
     "test": "vitest run",
     "chat": "tsx tools/chat-cli.ts",
     "eval": "tsx tools/eval-run.ts",
