@@ -108,6 +108,19 @@ function checkVariant(spec: ScenarioSpec, vi: number): string[] {
   ]
   if (exposed.some((t) => t.toLowerCase().includes(pw))) e.push(tag('비밀번호 원문이 노출된 곳이 있음'))
 
+  // 단서 낱말이 문서에 실제로 있어야 누를 수 있다
+  for (const c of sc.clues) {
+    const [kind, ref] = c.source.split(':')
+    const doc = kind === 'email' ? sc.emails[Number(ref)]?.body : sc.websites[ref]
+    if (!c.keyword) e.push(tag(`단서 ${c.id}: keyword 없음 (누를 낱말이 없어 모을 수 없음)`))
+    else if (doc !== undefined && !doc.includes(c.keyword)) e.push(tag(`단서 ${c.id}: 본문에 "${c.keyword}"가 없음`))
+  }
+  // 웹페이지 주소는 메일이나 다른 페이지에 적혀 있어야 찾아갈 수 있다
+  for (const url of Object.keys(sc.websites)) {
+    const docs = [...sc.emails.map((m) => m.subject + m.body), ...Object.entries(sc.websites).filter(([u]) => u !== url).map(([, t]) => t)]
+    if (!docs.some((t) => t.includes(url))) e.push(tag(`웹페이지 ${url}: 주소가 어디에도 적혀 있지 않음`))
+  }
+
   if (!reachesFinal(sc)) e.push(tag('규칙 4: final 추론에 닿지 않음'))
   for (const f of sc.facts.filter((x) => x.level === 'guarded')) {
     const n = turnsToReveal(sc, f.id)
