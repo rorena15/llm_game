@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import m1 from '../../scenarios/mission_1.json'
 import type { Llm } from '../engine/llm'
-import { applyVariant } from '../engine/scenario'
+import { applyVariant, pickVariant } from '../engine/scenario'
 import type { ScenarioSpec } from '../engine/types'
 import { MissionRun } from './run'
 
@@ -59,5 +59,25 @@ describe('board', () => {
     expect(run.suspicion).toBe(10)
     expect(run.tryLogin('blue_sky_2024')).toBe(true)
     expect(run.status).toBe('cleared')
+  })
+})
+
+describe('grade and restart', () => {
+  it('scores the run and keep-clues retry costs a grade', () => {
+    const run = new MissionRun(sc, noLlm)
+    expect(run.grade).toBe('S')
+    for (let i = 0; i < 10; i++) run.tryLogin('wrong')
+    expect(run.status).toBe('failed')
+    run.retryKeepClues()
+    expect(run.status).toBe('playing')
+    expect(run.suspicion).toBe(0)
+    // 실패 10회 -100, 이어서 다시 -15
+    expect(run.score).toBe(0)
+    expect(run.tryLogin('blue_sky_2024')).toBe(true)
+    expect(run.grade).toBe('C')
+  })
+
+  it('a fresh start picks a different variant', () => {
+    for (let i = 0; i < 20; i++) expect(pickVariant(spec, 'a').id).not.toBe('a')
   })
 })

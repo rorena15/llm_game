@@ -30,9 +30,13 @@ interface Props {
   playerName: string
   debug: boolean
   onQuit: () => void
+  /** 완전히 새로: 다른 변형으로 처음부터 (§6.4) */
+  onRestart: () => void
+  /** 완전히 새로 하면 정답이 바뀌나 (변형이 둘 이상) */
+  answerChanges: boolean
 }
 
-export function Desktop({ run, playerName, debug, onQuit }: Props) {
+export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChanges }: Props) {
   useRun(run)
   const [wins, setWins] = useState<OpenWin[]>([{ id: 'email', pos: APPS.email.at, z: 1 }])
   const [now, setNow] = useState(() => new Date())
@@ -157,9 +161,24 @@ export function Desktop({ run, playerName, debug, onQuit }: Props) {
           <div className="dialog danger">
             <h2>접속 차단</h2>
             <p>{run.scenario.npc.name}이(가) 수상함을 느끼고 보안팀에 알렸습니다.</p>
+            <div className="choices">
+              <button onClick={() => run.retryKeepClues()}>
+                <b>이어서 다시</b>
+                <span>모은 단서와 추론은 그대로, 대화와 경계는 처음으로. 등급이 한 단계 내려갑니다.</span>
+              </button>
+              <button onClick={onRestart}>
+                <b>완전히 새로</b>
+                <span>
+                  {answerChanges
+                    ? '단서도 대화도 처음부터. 대상의 사정이 달라져 정답도 바뀝니다. 감점은 없습니다.'
+                    : '단서도 대화도 처음부터 시작합니다. 감점은 없습니다.'}
+                </span>
+              </button>
+            </div>
             <div className="actions">
-              <button onClick={() => run.retryKeepClues()}>모은 단서를 가지고 다시 접근</button>
-              <button className="ghost" onClick={onQuit}>미션 선택으로</button>
+              <button className="ghost" onClick={onQuit}>
+                미션 선택으로
+              </button>
             </div>
           </div>
         </div>

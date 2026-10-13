@@ -670,7 +670,8 @@ button:disabled {
   position: absolute;
   top: 16px;
   right: 16px;
-  z-index: 800;
+  /* 바탕화면 위젯처럼 창 뒤에 깔린다. 가리면 창을 옮겨서 본다 */
+  z-index: 0;
   width: 300px;
   padding: 12px 14px;
   background: #050b07ee;
@@ -817,4 +818,67 @@ button:disabled {
   80% {
     transform: translateX(3px);
   }
+}
+
+/* 등급 (§6.5) */
+.missions button.cleared b::before {
+  content: '✓ ';
+  color: var(--accent);
+}
+.grade {
+  display: inline-block;
+  min-width: 1.6em;
+  margin-left: 10px;
+  font-style: normal;
+  font-weight: 700;
+  text-align: center;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+}
+.gS {
+  color: #ffd84a;
+}
+.gA {
+  color: var(--accent);
+}
+.gB {
+  color: #6fb6ff;
+}
+.gC {
+  color: var(--dim);
+}
+.grade-big {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+.grade-big b {
+  font: 700 64px/1 ui-monospace, Consolas, monospace;
+  text-shadow: 0 0 18px currentColor;
+}
+.grade-big small {
+  color: var(--dim);
+}
+.choices {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+}
+.choices button {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  text-align: left;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+.choices button:hover {
+  border-color: var(--danger);
+}
+.choices span {
+  color: var(--dim);
+  font-size: 13px;
 }

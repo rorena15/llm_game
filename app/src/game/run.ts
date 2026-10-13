@@ -5,6 +5,7 @@ import { ALARM_AT } from '../engine/rules'
 import { ScriptedSession } from '../engine/scripted'
 import { Session, type Talker } from '../engine/session'
 import type { FactSpec, InferenceSpec, Scenario, TurnResult } from '../engine/types'
+import { gradeOf, score, type Grade } from './grade'
 
 export const LOGIN_FAIL_SUSPICION = 10
 
@@ -48,6 +49,8 @@ export class MissionRun {
   readonly scenario: Scenario
   readonly session: Talker
   readonly startedAt = Date.now()
+  /** 클리어한 시각 (결과 화면의 걸린 시간) */
+  clearedAt: number | null = null
   cards: Card[] = []
   links: Link[] = []
   wrongLinks = 0
@@ -173,6 +176,7 @@ export class MissionRun {
     if (this.status !== 'playing') return false
     if (password.trim() === this.scenario.passwordValue) {
       this.status = 'cleared'
+      this.clearedAt = Date.now()
       this.emit()
       return true
     }
@@ -263,6 +267,20 @@ export class MissionRun {
       }
     }
     return ids.every((id) => seen.has(id))
+  }
+
+  /** 등급 점수 (§6.5) */
+  get score(): number {
+    return score({
+      maxSuspicion: this.session.state.maxSuspicion,
+      loginFails: this.loginFails,
+      wrongLinks: this.wrongLinks,
+      retries: this.retries,
+    })
+  }
+
+  get grade(): Grade {
+    return gradeOf(this.score)
   }
 
   /** 튜토리얼 안내: 단계마다 끝났는지 */
