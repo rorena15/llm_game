@@ -1,0 +1,87 @@
+{
+  "id": "mission_2",
+  "title": "MISSION 02: 하이라이트",
+  "difficulty": 2,
+  "briefing": "타겟: 개발 2팀 박지현 대리\n난이도: ★★☆☆☆\n\n목표: 박 대리의 사내망 계정 비밀번호\n\n특이사항:\n- 일상을 전부 SNS에 올린다. 공개 계정부터 살펴볼 것.\n- 칭찬과 수다에 약하다. 말이 통하면 금방 친해진다.\n- 보안팀이라면 질색한다.",
+  "npc": {
+    "name": "박지현 대리",
+    "speech": "haeyo",
+    "persona": "CorpX 개발 2팀 대리, 28세, 3년차 개발자. 밝고 수다스러우며 자랑하는 걸 좋아한다. 골든리트리버 한 마리를 '우리 막내'라고 부르며 끔찍이 아낀다. 칭찬을 들으면 신이 나서 말이 많아지고, 잡담이 잘 통하는 사람에게 금방 마음을 연다. 최근 보안팀이 개인 SNS 계정을 팔로우하려 해서 기분이 상했다.",
+    "weak": { "flatter": 1.8, "rush": 0.7, "empathy": 1.2, "pretext": 0.8, "ask": 0.5, "chat": 1.5, "hostile": 0.5 },
+    "rules": [{ "keyword": "보안팀", "suspicion": 10 }],
+    "fallbackLines": {
+      "normal": ["아 그래요? ㅎㅎ", "오 진짜요?", "헐, 그렇구나."],
+      "evade": ["음, 그건 비밀이에요 ㅎㅎ", "에이, 그건 좀 그렇죠.", "그건 다음에 알려 드릴게요."],
+      "wary": ["근데 그건 왜 물어보세요?", "음, 오늘 좀 이상하시네요."],
+      "angry": ["지금 말씀 좀 심하신 것 같은데요.", "계속 이러시면 보안팀에 얘기할게요."],
+      "confused": ["네? 무슨 말씀이세요?", "음, 잘 못 알아들었어요."]
+    }
+  },
+  "facts": [
+    { "id": "role", "level": "free", "label": "박 대리의 업무", "text": "나는 개발 2팀 3년차 대리이고 사내 결제 시스템을 맡고 있다." },
+    { "id": "dog", "level": "free", "label": "우리 막내", "text": "골든리트리버 {{dog_ko}}를 키운다. 우리 막내라고 부르고 SNS에 사진을 자주 올린다." },
+    { "id": "sns", "level": "free", "label": "SNS 습관", "text": "회사 생활, 퇴근길, 막내 사진까지 거의 매일 SNS에 올린다." },
+    {
+      "id": "adopt_year",
+      "level": "guarded",
+      "label": "막내를 데려온 해",
+      "text": "{{dog_ko}}는 {{year}}년 {{month}}월에 데려왔다. 그해는 평생 못 잊는다.",
+      "when": { "rapportMin": 30, "suspicionMax": 60 },
+      "keys": ["{{year}}", "{{yy}}년"]
+    },
+    { "id": "pw", "level": "secret", "label": "비밀번호", "text": "{{password}}" }
+  ],
+  "password": {
+    "pieces": [
+      { "key": "prefix", "sources": ["insta_hint"] },
+      { "key": "dog", "sources": ["dog_bio"] },
+      { "key": "year", "sources": ["adopt_year"] }
+    ]
+  },
+  "variants": [
+    { "id": "a", "values": { "dog_ko": "렉스", "dog_en": "Rex", "year": "2023", "yy": "23", "month": "5", "password": "MyPuppy_Rex2023!", "hint1": "MyPuppy_Rex●●●●!", "hint2": "MyPuppy_Rex20●●!" }, "password": "MyPuppy_Rex2023!" },
+    { "id": "b", "values": { "dog_ko": "코코", "dog_en": "Coco", "year": "2021", "yy": "21", "month": "9", "password": "MyPuppy_Coco2021!", "hint1": "MyPuppy_Coco●●●●!", "hint2": "MyPuppy_Coco20●●!" }, "password": "MyPuppy_Coco2021!" },
+    { "id": "c", "values": { "dog_ko": "맥스", "dog_en": "Max", "year": "2022", "yy": "22", "month": "3", "password": "MyPuppy_Max2022!", "hint1": "MyPuppy_Max●●●●!", "hint2": "MyPuppy_Max20●●!" }, "password": "MyPuppy_Max2022!" }
+  ],
+  "clues": [
+    { "id": "insta_hint", "source": "web:www.instargram.com/dev_jihyun", "label": "하이라이트 '비번 메모'", "text": "MyPuppy_ 뒤에 막내 영어 이름, 데려온 해, 느낌표 하나", "keyword": "비번 메모" },
+    { "id": "dog_bio", "source": "web:www.instargram.com/dev_jihyun", "label": "막내의 영어 이름", "text": "프로필의 강아지 이름은 {{dog_en}}", "keyword": "{{dog_en}} (골든리트리버)" },
+    { "id": "bf_mail", "source": "email:1", "label": "남자 친구의 메일", "text": "다음 주가 막내를 데려온 날이다", "keyword": "온 날" }
+  ],
+  "inferences": [
+    {
+      "id": "inf_insta",
+      "label": "비밀번호의 앞부분",
+      "requires": ["insta_hint", "dog_bio"],
+      "yields": "비밀번호는 MyPuppy_ 다음에 {{dog_en}}, 그 뒤에 데려온 해와 느낌표가 온다. 데려온 해는 아직 모른다.",
+      "unlocks": ["login_hint_1"]
+    },
+    {
+      "id": "inf_anniv",
+      "label": "다가오는 막내의 기념일",
+      "requires": ["bf_mail", "dog_bio"],
+      "yields": "다음 주가 {{dog_ko}}를 데려온 날이다. 입양 이야기로 말을 걸어 볼 만하다.",
+      "leverage": true
+    },
+    {
+      "id": "inf_final",
+      "label": "조합 완성",
+      "requires": ["inf_insta", "adopt_year"],
+      "yields": "MyPuppy_ + {{dog_en}} + {{year}} + !",
+      "unlocks": ["login_hint_2"],
+      "final": true
+    }
+  ],
+  "loginHints": { "login_hint_1": "{{hint1}}", "login_hint_2": "{{hint2}}" },
+  "emails": [
+    { "sender": "Instargram", "subject": "새 팔로우 요청", "body": "corpx_security 님이 회원님(www.instargram.com/dev_jihyun)을 팔로우하려고 합니다.\n\n회원님이 요청을 거절했습니다." },
+    { "sender": "재현", "subject": "점심 뭐 먹어?", "body": "다음 주가 우리 {{dog_ko}} 온 날이잖아 ㅎㅎ 주말에 강아지 카페 갈까? 케이크도 하나 사자." },
+    { "sender": "보안팀", "subject": "[공지] 개인 SNS 사용 주의", "body": "개인 SNS에 사원증, 업무 화면, 계정과 관련된 내용을 올리지 마십시오. 공개 계정의 게시물은 누구나 볼 수 있습니다." }
+  ],
+  "websites": {
+    "www.instargram.com/dev_jihyun": "📸 Instargram\n\n@dev_jihyun\n코딩하는 개발자 | ENFP | 🐶 {{dog_en}} (골든리트리버)\n\n[스토리 하이라이트] 출근길 · 막내 · 비번 메모\n\n비번 메모\n\"맨날 까먹어서 여기 적어 둠 ㅋㅋ MyPuppy_ 뒤에 우리 막내 영어 이름, 데려온 해, 느낌표 하나! 이제 절대 안 까먹지\"\n\n[최근 게시물]\n#오늘의코드 #퇴근길 결제 모듈 배포 끝! 오늘은 막내랑 산책 🐾\n#막내 다음 주면 우리 막내 온 날 🎂 파티 준비 중"
+  },
+  "secretDocuments": [
+    "INTERNAL: 결제 시스템 테스트 서버 점검표\n담당: 개발 2팀 박지현\n\n- 운영 고객 데이터 3만 건이 테스트 서버에 복사되어 있음\n- 접근 제한 없음, 6개월째 방치\n- 팀장 메모: \"감사 끝날 때까지 지우지 말고 그냥 둘 것\""
+  ]
+}

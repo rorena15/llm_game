@@ -81,3 +81,23 @@ describe('grade and restart', () => {
     for (let i = 0; i < 20; i++) expect(pickVariant(spec, 'a').id).not.toBe('a')
   })
 })
+
+describe('every mission and variant can be solved on the board', () => {
+  const all = Object.values(
+    import.meta.glob<ScenarioSpec>('../../scenarios/*.json', { eager: true, import: 'default' }),
+  )
+  for (const s of all)
+    for (const v of s.variants)
+      it(`${s.id} ${v.id}`, () => {
+        const sc = applyVariant(s, v)
+        const run = new MissionRun(sc, noLlm)
+        sc.clues.forEach((c) => run.collectClue(c.id))
+        sc.facts.filter((f) => f.level !== 'secret').forEach((f) => run.collectFact(f))
+        for (const inf of sc.inferences)
+          for (let i = 0; i + 1 < inf.requires.length; i++) run.link(inf.requires[i], inf.requires[i + 1])
+        expect(run.solved).toBe(true)
+        expect(run.wrongLinks).toBe(0)
+        expect(run.loginHints).not.toContain(sc.passwordValue)
+        expect(run.tryLogin(sc.passwordValue)).toBe(true)
+      })
+})
