@@ -32,11 +32,9 @@ export function EndingScreen({ ending, onDone }: { ending: EndingSpec; onDone: (
     return (
       <div className="screen ending">
         <div className="dialog">
-          <ol className="reveal">
-            {ending.reveal.slice(0, step.shown).map((line, i) => (
-              <li key={i}>{line}</li>
-            ))}
-          </ol>
+          <pre key={step.shown} className="epilogue reveal">
+            {ending.reveal[step.shown - 1]}
+          </pre>
           <div className="actions">
             <button
               onClick={() => setStep(done ? { name: 'choice' } : { name: 'reveal', shown: step.shown + 1 })}

@@ -16,7 +16,7 @@ export interface EndingSpec {
   /** 이 미션을 깨면 결과 화면에서 엔딩으로 넘어간다 */
   afterMission: string
   finalMail: Email
-  /** 마지막 메일 뒤 한 줄씩 보여 주는 단서 연결 */
+  /** 마지막 메일 뒤 한 장씩 넘기는 단서 연결 */
   reveal: string[]
   choices: EndingChoice[]
   credits: { role: string; names: string[] }[]
