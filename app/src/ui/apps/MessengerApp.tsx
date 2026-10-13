@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ALARM_AT } from '../../engine/rules'
 import { useRun, type MissionRun } from '../../game/run'
 import { play } from '../../game/sound'
+import { HealthBanner } from '../Screens'
 
 const TYPE_MS = 28
 
@@ -52,6 +53,7 @@ export function MessengerApp({ run, playerName, debug }: { run: MissionRun; play
         <span className="presence">● 온라인</span>
       </header>
 
+      {!run.scenario.script && <HealthBanner />}
       <div className="log" ref={logRef}>
         {run.chat.length === 0 && <p className="hint">{npc}에게 메시지를 보내 보세요.</p>}
         {run.chat.map((m) => {

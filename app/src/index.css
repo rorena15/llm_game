@@ -933,3 +933,39 @@ button:disabled {
   font-size: 15px;
   cursor: pointer;
 }
+
+/* 안내 띠: 새 버전, 모델 연결 ({robust}) */
+.banner-info,
+.banner-warn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.banner-info {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.banner-warn {
+  border: 1px solid var(--warn);
+  color: var(--warn);
+  background: #ffcf5a10;
+}
+.banner-warn.dim {
+  opacity: 0.6;
+}
+.banner-warn button {
+  flex: none;
+  margin-left: auto;
+  padding: 3px 10px;
+}
+.messenger .banner-warn {
+  margin: 8px;
+}
+.title .version {
+  margin-top: 16px;
+  color: var(--dim);
+}

@@ -3,6 +3,8 @@ import type { MissionRun } from '../game/run'
 import { useSave } from '../game/save'
 import { useEffect } from 'react'
 import { play } from '../game/sound'
+import { APP_VERSION, useNewVersion } from '../game/version'
+import { checkHealth, HEALTH_TEXT, useHealth } from '../game/health'
 import { MailCard } from './Ending'
 
 const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n))
@@ -17,8 +19,10 @@ interface TitleProps {
 /** 미션은 난이도 순. 앞 미션을 깨야 다음이 열린다 (§2) */
 export function TitleScreen({ missions, unlockAll, onPick }: TitleProps) {
   const save = useSave()
+  const latest = useNewVersion()
   return (
     <div className="screen title">
+      {latest && <p className="banner-info">새 버전 {latest}이 나왔습니다. itch.io 페이지에서 받을 수 있습니다.</p>}
       <h1>
         SOCIAL<span>_</span>ENGINEER
       </h1>
@@ -40,6 +44,7 @@ export function TitleScreen({ missions, unlockAll, onPick }: TitleProps) {
           )
         })}
       </ul>
+      <small className="version">v{APP_VERSION}</small>
     </div>
   )
 }
@@ -49,6 +54,7 @@ export function BriefingScreen({ spec, onStart, onBack }: { spec: ScenarioSpec; 
     <div className="screen briefing">
       <div className="dialog">
         {spec.request && <MailCard {...spec.request} />}
+        {!spec.script && <HealthBanner />}
         <h2>{spec.title}</h2>
         <pre>{spec.briefing}</pre>
         <div className="actions">
@@ -110,6 +116,18 @@ export function ResultScreen({ run, onBack, onEnding }: ResultProps) {
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+/** 대화 모델이 준비되지 않았으면 알리고 다시 확인할 수 있게 한다 */
+export function HealthBanner() {
+  const h = useHealth()
+  if (h === 'ok') return null
+  return (
+    <div className={`banner-warn${h === 'checking' ? ' dim' : ''}`}>
+      <span>{HEALTH_TEXT[h]}</span>
+      {h !== 'checking' && <button onClick={() => void checkHealth()}>다시 확인</button>}
     </div>
   )
 }

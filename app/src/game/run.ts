@@ -6,6 +6,8 @@ import { ScriptedSession } from '../engine/scripted'
 import { Session, type Talker } from '../engine/session'
 import type { FactSpec, InferenceSpec, Scenario, TurnResult } from '../engine/types'
 import { gradeOf, score, type Grade } from './grade'
+import { checkHealth } from './health'
+import { logError } from './log'
 
 export const LOGIN_FAIL_SUSPICION = 10
 
@@ -163,7 +165,10 @@ export class MissionRun {
       if (r.gameOver) this.fail()
       return r
     } catch (e) {
-      this.push({ from: 'system', text: `연결 오류: 모델 서버에 닿지 않습니다. (${(e as Error).message.slice(0, 80)})` })
+      logError('turn', e)
+      void checkHealth()
+      // 실패한 턴은 모델 쪽 대화 기록(session.history)에 남지 않으니 다시 보내면 된다
+      this.push({ from: 'system', text: '대화 모델이 응답하지 않습니다. 잠시 뒤 다시 보내 주세요.' })
       return null
     } finally {
       this.busy = false

@@ -31,6 +31,22 @@ fn write_save(app: tauri::AppHandle, data: String) -> Result<(), String> {
   fs::rename(&tmp, &path).map_err(|e| e.to_string())
 }
 
+const LOG_MAX_BYTES: u64 = 1024 * 1024;
+
+/// 오류 기록 (설계안 §12): 앱 로그 폴더의 game.log에 한 줄씩. 1MB를 넘으면 game.old.log로 넘긴다
+#[tauri::command]
+fn append_log(app: tauri::AppHandle, line: String) -> Result<(), String> {
+  use std::io::Write;
+  let dir = app.path().app_log_dir().map_err(|e| e.to_string())?;
+  fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+  let path = dir.join("game.log");
+  if fs::metadata(&path).map(|m| m.len() > LOG_MAX_BYTES).unwrap_or(false) {
+    let _ = fs::rename(&path, dir.join("game.old.log"));
+  }
+  let mut f = fs::OpenOptions::new().create(true).append(true).open(&path).map_err(|e| e.to_string())?;
+  writeln!(f, "{}", line).map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -44,7 +60,7 @@ pub fn run() {
       }
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![load_save, write_save])
+    .invoke_handler(tauri::generate_handler![load_save, write_save, append_log])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
