@@ -119,7 +119,12 @@ export function InstaSite(p: SiteProps) {
               </div>
               <figcaption>
                 <b>{handle}</b> <T p={p} text={caption} />
-                {tags.length > 0 && <span className="tags"> {tags.join(' ')}</span>}
+                {tags.length > 0 && (
+                  <span className="tags">
+                    {' '}
+                    <T p={p} text={tags.join(' ')} />
+                  </span>
+                )}
               </figcaption>
             </figure>
           )

@@ -42,6 +42,13 @@ describe('search portal', () => {
     expect(urls(pagesOf(m4), '강태호')).toContain('www.greenhill-cc.com/record')
   })
 
+  it('does not show story text that is only visible after opening a highlight', () => {
+    const pages = pagesOf(m2)
+    expect(urls(pages, '잠겨서')).toEqual([])
+    expect(urls(pages, '까먹지')).toContain('www.instargram.com/dev_jihyun')
+    expect(search(pages, '까먹지')[0].snippet).not.toContain('단골 태그')
+  })
+
   it('only returns pages that have every word, best match first', () => {
     const r = search(SHARED_SITES, 'corpx 조직도')
     expect(r[0].url).toBe('www.corpx.com/people')

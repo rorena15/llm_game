@@ -33,7 +33,8 @@ export function search(pages: Record<string, string>, query: string): SearchResu
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean)
   if (!terms.length) return []
   const scored: (SearchResult & { score: number })[] = []
-  for (const [key, body] of Object.entries(pages)) {
+  for (const [key, full] of Object.entries(pages)) {
+    const body = indexed(full)
     const url = normalizeUrl(key)
     const host = url.split('/')[0].replace(/^www\./, '')
     const path = url.split('/').slice(1).join('/')
@@ -51,6 +52,19 @@ export function search(pages: Record<string, string>, query: string): SearchResu
     if (all) scored.push({ url, title, snippet: snippet(body, terms), score })
   }
   return scored.sort((a, b) => b.score - a.score || a.url.localeCompare(b.url)).map(({ url, title, snippet }) => ({ url, title, snippet }))
+}
+
+/** 검색에 걸리는 글. 하이라이트(스토리) 안의 글은 눌러 봐야 보이는 것이라 빼고 제목 줄만 남긴다 */
+function indexed(body: string): string {
+  let hidden = false
+  return body
+    .split('\n')
+    .filter((l) => {
+      const sec = l.trim().match(/^\[(.+?)\]/)
+      if (sec) hidden = sec[1].includes('하이라이트')
+      return !hidden || !!sec
+    })
+    .join('\n')
 }
 
 /** 첫 낱말이 나오는 줄 둘레 (없으면 본문 앞부분). 메뉴 줄과 [제목] 괄호는 뺀다 */
