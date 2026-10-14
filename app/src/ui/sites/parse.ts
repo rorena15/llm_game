@@ -64,6 +64,7 @@ const BRAND: Record<string, string> = {
   'instargram.com': 'linear-gradient(135deg, #7b3fe4, #e1306c, #f77737)',
   'hanbit-es.kr': '#2f7d4f',
   'greenhill-cc.com': '#23422f',
+  'nachimban.com': '#1f8a70',
 }
 
 export function brand(host: string): string {

@@ -3,6 +3,8 @@ import { normalizeUrl, useRun, type MissionRun } from '../../game/run'
 import { findPage, HOME, SHARED_SITES, URL_IN_TEXT } from '../../game/sites'
 import { Site } from '../sites'
 import { brand, siteTitle } from '../sites/parse'
+import { SearchSite } from '../sites/SearchSite'
+import { isSearchHost, looksLikeUrl, parseSearch, SEARCH_HOME, SEARCH_NAME, searchUrl } from '../sites/search'
 
 const host = (key: string) => key.split('/')[0].replace(/^www\./, '')
 const path = (key: string) => key.split('/').slice(1).join('/')
@@ -23,18 +25,34 @@ export function BrowserApp({ run }: { run: MissionRun }) {
   const page = current ? findPage(sites, current) : null
   const knownHosts = new Set([...Object.keys(sites), ...Object.keys(SHARED_SITES)].map((k) => host(normalizeUrl(k))))
   const visited = [...new Set(history)].reverse()
+  // 주소가 아니면 검색한다. www.를 빼고 써도 그 페이지가 있으면 연다
   const go = (u: string) => {
-    if (!u.trim()) return
+    const t = u.trim()
+    if (!t) return
     setShowHistory(false)
     setHover(null)
-    run.navigate(u)
+    if (!looksLikeUrl(t)) return run.navigate(searchUrl(t))
+    const bare = normalizeUrl(t)
+    const withWww = `www.${bare}`
+    run.navigate(!bare.startsWith('www.') && (findPage(sites, withWww) || isSearchHost(withWww)) ? withWww : t)
+  }
+  const onSearch = !!current && isSearchHost(current)
+  const query = current ? parseSearch(current) : null
+  const label = (u: string) => {
+    const q = parseSearch(u)
+    if (q !== null) return `${q} - ${SEARCH_NAME} 검색`
+    if (isSearchHost(u)) return SEARCH_NAME
+    const p = findPage(sites, u)
+    return p ? siteTitle(host(normalizeUrl(p.key)), p.body, path(normalizeUrl(p.key))) : u
   }
 
   const tabTitle = showHistory
     ? '방문 기록'
     : current === null
       ? '새 탭'
-      : page
+      : onSearch
+        ? label(current)
+        : page
         ? siteTitle(host(normalizeUrl(page.key)), page.body, path(normalizeUrl(page.key)))
         : knownHosts.has(host(current))
           ? '404 Not Found'
@@ -48,11 +66,10 @@ export function BrowserApp({ run }: { run: MissionRun }) {
         <h2>방문 기록</h2>
         <ul>
           {visited.map((u) => {
-            const p = findPage(sites, u)
             return (
               <li key={u}>
                 <button className="link-word" data-url={u} onClick={() => go(u)}>
-                  {p ? siteTitle(host(normalizeUrl(p.key)), p.body, path(normalizeUrl(p.key))) : u}
+                  {label(u)}
                 </button>
                 <small>{u}</small>
               </li>
@@ -62,9 +79,13 @@ export function BrowserApp({ run }: { run: MissionRun }) {
       </div>
     )
   else if (current === null) {
-    const tiles = [HOME, ...visited.filter((u) => u !== HOME && findPage(sites, u))].slice(0, 8)
+    const tiles = [SEARCH_HOME, HOME, ...visited.filter((u) => u !== HOME && findPage(sites, u))].slice(0, 8)
     content = (
       <div className="newtab">
+        <span className="nb-logo big">
+          <i>🧭</i>
+          {SEARCH_NAME}
+        </span>
         <form
           className="search"
           onSubmit={(e) => {
@@ -75,7 +96,7 @@ export function BrowserApp({ run }: { run: MissionRun }) {
           <input
             value={url}
             onChange={(e) => setDraft({ for: current, text: e.target.value })}
-            placeholder="주소 입력 (예: www.corpx.com)"
+            placeholder="나침반 검색 또는 주소 입력"
             spellCheck={false}
           />
         </form>
@@ -91,7 +112,9 @@ export function BrowserApp({ run }: { run: MissionRun }) {
         </div>
       </div>
     )
-  } else if (page)
+  } else if (onSearch)
+    content = <SearchSite key={current} query={query} pages={{ ...SHARED_SITES, ...sites }} go={go} />
+  else if (page)
     content = (
       <Site
         key={current}
@@ -171,13 +194,13 @@ export function BrowserApp({ run }: { run: MissionRun }) {
         </button>
         <div className="omnibox">
           <span className="lock" title={current ? '보안 연결' : undefined}>
-            {current && page ? '🔒' : current ? 'ⓘ' : '🔍'}
+            {current && (page || onSearch) ? '🔒' : current ? 'ⓘ' : '🔍'}
           </span>
           <input
             value={url}
             onChange={(e) => setDraft({ for: current, text: e.target.value })}
             onFocus={(e) => e.currentTarget.select()}
-            placeholder="주소 입력"
+            placeholder="검색어 또는 주소 입력"
             spellCheck={false}
           />
         </div>
