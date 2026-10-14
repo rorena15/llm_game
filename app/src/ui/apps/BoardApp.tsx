@@ -38,7 +38,7 @@ function defaultPos(card: Card, index: number) {
   return { x: 20 + col * 230, y: 20 + (index % 6) * 120 }
 }
 
-export function BoardApp({ run }: { run: MissionRun }) {
+export function BoardApp({ run, visible = true }: { run: MissionRun; visible?: boolean }) {
   useRun(run)
   const [toast, setToast] = useState<{ text: string; bad: boolean } | null>(null)
   useEffect(() => {
@@ -47,8 +47,10 @@ export function BoardApp({ run }: { run: MissionRun }) {
     return () => clearTimeout(t)
   }, [toast])
 
-  // 보드가 열려 있으면 새 카드는 본 것으로
-  useEffect(() => run.markSeen(), [run, run.cards.length])
+  // 보드가 화면에 보이면 새 카드는 본 것으로 (최소화한 동안은 아니다)
+  useEffect(() => {
+    if (visible) run.markSeen()
+  }, [run, run.cards.length, visible])
 
   const finals = useMemo(() => new Set(run.scenario.inferences.filter((i) => i.final).map((i) => i.id)), [run.scenario])
   const [nodes, setNodes] = useState<CardNode[]>([])

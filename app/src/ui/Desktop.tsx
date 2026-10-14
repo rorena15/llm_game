@@ -9,7 +9,7 @@ import { BrowserApp } from './apps/BrowserApp'
 import { EmailApp } from './apps/EmailApp'
 import { MessengerApp } from './apps/MessengerApp'
 import { ServerApp } from './apps/ServerApp'
-import { Window, type WinPos } from './Window'
+import { Window, type WinPos, type WinSize } from './Window'
 
 type AppId = 'messenger' | 'email' | 'browser' | 'board' | 'server'
 
@@ -25,14 +25,29 @@ const ORDER: AppId[] = ['email', 'messenger', 'browser', 'board', 'server']
 interface OpenWin {
   id: AppId
   pos: WinPos
+  size: WinSize
   z: number
+  min: boolean
+  max: boolean
 }
 
-/** 창을 맨 앞으로. 닫혀 있으면 연다 */
+const newWin = (id: AppId, z: number): OpenWin => ({
+  id,
+  pos: APPS[id].at,
+  size: { w: APPS[id].w, h: APPS[id].h },
+  z,
+  min: false,
+  max: false,
+})
+
+/** 창을 맨 앞으로. 최소화돼 있으면 되살리고, 닫혀 있으면 연다 */
 function raise(ws: OpenWin[], id: AppId): OpenWin[] {
   const z = Math.max(0, ...ws.map((w) => w.z)) + 1
-  return ws.some((w) => w.id === id) ? ws.map((w) => (w.id === id ? { ...w, z } : w)) : [...ws, { id, pos: APPS[id].at, z }]
+  return ws.some((w) => w.id === id) ? ws.map((w) => (w.id === id ? { ...w, z, min: false } : w)) : [...ws, newWin(id, z)]
 }
+
+/** 보이는 창 가운데 맨 앞 */
+const frontmost = (ws: OpenWin[]) => ws.filter((w) => !w.min).sort((a, b) => b.z - a.z)[0]?.id
 
 interface Props {
   run: MissionRun
@@ -47,7 +62,7 @@ interface Props {
 
 export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChanges }: Props) {
   useRun(run)
-  const [wins, setWins] = useState<OpenWin[]>([{ id: 'email', pos: APPS.email.at, z: 1 }])
+  const [wins, setWins] = useState<OpenWin[]>([newWin('email', 1)])
   const [now, setNow] = useState(() => new Date())
   const [volOpen, setVolOpen] = useState(false)
   // 경계가 오르면 막대를 잠깐 흔든다
@@ -97,9 +112,13 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
   }, [run.browserRequest])
   const focus = (id: AppId) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, z: top() } : w)))
   const close = (id: AppId) => setWins((ws) => ws.filter((w) => w.id !== id))
-  const move = (id: AppId, pos: WinPos) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, pos } : w)))
+  const patch = (id: AppId, p: Partial<OpenWin>) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, ...p } : w)))
+  const move = (id: AppId, pos: WinPos) => patch(id, { pos })
+  // 작업 표시줄 단추: 맨 앞에 있는 창이면 최소화, 아니면 앞으로 (윈도우와 같게)
+  const taskClick = (id: AppId) =>
+    setWins((ws) => (frontmost(ws) === id ? ws.map((w) => (w.id === id ? { ...w, min: true } : w)) : raise(ws, id)))
 
-  const body = (id: AppId): ReactNode => {
+  const body = (id: AppId, visible: boolean): ReactNode => {
     switch (id) {
       case 'messenger':
         return <MessengerApp run={run} playerName={playerName} debug={debug} />
@@ -108,7 +127,7 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
       case 'browser':
         return <BrowserApp run={run} />
       case 'board':
-        return <BoardApp run={run} />
+        return <BoardApp run={run} visible={visible} />
       case 'server':
         return <ServerApp run={run} />
     }
@@ -131,14 +150,18 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
           key={w.id}
           title={APPS[w.id].title}
           pos={w.pos}
+          size={w.size}
           z={w.z}
-          width={APPS[w.id].w}
-          height={APPS[w.id].h}
+          minimized={w.min}
+          maximized={w.max}
           onMove={(p) => move(w.id, p)}
+          onResize={(size) => patch(w.id, { size })}
           onFocus={() => focus(w.id)}
+          onMinimize={() => patch(w.id, { min: true })}
+          onToggleMax={() => patch(w.id, { max: !w.max })}
           onClose={() => close(w.id)}
         >
-          {body(w.id)}
+          {body(w.id, !w.min)}
         </Window>
       ))}
 
@@ -148,7 +171,14 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
         </button>
         <div className="tasks">
           {ORDER.map((id) => (
-            <button key={id} className={wins.some((w) => w.id === id) ? 'on' : ''} onClick={() => open(id)}>
+            <button
+              key={id}
+              className={(() => {
+                const w = wins.find((x) => x.id === id)
+                return !w ? '' : w.min ? 'on min' : frontmost(wins) === id ? 'on front' : 'on'
+              })()}
+              onClick={() => taskClick(id)}
+            >
               {APPS[id].icon} {APPS[id].title}
               {id === 'board' && run.unseen > 0 && <span className="badge">{run.unseen}</span>}
             </button>

@@ -579,8 +579,9 @@ button:disabled {
 
 .debug-badge {
   position: fixed;
-  top: 6px;
   right: 8px;
+  bottom: 52px;
+  pointer-events: none;
   z-index: 2000;
   padding: 2px 8px;
   font: 11px ui-monospace, monospace;
@@ -1045,8 +1046,8 @@ button:disabled {
 /* 개발자 패널 (개발 빌드·?debug에서만) */
 .dev-toggle {
   position: fixed;
-  top: 6px;
   left: 8px;
+  bottom: 52px;
   z-index: 3000;
   padding: 2px 8px;
   font: 11px ui-monospace, monospace;
@@ -1854,4 +1855,74 @@ button:disabled {
 }
 .volume-pop .mute {
   font-size: 13px;
+}
+
+/* 창 단추: 최소화·최대화·닫기, 크기 조절 손잡이 */
+.win-buttons {
+  display: flex;
+  gap: 2px;
+}
+.win-buttons button {
+  width: 30px;
+  height: 22px;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--dim);
+  background: none;
+  border: 0;
+  border-radius: 3px;
+}
+.win-buttons button:hover {
+  color: var(--text);
+  background: #ffffff14;
+}
+.win-buttons .close {
+  font-size: 16px;
+}
+.win-buttons .close:hover {
+  color: #fff;
+  background: var(--danger);
+}
+.window.minimized {
+  display: none;
+}
+.window.maximized {
+  border-radius: 0;
+  border-width: 0 0 1px;
+}
+.window.maximized .titlebar {
+  cursor: default;
+}
+.window .resize {
+  position: absolute;
+  z-index: 5;
+  touch-action: none;
+}
+.window .resize.r {
+  top: 30px;
+  right: -3px;
+  bottom: 10px;
+  width: 7px;
+  cursor: ew-resize;
+}
+.window .resize.b {
+  left: 10px;
+  right: 10px;
+  bottom: -3px;
+  height: 7px;
+  cursor: ns-resize;
+}
+.window .resize.rb {
+  right: -3px;
+  bottom: -3px;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+}
+.taskbar .tasks button.min {
+  opacity: 0.6;
+}
+.taskbar .tasks button.front {
+  box-shadow: inset 0 -2px 0 var(--accent);
 }
