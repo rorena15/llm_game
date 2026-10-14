@@ -47,3 +47,18 @@ describe('site templates keep clues and links', () => {
 function escRe(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
+
+// 회사 홈페이지는 모든 미션에 같이 보인다. 어느 변형의 정답 조각도 들어 있으면 안 된다
+describe('shared site does not leak variant values', () => {
+  const text = Object.values(SHARED_SITES).join('\n').toLowerCase()
+  const isYear = (v: string) => /^\d{4}$/.test(v) && Number(v) >= 1990 && Number(v) <= 2030
+  for (const s of all)
+    it(s.id, () => {
+      for (const v of s.variants)
+        for (const [k, value] of Object.entries({ ...v.values, password: v.password })) {
+          const digits = /^\d+$/.test(value)
+          if (value.includes('●') || (digits ? value.length < 4 || isYear(value) : value.length < 2)) continue
+          expect(text.includes(value.toLowerCase()), `${v.id}.${k} = ${value}`).toBe(false)
+        }
+    })
+})

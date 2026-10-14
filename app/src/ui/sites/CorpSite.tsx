@@ -1,148 +1,206 @@
-// 회사 홈페이지 (CorpX): 위쪽 메뉴, 첫 화면 큰 배너와 소식, 소개 표, 알림 게시판, 조직도
-import type { ReactNode } from 'react'
+// 회사 홈페이지 (CorpX): 위쪽 메뉴, 첫 화면(배너·사업·숫자·소식·알림·보도자료), 게시판(눌러서 펼침),
+// 연혁, 표, 조직도(본부 → 팀 → 구성원, 인원 합계)
+import { useState, type ReactNode } from 'react'
 import { normalizeUrl } from '../../game/run'
 import { Go, T } from './common'
-import { NAV_LINE, sections, type SiteProps } from './parse'
+import { cells, NAV_LINE, sections, seeded, type Section, type SiteProps } from './parse'
 
 interface OrgNode {
   dept: string
+  /** 책임자 또는 구성원 이름 */
   name: string
+  count: number | null
   kids: OrgNode[]
 }
 
-/** 들여쓴 줄은 바로 위 줄의 아래 조직 ("대표이사  강태호" / "  비서실  정우진 대리" / "  이민수 사원") */
+/** 들여쓰기 두 칸마다 한 단계 아래. 칸은 두 칸 이상 띄움: "부서  책임자  인원" 또는 구성원 이름만 */
 function orgTree(lines: string[]): OrgNode[] | null {
   const rows = lines.filter((l) => !NAV_LINE.test(l.trim()))
-  const split = rows.map((l) => l.match(/^(\s*)(\S.*?)\s{2,}(\S.*)$/))
-  // 줄 대부분이 "부서  이름" 꼴이고 들여쓴 줄이 있어야 조직도로 본다
-  if (rows.length < 3 || split.filter(Boolean).length < rows.length / 2 || !rows.some((l) => /^\s/.test(l))) return null
+  if (rows.length < 3 || !rows.some((l) => /^\s/.test(l))) return null
+  const split = rows.map((l) => l.trim().split(/\s{2,}/))
+  if (split.filter((s) => s.length >= 2).length < rows.length / 2) return null
   const roots: OrgNode[] = []
+  const stack: OrgNode[] = []
   rows.forEach((l, i) => {
-    const m = split[i]
-    const node: OrgNode = m ? { dept: m[2], name: m[3], kids: [] } : { dept: '', name: l.trim(), kids: [] }
-    if (/^\s/.test(l) && roots.length) roots[roots.length - 1].kids.push(node)
+    const depth = Math.floor((l.length - l.trimStart().length) / 2)
+    const s = split[i]
+    const count = s[2]?.match(/^(\d+)명$/)
+    const node: OrgNode =
+      s.length >= 2
+        ? { dept: s[0], name: s[1], count: count ? Number(count[1]) : null, kids: [] }
+        : { dept: '', name: s[0], count: null, kids: [] }
+    stack.length = depth
+    if (depth > 0 && stack[depth - 1]) stack[depth - 1].kids.push(node)
     else roots.push(node)
+    stack[depth] = node
   })
   return roots
 }
 
+/** 팀 인원의 합 (구성원 줄은 팀 인원 안에 있다) */
+const teamSum = (n: OrgNode): number => n.kids.reduce((a, k) => a + (k.count ?? teamSum(k)), 0)
+/** 맨 위 단계(대표·본부장) 한 명씩과 그 아래 팀 인원 */
+const headcount = (roots: OrgNode[]) => roots.reduce((a, r) => a + 1 + teamSum(r), 0)
+
 /** "본사: 서울 강남구" 꼴 */
 const KV = /^([^:：]{1,10})[:：]\s*(.+)$/
+const DATE_TAG = /^\d{4}\.\d{2}\.\d{2}$/
 
 export function CorpSite(p: SiteProps) {
   const brand = p.host.split('.')[0]
   const brandName = brand === 'corpx' ? 'CorpX' : brand
   const home = `www.${p.host}`
-  // 메뉴는 첫 화면의 메뉴 줄에서 가져온다
-  const menu = (p.find(home) ?? '')
-    .split('\n')
+  const homeParts = sections(p.find(home) ?? '').parts
+  const menuSec = homeParts.find((s) => s.tag === '메뉴')
+  const menu = (menuSec?.lines ?? [])
     .map((l) => l.trim().match(NAV_LINE))
     .filter((m): m is RegExpMatchArray => !!m)
     .map((m) => ({ label: m[1].trim(), url: m[2] }))
-  const inMenu = (u: string) => normalizeUrl(u) === normalizeUrl(home) || menu.some((m) => normalizeUrl(m.url) === normalizeUrl(u))
+  const menuUrl = (label: string) => menu.find((m) => m.label === label)?.url
+  const isHomeUrl = (u: string) => normalizeUrl(u) === normalizeUrl(home)
 
   const { head, parts } = sections(p.body)
   const isHome = p.path === ''
   const pageTitle = head.replace(new RegExp(`^${brandName}\\s*`), '') || brandName
+  const content = parts.filter((s) => s.tag !== '메뉴')
+  const intro = content.find((s) => s.tag === null)
+  const rest = content.filter((s) => s.tag !== null)
+  const board = !isHome && rest.length >= 2 && rest.every((s) => s.title)
 
   const renderLines = (lines: string[]): ReactNode[] => {
     const out: ReactNode[] = []
     const org = orgTree(lines)
-    if (org)
-      return [
-        <div key="org" className="corp-org">
-          {org.map((n, i) => (
-            <div key={i} className="org-branch">
-              <div className="org-card top">
-                <small>
-                  <T p={p} text={n.dept} />
-                </small>
-                <b>
-                  <T p={p} text={n.name} />
-                </b>
-              </div>
-              {n.kids.length > 0 && (
-                <div className="org-kids">
-                  {n.kids.map((k, j) => (
-                    <div key={j} className="org-card">
-                      {k.dept && (
-                        <small>
-                          <T p={p} text={k.dept} />
-                        </small>
-                      )}
-                      <b>
-                        <T p={p} text={k.name} />
-                      </b>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>,
-      ]
+    if (org) return [<OrgChart key="org" p={p} roots={org} />]
     let kv: [string, string][] = []
-    const flushKv = () => {
-      if (!kv.length) return
-      const rows = kv
-      out.push(
-        <dl key={`kv${out.length}`} className="corp-info">
-          {rows.map(([k, v]) => (
-            <div key={k}>
-              <dt>{k}</dt>
-              <dd>
-                <T p={p} text={v} />
-              </dd>
+    let table: string[][] = []
+    let links: { label: string; url: string }[] = []
+    const flush = () => {
+      if (kv.length) {
+        const rows = kv
+        out.push(
+          isHome ? (
+            <div key={`s${out.length}`} className="corp-stats">
+              {rows.map(([k, v]) => (
+                <div key={k}>
+                  <b>
+                    <T p={p} text={v} />
+                  </b>
+                  <small>{k}</small>
+                </div>
+              ))}
             </div>
-          ))}
-        </dl>,
-      )
+          ) : (
+            <dl key={`k${out.length}`} className="corp-info">
+              {rows.map(([k, v]) => (
+                <div key={k}>
+                  <dt>{k}</dt>
+                  <dd>
+                    <T p={p} text={v} />
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ),
+        )
+      }
+      if (table.length) {
+        const rows = table
+        const years = rows.every((r) => /^\d{4}$/.test(r[0]))
+        out.push(
+          years ? (
+            <ol key={`y${out.length}`} className="corp-timeline">
+              {rows.map((r, i) => (
+                <li key={i}>
+                  <b>{r[0]}</b>
+                  <span>
+                    <T p={p} text={r.slice(1).join(' ')} />
+                  </span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <table key={`t${out.length}`} className="corp-table">
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={i}>
+                    {r.map((c, j) => (
+                      <td key={j} className={c === '마감' ? 'closed' : /마감|상시/.test(c) ? 'due' : ''}>
+                        <T p={p} text={c} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ),
+        )
+      }
+      if (links.length) {
+        const ls = links
+        out.push(
+          isHome ? (
+            <div key={`c${out.length}`} className="corp-cards">
+              {ls.map((l, i) => {
+                const [title, desc] = l.label.split(' · ')
+                return (
+                  <Go key={i} p={p} url={l.url} className="corp-card">
+                    <b>{title}</b>
+                    {desc && <small>{desc}</small>}
+                    <i>자세히 보기 →</i>
+                  </Go>
+                )
+              })}
+            </div>
+          ) : (
+            <p key={`l${out.length}`} className="corp-links">
+              {ls.map((l, i) => (
+                <Go key={i} p={p} url={l.url}>
+                  {l.label} →
+                </Go>
+              ))}
+            </p>
+          ),
+        )
+      }
       kv = []
+      table = []
+      links = []
     }
     lines.forEach((line, i) => {
-      const nav = line.trim().match(NAV_LINE)
+      const t = line.trim()
+      const nav = t.match(NAV_LINE)
       if (nav) {
-        flushKv()
-        if (!inMenu(nav[2]))
-          out.push(
-            <p key={i}>
-              <Go p={p} url={nav[2]}>
-                {nav[1].trim()} →
-              </Go>
-            </p>,
-          )
+        if (!isHomeUrl(nav[2])) links.push({ label: nav[1].trim(), url: nav[2] })
         return
       }
-      const m = line.trim().match(KV)
-      if (m && !/www\./.test(line)) {
-        kv.push([m[1].trim(), m[2]])
-        return
-      }
-      flushKv()
-      if (line.startsWith('- '))
+      const c = cells(line)
+      if (c) return void table.push(c)
+      const m = t.match(KV)
+      if (m && !/www\./.test(t)) return void kv.push([m[1].trim(), m[2]])
+      flush()
+      if (t.startsWith('- '))
         out.push(
-          <div key={i} className="corp-news">
+          <div key={i} className="corp-bullet">
             <span className="dot" />
-            <T p={p} text={line.slice(2)} />
+            <span>
+              <T p={p} text={t.slice(2)} />
+            </span>
           </div>,
         )
       else
         out.push(
           <p key={i}>
-            <T p={p} text={line} />
+            <T p={p} text={t} />
           </p>,
         )
     })
-    flushKv()
+    flush()
     return out
   }
 
-  // 메뉴 줄만 있는 덩어리([메뉴])는 위쪽 메뉴로 대신한다
-  const content = parts.filter((s) => !s.lines.every((l) => NAV_LINE.test(l.trim()) && inMenu(l.trim().match(NAV_LINE)![2])))
-  const intro = content.find((s) => s.tag === null)
-  const rest = content.filter((s) => s.tag !== null)
-  // 알림 게시판: 모든 덩어리가 [꼬리표] 제목 꼴이면 게시판 줄로
-  const board = !isHome && rest.length >= 2 && rest.every((s) => s.title)
+  // 첫 화면의 알림 상자: 알림 페이지의 제목 몇 개
+  const noticeUrl = menuUrl('알림')
+  const noticeTitles = noticeUrl ? sections(p.find(noticeUrl) ?? '').parts.filter((s) => s.title).slice(0, 4) : []
 
   return (
     <article className="s-corp">
@@ -163,7 +221,7 @@ export function CorpSite(p: SiteProps) {
       {isHome ? (
         <section className="corp-hero">
           <small>{brandName.toUpperCase()}</small>
-          <h1>{intro?.lines[0] ? <T p={p} text={intro.lines[0]} /> : brandName}</h1>
+          <h1>{intro?.lines[0] ? <T p={p} text={intro.lines[0].trim()} /> : brandName}</h1>
           {intro && intro.lines.length > 1 && <div className="hero-sub">{renderLines(intro.lines.slice(1))}</div>}
         </section>
       ) : (
@@ -183,42 +241,154 @@ export function CorpSite(p: SiteProps) {
       <div className="corp-body">
         {!isHome && intro && renderLines(intro.lines)}
         {board ? (
-          <ul className="corp-board">
-            {rest.map((s, i) => (
-              <li key={i}>
-                <div className="row">
-                  <span className={`corp-badge${s.tag === '필독' ? ' hot' : ''}`}>{s.tag}</span>
-                  <b>
-                    <T p={p} text={s.title} />
-                  </b>
-                </div>
-                {renderLines(s.lines)}
-              </li>
-            ))}
-          </ul>
+          <Board p={p} items={rest} render={renderLines} />
         ) : (
           rest.map((s, i) => (
             <section key={i} className="corp-sec">
               <h2>
                 {s.tag}
                 {s.title && (
-                  <>
-                    {' '}
+                  <small>
                     <T p={p} text={s.title} />
-                  </>
+                  </small>
                 )}
               </h2>
               {renderLines(s.lines)}
             </section>
           ))
         )}
+        {isHome && noticeTitles.length > 0 && noticeUrl && (
+          <section className="corp-sec">
+            <h2>
+              알림
+              <Go p={p} url={noticeUrl} className="more">
+                더 보기 +
+              </Go>
+            </h2>
+            <ul className="corp-mini">
+              {noticeTitles.map((s, i) => (
+                <li key={i}>
+                  <span className={`corp-badge${s.tag === '필독' ? ' hot' : ''}`}>{s.tag}</span>
+                  <Go p={p} url={noticeUrl}>
+                    {s.title}
+                  </Go>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
 
       <footer className="corp-foot">
         <b>{brandName}</b>
-        <span>개인정보처리방침 · 이용약관 · 윤리경영 · 고객센터</span>
+        <span>개인정보처리방침 · 이용약관 · 윤리경영 · 고객센터 02-555-0100</span>
+        <small>주식회사 {brandName} · 서울 강남구 테헤란로 CorpX 타워</small>
         <small>© 2024 {brandName} Corp. All rights reserved.</small>
       </footer>
     </article>
+  )
+}
+
+/** 게시판: 번호·꼬리표·제목·조회. 제목을 누르면 본문이 펼쳐진다 (처음에는 맨 위 글만) */
+function Board({ p, items, render }: { p: SiteProps; items: Section[]; render: (lines: string[]) => ReactNode[] }) {
+  const [open, setOpen] = useState<Set<number>>(() => new Set([0]))
+  const toggle = (i: number) =>
+    setOpen((o) => {
+      const n = new Set(o)
+      if (n.has(i)) n.delete(i)
+      else n.add(i)
+      return n
+    })
+  return (
+    <div className="corp-board">
+      <div className="board-head">
+        <span>번호</span>
+        <span>제목</span>
+        <span>조회</span>
+      </div>
+      <ul>
+        {items.map((s, i) => {
+          const date = DATE_TAG.test(s.tag ?? '')
+          return (
+            <li key={i} className={open.has(i) ? 'open' : ''}>
+              <div className="row" onClick={() => toggle(i)}>
+                <span className="no">{items.length - i}</span>
+                <span className="subject">
+                  {!date && <span className={`corp-badge${s.tag === '필독' ? ' hot' : ''}`}>{s.tag}</span>}
+                  <b>
+                    <T p={p} text={s.title} />
+                  </b>
+                  {date && <time>{s.tag}</time>}
+                </span>
+                <span className="views">{Math.round(30 + seeded(s.title) * 900)}</span>
+              </div>
+              {open.has(i) && <div className="post">{render(s.lines)}</div>}
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
+function OrgChart({ p, roots }: { p: SiteProps; roots: OrgNode[] }) {
+  const total = headcount(roots)
+  const [ceo, ...divisions] = roots
+  const teamCount = roots.reduce((a, r) => a + r.kids.length, 0)
+  const text = (t: string) => <T p={p} text={t} />
+  return (
+    <div className="corp-org">
+      <p className="org-summary">
+        임직원 <b>{total}명</b> · 본부 {divisions.length}개 · 부서 {teamCount}개
+      </p>
+      {ceo && (
+        <div className="org-ceo">
+          <div className="org-card top">
+            <small>{text(ceo.dept)}</small>
+            <b>{text(ceo.name)}</b>
+          </div>
+          {ceo.kids.length > 0 && (
+            <div className="org-staff">
+              {ceo.kids.map((k, i) => (
+                <div key={i} className="org-card">
+                  <small>{text(k.dept)}</small>
+                  <b>{text(k.name)}</b>
+                  {k.count !== null && <em>{k.count}명</em>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      <div className="org-divisions">
+        {divisions.map((d, i) => (
+          <section key={i} className="org-division">
+            <header>
+              <b>{text(d.dept)}</b>
+              <small>{text(d.name)}</small>
+              <em>{teamSum(d) + 1}명</em>
+            </header>
+            <ul>
+              {d.kids.map((t, j) => (
+                <li key={j}>
+                  <div className="team">
+                    <span>{text(t.dept)}</span>
+                    <small>{text(t.name)}</small>
+                    {t.count !== null && <em>{t.count}</em>}
+                  </div>
+                  {t.kids.length > 0 && (
+                    <div className="members">
+                      {t.kids.map((m, k) => (
+                        <span key={k}>{text(m.name)}</span>
+                      ))}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </div>
   )
 }
