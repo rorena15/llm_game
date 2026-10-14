@@ -32,6 +32,9 @@ button {
   font: inherit;
   color: inherit;
   cursor: pointer;
+  /* 따로 정하지 않은 단추가 브라우저 기본 흰 바탕이 되지 않게 */
+  background: transparent;
+  border: 1px solid var(--line);
 }
 input {
   font: inherit;
@@ -1039,6 +1042,12 @@ button:disabled {
   flex: none;
   margin-left: auto;
   padding: 3px 10px;
+  color: var(--warn);
+  border: 1px solid var(--warn);
+  border-radius: 4px;
+}
+.banner-warn button:hover {
+  background: #ffcf5a20;
 }
 .messenger .banner-warn {
   margin: 8px;
