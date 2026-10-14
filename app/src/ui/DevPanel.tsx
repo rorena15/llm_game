@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react'
 import type { ScenarioSpec } from '../engine/types'
 import { DEV_ENABLED, setDevFlag, useDevFlags, type DevFlags } from '../game/dev'
-import { useRun, type MissionRun } from '../game/run'
+import { normalizeUrl, useRun, type MissionRun } from '../game/run'
+import { SHARED_SITES } from '../game/sites'
+import { SEARCH_HOME } from './sites/search'
 import { useSave } from '../game/save'
 
 export type DevJump = 'title' | 'settings' | 'licenses' | 'ending'
@@ -123,6 +125,7 @@ function Body({ missions, screen, run, onJump, onBriefing, onStart, flags }: Pro
       </section>
 
       {run && <RunControls run={run} />}
+      {run && <MissionMap run={run} />}
     </aside>
   )
 }
@@ -166,5 +169,99 @@ function RunControls({ run }: { run: MissionRun }) {
         </button>
       </div>
     </section>
+  )
+}
+
+const FOLDER: Record<string, string> = { inbox: '받은편지함', sent: '보낸편지함', drafts: '임시보관함', trash: '휴지통' }
+const LEVEL: Record<string, string> = { free: '바로', guarded: '조건', secret: '안 나옴' }
+
+/** 플레이어가 찾아야 하는 것: 사이트 주소, 문서 단서 위치, 대화 사실의 공개 조건, 비밀번호 조각 */
+function MissionMap({ run }: { run: MissionRun }) {
+  useRun(run)
+  const sc = run.scenario
+  const own = Object.keys(sc.websites)
+  const shared = Object.keys(SHARED_SITES).filter((u) => !own.some((o) => normalizeUrl(o) === normalizeUrl(u)))
+  const where = (source: string) => {
+    const [kind, ref] = [source.slice(0, source.indexOf(':')), source.slice(source.indexOf(':') + 1)]
+    if (kind === 'email') {
+      const m = sc.emails[Number(ref)]
+      return m ? `메일 ${FOLDER[m.folder ?? 'inbox']} "${m.subject}"` : source
+    }
+    return ref
+  }
+  const labelOf = (id: string) => sc.clues.find((c) => c.id === id)?.label ?? sc.facts.find((f) => f.id === id)?.label ?? id
+  const revealed = new Set(run.session.state.revealed)
+  const cond = (w: (typeof sc.facts)[number]['when']) =>
+    [
+      w?.rapportMin !== undefined && `친밀 ${w.rapportMin}+`,
+      w?.suspicionMax !== undefined && `경계 ${w.suspicionMax} 이하`,
+      w?.tactics?.length && w.tactics.join('/'),
+    ]
+      .filter(Boolean)
+      .join(' · ')
+
+  return (
+    <>
+      <section>
+        <h4>사이트 (누르면 브라우저로)</h4>
+        <ul className="dev-list">
+          {[...own, ...shared, SEARCH_HOME].map((u) => (
+            <li key={u}>
+              <button className="link" onClick={() => run.openUrl(u)}>
+                {u}
+              </button>
+              {own.includes(u) && <em>미션</em>}
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h4>문서 단서</h4>
+        <ul className="dev-list">
+          {sc.clues.map((c) => (
+            <li key={c.id} className={run.hasCard(c.id) ? 'got' : ''}>
+              <b>{run.hasCard(c.id) ? '✓' : '·'} {c.label}</b>
+              <small>
+                {c.source.startsWith('web:') ? (
+                  <button className="link" onClick={() => run.openUrl(c.source.slice(4))}>
+                    {where(c.source)}
+                  </button>
+                ) : (
+                  where(c.source)
+                )}
+                {c.keyword && <> · 누를 낱말 「{c.keyword}」</>}
+              </small>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h4>대화 사실</h4>
+        <ul className="dev-list">
+          {sc.facts.map((f) => (
+            <li key={f.id} className={revealed.has(f.id) || run.hasCard(f.id) ? 'got' : ''}>
+              <b>
+                {revealed.has(f.id) || run.hasCard(f.id) ? '✓' : '·'} {f.label}
+              </b>
+              <small>
+                {LEVEL[f.level]}
+                {f.level === 'guarded' && cond(f.when) && ` · ${cond(f.when)}`}
+              </small>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h4>비밀번호 조각</h4>
+        <ul className="dev-list">
+          {sc.password.pieces.map((p) => (
+            <li key={p.key}>
+              <b>{p.key}</b>
+              <small>{p.sources.map(labelOf).join(' 또는 ')}</small>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </>
   )
 }
