@@ -121,3 +121,29 @@ describe('browser and mail state', () => {
     expect(run.readMails.has(2)).toBe(true)
   })
 })
+
+describe('dev panel shortcuts', () => {
+  const all = Object.values(
+    import.meta.glob<ScenarioSpec>('../../scenarios/*.json', { eager: true, import: 'default' }),
+  )
+  for (const s of all)
+    it(`solves ${s.id} on every variant`, () => {
+      for (const v of s.variants) {
+        const run = new MissionRun(applyVariant(s, v), noLlm)
+        run.devSolveBoard()
+        expect(run.solved).toBe(true)
+        expect(run.wrongLinks).toBe(0)
+      }
+    })
+
+  it('sets suspicion, fails at 100, and clears from a failed run', () => {
+    const run = new MissionRun(sc, noLlm)
+    run.devSetSuspicion(80)
+    expect(run.suspicion).toBe(80)
+    expect(run.status).toBe('playing')
+    run.devSetSuspicion(100)
+    expect(run.status).toBe('failed')
+    run.devClear()
+    expect(run.status).toBe('cleared')
+  })
+})

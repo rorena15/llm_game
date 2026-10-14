@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { applyVariant, pickVariant } from './engine/scenario'
+import { useDevFlags } from './game/dev'
 import { MissionRun, useRun } from './game/run'
 import { save, useSave } from './game/save'
 import { llm, SCENARIOS } from './game/scenarios'
 import { ENDING } from './game/story'
+import { DevPanel } from './ui/DevPanel'
 import { Desktop } from './ui/Desktop'
 import { EndingScreen } from './ui/Ending'
 import { LicenseScreen, SettingsScreen } from './ui/Settings'
@@ -17,70 +19,80 @@ type Screen =
   | { name: 'settings' }
   | { name: 'licenses' }
 
-const debug = new URLSearchParams(location.search).has('debug')
 const PLAYER = '나'
 
-/** 새로 시작할 때마다 지난번과 다른 변형 (§7.1). 고른 변형은 저장한다 */
-function startRun(id: string): MissionRun {
+/** 새로 시작할 때마다 지난번과 다른 변형 (§7.1). 고른 변형은 저장한다. variantId는 개발자 패널이 정할 때만 */
+function startRun(id: string, variantId?: string): MissionRun {
   const spec = SCENARIOS[id]
-  const variant = pickVariant(spec, save.mission(id).variant)
+  const variant = spec.variants.find((v) => v.id === variantId) ?? pickVariant(spec, save.mission(id).variant)
   save.startVariant(id, variant.id)
   return new MissionRun(applyVariant(spec, variant), llm)
 }
 
 export default function App() {
   useSave()
+  const dev = useDevFlags()
   const [screen, setScreen] = useState<Screen>({ name: 'title' })
   const missions = Object.values(SCENARIOS).sort((a, b) => a.difficulty - b.difficulty)
+  const play = (id: string, variant?: string) => setScreen({ name: 'play', run: startRun(id, variant) })
 
+  let body: ReactNode
   if (screen.name === 'title')
-    return (
+    body = (
       <TitleScreen
         missions={missions}
-        unlockAll={debug}
-        onPick={(id) => setScreen({ name: 'briefing', id })}
+        unlockAll={dev.unlockAll}
+        onPick={(id) => (dev.skipBriefing ? play(id) : setScreen({ name: 'briefing', id }))}
         onSettings={() => setScreen({ name: 'settings' })}
       />
     )
-
-  if (screen.name === 'briefing') {
+  else if (screen.name === 'briefing') {
     const spec = SCENARIOS[screen.id]
-    return (
-      <BriefingScreen
-        spec={spec}
-        onBack={() => setScreen({ name: 'title' })}
-        onStart={() => setScreen({ name: 'play', run: startRun(spec.id) })}
-      />
+    body = (
+      <BriefingScreen spec={spec} onBack={() => setScreen({ name: 'title' })} onStart={() => play(spec.id)} />
     )
-  }
-
-  if (screen.name === 'settings')
-    return (
+  } else if (screen.name === 'settings')
+    body = (
       <SettingsScreen onBack={() => setScreen({ name: 'title' })} onLicenses={() => setScreen({ name: 'licenses' })} />
     )
-  if (screen.name === 'licenses') return <LicenseScreen onBack={() => setScreen({ name: 'settings' })} />
-
-  if (screen.name === 'ending') return <EndingScreen ending={ENDING} onDone={() => setScreen({ name: 'title' })} />
+  else if (screen.name === 'licenses') body = <LicenseScreen onBack={() => setScreen({ name: 'settings' })} />
+  else if (screen.name === 'ending') body = <EndingScreen ending={ENDING} onDone={() => setScreen({ name: 'title' })} />
+  else
+    body = (
+      <Play
+        key={screen.run.startedAt}
+        run={screen.run}
+        debug={dev.showDebug}
+        onQuit={() => setScreen({ name: 'title' })}
+        onRestart={() => play(screen.run.scenario.id)}
+        onEnding={screen.run.scenario.id === ENDING.afterMission ? () => setScreen({ name: 'ending' }) : undefined}
+      />
+    )
 
   return (
-    <Play
-      key={screen.run.startedAt}
-      run={screen.run}
-      onQuit={() => setScreen({ name: 'title' })}
-      onRestart={() => setScreen({ name: 'play', run: startRun(screen.run.scenario.id) })}
-      onEnding={screen.run.scenario.id === ENDING.afterMission ? () => setScreen({ name: 'ending' }) : undefined}
-    />
+    <>
+      {body}
+      <DevPanel
+        missions={missions}
+        screen={screen.name === 'play' ? `play:${screen.run.scenario.id}` : screen.name}
+        run={screen.name === 'play' ? screen.run : undefined}
+        onJump={(to) => setScreen({ name: to } as Screen)}
+        onBriefing={(id) => setScreen({ name: 'briefing', id })}
+        onStart={play}
+      />
+    </>
   )
 }
 
 interface PlayProps {
   run: MissionRun
+  debug: boolean
   onQuit: () => void
   onRestart: () => void
   onEnding?: () => void
 }
 
-function Play({ run, onQuit, onRestart, onEnding }: PlayProps) {
+function Play({ run, debug, onQuit, onRestart, onEnding }: PlayProps) {
   useRun(run)
   const cleared = run.status === 'cleared'
   useEffect(() => {

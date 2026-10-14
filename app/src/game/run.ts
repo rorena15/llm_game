@@ -314,6 +314,58 @@ export class MissionRun {
     return ids.every((id) => seen.has(id))
   }
 
+  // ---- 개발자 패널용 (src/ui/DevPanel.tsx). 게임 흐름에서는 부르지 않는다 ----
+
+  /** 문서 단서와 대화로 얻을 수 있는 사실(secret 제외)을 모두 카드로 */
+  devCollectAll() {
+    for (const c of this.scenario.clues) this.addCard({ id: c.id, kind: 'clue', label: c.label, text: c.text })
+    const facts = this.scenario.facts.filter((f) => f.level !== 'secret')
+    for (const f of facts) this.addCard({ id: f.id, kind: 'fact', label: f.label, text: f.text })
+    const st = this.session.state
+    this.session.state = { ...st, revealed: [...new Set([...st.revealed, ...facts.map((f) => f.id)])] }
+    this.emit()
+  }
+
+  /** 재료를 모두 모으고 추론마다 재료를 이어서, 만들 수 있는 추론을 다 만든다 */
+  devSolveBoard() {
+    this.devCollectAll()
+    let grew = true
+    while (grew) {
+      grew = false
+      for (const inf of this.scenario.inferences) {
+        if (this.hasCard(inf.id) || !inf.requires.every((r) => this.hasCard(r))) continue
+        for (let i = 1; i < inf.requires.length; i++) this.links = [...this.links, { a: inf.requires[i - 1], b: inf.requires[i] }]
+        if (this.resolveInferences().length) grew = true
+      }
+    }
+    this.emit()
+  }
+
+  devSetSuspicion(n: number) {
+    const st = this.session.state
+    const suspicion = Math.max(0, Math.min(100, n))
+    this.session.state = { ...st, suspicion, maxSuspicion: Math.max(st.maxSuspicion, suspicion) }
+    if (suspicion >= 100 && this.status === 'playing') this.fail()
+    this.emit()
+  }
+
+  devSetRapport(n: number) {
+    this.session.state = { ...this.session.state, rapport: n }
+    this.emit()
+  }
+
+  /** 맞는 비밀번호로 로그인 */
+  devClear() {
+    this.status = 'playing'
+    this.tryLogin(this.scenario.passwordValue)
+  }
+
+  devFail() {
+    if (this.status !== 'playing') return
+    this.fail()
+    this.emit()
+  }
+
   /** 등급 점수 (§6.5) */
   get score(): number {
     return score({

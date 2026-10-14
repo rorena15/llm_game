@@ -130,6 +130,20 @@ export class SaveStore {
     this.update(id, patch)
   }
 
+  /** 개발자 패널: 주어진 미션을 모두 S로 클리어한 기록 */
+  devClearAll(ids: string[]) {
+    const missions = { ...this.data.missions }
+    for (const id of ids) missions[id] = { ...this.mission(id), cleared: true, best: 'S', bestScore: 100 }
+    this.data = { ...this.data, missions }
+    this.persist()
+  }
+
+  /** 개발자 패널: 클리어 기록만 지운다 (설정은 남긴다) */
+  devResetProgress() {
+    this.data = { ...this.data, missions: {} }
+    this.persist()
+  }
+
   /** 쓰기가 다 끝날 때까지 (테스트용) */
   flush() {
     return this.writing
