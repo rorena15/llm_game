@@ -1,104 +1,11 @@
 import { useState, type ReactNode } from 'react'
-import type { ClueSpec } from '../../engine/types'
 import { normalizeUrl, useRun, type MissionRun } from '../../game/run'
 import { findPage, HOME, SHARED_SITES, URL_IN_TEXT } from '../../game/sites'
-import { ClueText } from '../ClueText'
-
-/** 사이트별 머리띠 색. 없는 도메인은 이름으로 색을 정한다 */
-const BRAND: Record<string, string> = {
-  'corpx.com': '#1d3c78',
-  'instargram.com': 'linear-gradient(90deg, #7b3fe4, #e1306c, #f77737)',
-  'hanbit-es.kr': '#2f7d4f',
-  'greenhill-cc.com': '#23422f',
-}
+import { Site } from '../sites'
+import { brand, siteTitle } from '../sites/parse'
 
 const host = (key: string) => key.split('/')[0].replace(/^www\./, '')
-
-function brand(h: string): string {
-  if (BRAND[h]) return BRAND[h]
-  let n = 0
-  for (const ch of h) n = (n * 31 + ch.charCodeAt(0)) % 360
-  return `hsl(${n} 45% 32%)`
-}
-
-/** 페이지 첫 줄이 사이트 제목 */
-const titleOf = (body: string) => body.split('\n')[0].trim()
-
-/** "이름  www.주소" 꼴의 줄 (메뉴, 돌아가기) */
-const NAV_LINE = /^(.+?)\s{2,}(www\.\S+)$/
-
-interface PageProps {
-  body: string
-  pageKey: string
-  clues: ClueSpec[]
-  run: MissionRun
-  go: (u: string) => void
-}
-
-/** 일반 텍스트 본문을 웹페이지처럼: 첫 줄은 사이트 머리, [제목]은 소제목, "- "는 목록, 메뉴 줄은 링크 */
-function SitePage({ body, pageKey, clues, run, go }: PageProps) {
-  const [head, ...lines] = body.split('\n')
-  const h = host(pageKey)
-  const text = (t: string) => (
-    <ClueText text={t} clues={clues} collected={(id) => run.hasCard(id)} onClue={(id) => run.collectClue(id)} onLink={go} />
-  )
-  const blocks: ReactNode[] = []
-  let navRun: { label: string; url: string }[] = []
-  const flushNav = () => {
-    if (!navRun.length) return
-    const items = navRun
-    blocks.push(
-      <nav key={`n${blocks.length}`} className="site-nav">
-        {items.map((l) => (
-          <button key={l.url} className="link-word" data-url={l.url} onClick={() => go(l.url)}>
-            {l.label}
-          </button>
-        ))}
-      </nav>,
-    )
-    navRun = []
-  }
-  lines.forEach((raw, i) => {
-    const line = raw.trimEnd()
-    const nav = line.match(NAV_LINE)
-    if (nav && !clues.some((c) => c.keyword && line.includes(c.keyword))) {
-      navRun.push({ label: nav[1].trim(), url: nav[2] })
-      return
-    }
-    flushNav()
-    if (!line.trim()) return
-    const sec = line.match(/^\[(.+)\]\s*(.*)$/)
-    // 바로 아래가 메뉴 줄이면 "[메뉴]" 같은 제목은 빼고 메뉴만 보인다
-    const below = lines.slice(i + 1).find((l) => l.trim())
-    if (sec && !sec[2] && below && NAV_LINE.test(below.trimEnd())) return
-    if (sec)
-      blocks.push(
-        <h3 key={i}>
-          <span className="tag">{sec[1]}</span>
-          {sec[2] && text(sec[2])}
-        </h3>,
-      )
-    else if (line.startsWith('- '))
-      blocks.push(
-        <p key={i} className="li">
-          {text(line.slice(2))}
-        </p>,
-      )
-    else blocks.push(<p key={i}>{text(line)}</p>)
-  })
-  flushNav()
-
-  return (
-    <article className="site">
-      <header className="site-head" style={{ background: brand(h) }}>
-        <b>{text(head)}</b>
-        <small>{h}</small>
-      </header>
-      <div className="site-body">{blocks}</div>
-      <footer className="site-foot">© 2024 {h}. All rights reserved.</footer>
-    </article>
-  )
-}
+const path = (key: string) => key.split('/').slice(1).join('/')
 
 export function BrowserApp({ run }: { run: MissionRun }) {
   useRun(run)
@@ -109,6 +16,8 @@ export function BrowserApp({ run }: { run: MissionRun }) {
   const url = draft.for === current ? draft.text : (current ?? '')
   const [showHistory, setShowHistory] = useState(false)
   const [hover, setHover] = useState<string | null>(null)
+  // 페이지가 스크롤과 상관없이 보이는 영역 위에 띄울 것 (스토리 보기 등)
+  const [layer, setLayer] = useState<HTMLDivElement | null>(null)
 
   const sites = run.scenario.websites
   const page = current ? findPage(sites, current) : null
@@ -126,7 +35,7 @@ export function BrowserApp({ run }: { run: MissionRun }) {
     : current === null
       ? '새 탭'
       : page
-        ? titleOf(page.body)
+        ? siteTitle(host(normalizeUrl(page.key)), page.body, path(normalizeUrl(page.key)))
         : knownHosts.has(host(current))
           ? '404 Not Found'
           : '사이트에 연결할 수 없음'
@@ -143,7 +52,7 @@ export function BrowserApp({ run }: { run: MissionRun }) {
             return (
               <li key={u}>
                 <button className="link-word" data-url={u} onClick={() => go(u)}>
-                  {p ? titleOf(p.body) : u}
+                  {p ? siteTitle(host(normalizeUrl(p.key)), p.body, path(normalizeUrl(p.key))) : u}
                 </button>
                 <small>{u}</small>
               </li>
@@ -184,12 +93,16 @@ export function BrowserApp({ run }: { run: MissionRun }) {
     )
   } else if (page)
     content = (
-      <SitePage
+      <Site
         key={current}
+        pageKey={normalizeUrl(page.key)}
+        host={host(normalizeUrl(page.key))}
+        path={path(normalizeUrl(page.key))}
         body={page.body}
-        pageKey={page.key}
         run={run}
         go={go}
+        find={(u) => findPage(sites, u)?.body ?? null}
+        layer={layer}
         clues={run.scenario.clues.filter((c) => normalizeUrl(c.source.replace(/^web:/, '')) === normalizeUrl(page.key))}
       />
     )
@@ -279,17 +192,20 @@ export function BrowserApp({ run }: { run: MissionRun }) {
         </button>
       </form>
       {current && !showHistory && <div key={`${current}#${index}`} className="loadbar" />}
-      <div
-        className="page"
-        onMouseOver={(e) => {
-          const b = (e.target as HTMLElement).closest<HTMLElement>('[data-url], .link-word')
-          setHover(b ? (b.dataset.url ?? b.textContent?.match(URL_IN_TEXT)?.[0] ?? null) : null)
-        }}
-        onMouseLeave={() => setHover(null)}
-      >
-        <div key={`${current}#${showHistory}`} className="page-in">
-          {content}
+      <div className="page-wrap">
+        <div
+          className="page"
+          onMouseOver={(e) => {
+            const b = (e.target as HTMLElement).closest<HTMLElement>('[data-url], .link-word')
+            setHover(b ? (b.dataset.url ?? b.textContent?.match(URL_IN_TEXT)?.[0] ?? null) : null)
+          }}
+          onMouseLeave={() => setHover(null)}
+        >
+          <div key={`${current}#${showHistory}`} className="page-in">
+            {content}
+          </div>
         </div>
+        <div className="page-layer" ref={setLayer} />
       </div>
       {hover && <div className="statusbar">https://{hover}</div>}
     </div>

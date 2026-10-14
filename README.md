@@ -20,6 +20,7 @@ app/                 게임 (Tauri + React + TS)
   src/engine/        NPC 엔진. UI에 의존하지 않는 순수 TS (판정 → 수치표 → 대사 → 검사)
   src/game/          미션 한 판의 상태(MissionRun), 시나리오·모델 연결
   src/ui/            데스크톱, 창, 앱 화면
+  src/ui/sites/      브라우저 속 사이트 틀 (회사·SNS·학교·골프장, 그 밖은 기본 틀)
   scenarios/         미션 데이터 (JSON, 변형 포함)
   story/             엔딩 문구(ending.json), 모든 미션 공통 웹페이지(sites.json)
   eval/convos/       모델 평가용 대화 세트
@@ -89,6 +90,8 @@ ollama create se-kanana-8b -f Modelfile.kanana-8b
 - 미션마다 변형 3개 (값만 바뀌고 구조는 같음). 실패 후 "완전 초기화"하면 다른 변형으로 바뀐다.
 
 작성 뒤 `npm run validate`로 검사합니다.
+
+웹페이지 본문(`websites`, `app/story/sites.json`)은 일반 텍스트로 씁니다. 첫 줄은 사이트 제목, `[제목]`은 소제목, `- `는 목록, `이름  www.주소`(두 칸 띄움)는 메뉴 줄, 세 칸 이상 띄운 줄은 표의 한 줄로 그려집니다. 도메인에 맞는 틀이 `app/src/ui/sites/`에 있으면 그 사이트 모양으로 보이고, 없으면 기본 틀로 보입니다. 틀을 고치면 `npm test`가 모든 미션·변형에서 단서 낱말과 본문 속 주소가 눌리는지 확인합니다.
 
 이야기 문구(미션 앞 의뢰 메일, 클리어 후 기밀 문서, 엔딩)는 모두 [docs/이야기.md](docs/이야기.md)의 "7. 원고"에 씁니다. 고친 뒤 `app/`에서 `npm run story`를 실행하면 시나리오 파일의 `request`·`secretDocuments`와 `app/story/ending.json`에 들어갑니다. 아직 쓰지 않은 칸에는 "(작성 예정)"이 들어 있습니다.
 

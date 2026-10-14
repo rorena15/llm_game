@@ -16,7 +16,7 @@ type AppId = 'messenger' | 'email' | 'browser' | 'board' | 'server'
 const APPS: Record<AppId, { title: string; icon: string; w: number; h: number; at: WinPos }> = {
   email: { title: '메일', icon: '✉', w: 780, h: 440, at: { x: 130, y: 40 } },
   messenger: { title: '사내 메신저', icon: '💬', w: 460, h: 560, at: { x: 520, y: 70 } },
-  browser: { title: '브라우저', icon: '🌐', w: 620, h: 440, at: { x: 180, y: 110 } },
+  browser: { title: '브라우저', icon: '🌐', w: 760, h: 500, at: { x: 170, y: 70 } },
   board: { title: '수사보드', icon: '📌', w: 640, h: 460, at: { x: 220, y: 90 } },
   server: { title: '사내망 접속', icon: '🖥', w: 420, h: 320, at: { x: 600, y: 160 } },
 }
