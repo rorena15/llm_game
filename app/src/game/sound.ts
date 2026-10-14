@@ -4,26 +4,55 @@ import { save } from './save'
 
 export type Sfx = 'key' | 'notice' | 'clue' | 'inference' | 'error' | 'granted' | 'alarm'
 
-const MASTER = 0.5
+/** 볼륨 종류. 전체가 나머지 셋에 곱해진다 */
+export type VolumeKind = 'master' | 'bgm' | 'sfx' | 'key'
+export const VOLUMES: { id: VolumeKind; label: string; fallback: number }[] = [
+  { id: 'master', label: '전체', fallback: 80 },
+  { id: 'bgm', label: '배경음', fallback: 70 },
+  { id: 'sfx', label: '효과음', fallback: 80 },
+  { id: 'key', label: '타자음', fallback: 60 },
+]
+
+/** 볼륨 100일 때 실제 크기 */
+const SCALE: Record<VolumeKind, number> = { master: 0.6, bgm: 1, sfx: 1, key: 1 }
 const BGM_GAIN = 0.05
 
 let ctx: AudioContext | null = null
-let master: GainNode | null = null
+let buses: Record<VolumeKind, GainNode> | null = null
 let bgm: { stop: () => void } | null = null
 let wantBgm = false
 
+/** 음소거 (작업 표시줄 단추). 볼륨 값은 그대로 둔다 */
 export const soundOn = () => save.data.settings.sound !== false
+
+/** 0~100 */
+export function volume(kind: VolumeKind): number {
+  const v = save.data.settings[`vol_${kind}`]
+  return typeof v === 'number' ? v : VOLUMES.find((x) => x.id === kind)!.fallback
+}
+
+const gainOf = (kind: VolumeKind) => (kind === 'master' && !soundOn() ? 0 : (volume(kind) / 100) * SCALE[kind])
 
 function audio(): AudioContext | null {
   if (typeof window === 'undefined' || !('AudioContext' in window)) return null
   if (!ctx) {
     ctx = new AudioContext()
-    master = ctx.createGain()
-    master.gain.value = soundOn() ? MASTER : 0
-    master.connect(ctx.destination)
+    const c = ctx
+    const make = (kind: VolumeKind) => {
+      const g = c.createGain()
+      g.gain.value = gainOf(kind)
+      return g
+    }
+    buses = { master: make('master'), bgm: make('bgm'), sfx: make('sfx'), key: make('key') }
+    buses.master.connect(c.destination)
+    ;[buses.bgm, buses.sfx, buses.key].forEach((b) => b.connect(buses!.master))
   }
   if (ctx.state === 'suspended') void ctx.resume()
   return ctx
+}
+
+function applyGain(kind: VolumeKind) {
+  if (buses && ctx) buses[kind].gain.setTargetAtTime(gainOf(kind), ctx.currentTime, 0.05)
 }
 
 /** 첫 사용자 입력에 AudioContext를 깨우고, 기다리던 배경음을 튼다 */
@@ -40,11 +69,17 @@ export function unlockAudio() {
 
 export function setSoundOn(on: boolean) {
   save.setSetting('sound', on)
-  if (master && ctx) master.gain.setTargetAtTime(on ? MASTER : 0, ctx.currentTime, 0.05)
+  applyGain('master')
+}
+
+export function setVolume(kind: VolumeKind, v: number) {
+  save.setSetting(`vol_${kind}`, Math.max(0, Math.min(100, Math.round(v))))
+  applyGain(kind)
 }
 
 /** 짧은 음 하나: 주파수, 시작(초), 길이(초), 파형, 크기 */
 function tone(c: AudioContext, freq: number, at: number, dur: number, type: OscillatorType, vol: number, slideTo?: number) {
+  const out = buses!.sfx
   const o = c.createOscillator()
   const g = c.createGain()
   const t = c.currentTime + at
@@ -54,7 +89,7 @@ function tone(c: AudioContext, freq: number, at: number, dur: number, type: Osci
   g.gain.setValueAtTime(0, t)
   g.gain.linearRampToValueAtTime(vol, t + 0.008)
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur)
-  o.connect(g).connect(master!)
+  o.connect(g).connect(out)
   o.start(t)
   o.stop(t + dur + 0.02)
 }
@@ -72,14 +107,15 @@ function tick(c: AudioContext, vol: number) {
   f.type = 'bandpass'
   f.frequency.value = 2500 + Math.random() * 1500
   g.gain.value = vol
-  src.connect(f).connect(g).connect(master!)
+  src.connect(f).connect(g).connect(buses!.key)
   src.start()
 }
 
 export function play(s: Sfx) {
   if (!soundOn()) return
   const c = audio()
-  if (!c || !master || c.state !== 'running') return
+  if (!c || !buses || c.state !== 'running') return
+  if (s !== 'key' && volume('sfx') === 0) return
   switch (s) {
     case 'key':
       return tick(c, 0.35)
@@ -108,11 +144,11 @@ export function play(s: Sfx) {
 export function startBgm() {
   wantBgm = true
   const c = audio()
-  if (!c || !master || bgm || c.state !== 'running') return
+  if (!c || !buses || bgm || c.state !== 'running') return
   const out = c.createGain()
   out.gain.setValueAtTime(0, c.currentTime)
   out.gain.linearRampToValueAtTime(BGM_GAIN, c.currentTime + 3)
-  out.connect(master)
+  out.connect(buses.bgm)
 
   const lp = c.createBiquadFilter()
   lp.type = 'lowpass'

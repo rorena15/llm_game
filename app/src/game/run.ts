@@ -23,6 +23,8 @@ export interface ChatMsg {
   id: number
   from: 'player' | 'npc' | 'system'
   text: string
+  /** 보낸 시각 (메신저의 시간 표시) */
+  at: number
   clues?: FactSpec[]
   /** 개발용 판정 요약 */
   debug?: string
@@ -172,8 +174,8 @@ export class MissionRun {
     if (this.addCard({ id: f.id, kind: 'fact', label: f.label, text: f.text })) this.emit()
   }
 
-  private push(m: Omit<ChatMsg, 'id'>) {
-    const msg = { ...m, id: this.nextMsg++ }
+  private push(m: Omit<ChatMsg, 'id' | 'at'>) {
+    const msg = { ...m, id: this.nextMsg++, at: Date.now() }
     this.chat = [...this.chat, msg]
     return msg
   }

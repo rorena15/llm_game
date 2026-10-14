@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ALARM_AT } from '../engine/rules'
 import { useRun, type MissionRun, type Notice } from '../game/run'
 import { useSave } from '../game/save'
-import { play, setSoundOn, soundOn, startBgm, stopBgm, type Sfx } from '../game/sound'
+import { play, setSoundOn, soundOn, startBgm, stopBgm, VOLUMES, type Sfx } from '../game/sound'
+import { Volume } from './Settings'
 import { BoardApp } from './apps/BoardApp'
 import { BrowserApp } from './apps/BrowserApp'
 import { EmailApp } from './apps/EmailApp'
@@ -48,6 +49,7 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
   useRun(run)
   const [wins, setWins] = useState<OpenWin[]>([{ id: 'email', pos: APPS.email.at, z: 1 }])
   const [now, setNow] = useState(() => new Date())
+  const [volOpen, setVolOpen] = useState(false)
   // 경계가 오르면 막대를 잠깐 흔든다
   const [prevS, setPrevS] = useState(run.suspicion)
   const [bump, setBump] = useState(false)
@@ -158,13 +160,28 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
             <div className="fill" style={{ width: `${s}%` }} />
           </div>
         </div>
-        <button
-          className="sound-toggle"
-          title={soundOn() ? '소리 끄기' : '소리 켜기'}
-          onClick={() => setSoundOn(!soundOn())}
-        >
-          {soundOn() ? '🔊' : '🔇'}
-        </button>
+        <div className="tray-sound">
+          <button
+            className={`sound-toggle${volOpen ? ' on' : ''}`}
+            title="볼륨"
+            onClick={() => setVolOpen((v) => !v)}
+          >
+            {soundOn() ? '🔊' : '🔇'}
+          </button>
+          {volOpen && (
+            <div className="volume-pop">
+              <label className="mute">
+                <input type="checkbox" checked={!soundOn()} onChange={(e) => setSoundOn(!e.target.checked)} />
+                음소거
+              </label>
+              <div className={`volumes${soundOn() ? '' : ' muted'}`}>
+                {VOLUMES.map((v) => (
+                  <Volume key={v.id} kind={v.id} label={v.label} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
         <time>{now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</time>
       </footer>
 

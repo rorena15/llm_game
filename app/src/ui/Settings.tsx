@@ -4,7 +4,7 @@ import { appLogDir } from '@tauri-apps/api/path'
 import { useEffect, useState } from 'react'
 import { useSave } from '../game/save'
 import { MODELS, modelId, setSetting, TEXT_SIZES, TEXT_SPEEDS, textSize, textSpeed } from '../game/settings'
-import { setSoundOn, soundOn } from '../game/sound'
+import { play, setSoundOn, setVolume, soundOn, volume, VOLUMES, type VolumeKind } from '../game/sound'
 import { APP_VERSION } from '../game/version'
 import { HealthBanner } from './Screens'
 
@@ -25,6 +25,29 @@ function Choice<T extends { id: string; label: string }>({
         </button>
       ))}
     </div>
+  )
+}
+
+/** 미리 듣기 소리. 배경음은 미션 중에만 나와서 효과음으로 대신 들려준다 */
+const PREVIEW: Record<VolumeKind, Parameters<typeof play>[0]> = { master: 'notice', bgm: 'notice', sfx: 'clue', key: 'key' }
+
+export function Volume({ kind, label }: { kind: VolumeKind; label: string }) {
+  const v = volume(kind)
+  return (
+    <label className="volume">
+      <span>{label}</span>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        step={5}
+        value={v}
+        onChange={(e) => setVolume(kind, Number(e.target.value))}
+        onPointerUp={() => kind !== 'bgm' && play(PREVIEW[kind])}
+        onKeyUp={() => kind !== 'bgm' && play(PREVIEW[kind])}
+      />
+      <output>{v}</output>
+    </label>
   )
 }
 
@@ -60,11 +83,16 @@ export function SettingsScreen({ onBack, onLicenses }: { onBack: () => void; onL
             <Choice
               options={[
                 { id: 'on', label: '켜기' },
-                { id: 'off', label: '끄기' },
+                { id: 'off', label: '음소거' },
               ]}
               value={soundOn() ? 'on' : 'off'}
               onPick={(id) => setSoundOn(id === 'on')}
             />
+            <div className={`volumes${soundOn() ? '' : ' muted'}`}>
+              {VOLUMES.map((v) => (
+                <Volume key={v.id} kind={v.id} label={v.label} />
+              ))}
+            </div>
           </dd>
           <dt>문제 신고</dt>
           <dd>
