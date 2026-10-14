@@ -1,24 +1,25 @@
 // 설정 ({pack}): 값은 진행 저장의 settings에 둔다. 기본값과 화면에 적용하는 일만 여기서
+import { applyLang } from '../i18n'
 import { checkHealth } from './health'
 import { save } from './save'
 import { llm } from './scenarios'
 
 export const MODELS = [
-  { id: 'se-kanana-8b', label: '고품질 (8B)', note: 'VRAM 6GB 이상 권장' },
-  { id: 'se-kanana-2.1b', label: '가벼움 (2.1B)', note: '그 외 PC, CPU 포함' },
+  { id: 'se-kanana-8b' },
+  { id: 'se-kanana-2.1b' },
 ] as const
 
 export const TEXT_SPEEDS = [
-  { id: 'slow', label: '느리게', ms: 45 },
-  { id: 'normal', label: '보통', ms: 28 },
-  { id: 'fast', label: '빠르게', ms: 12 },
-  { id: 'instant', label: '바로', ms: 0 },
+  { id: 'slow', ms: 45 },
+  { id: 'normal', ms: 28 },
+  { id: 'fast', ms: 12 },
+  { id: 'instant', ms: 0 },
 ] as const
 
 export const TEXT_SIZES = [
-  { id: 'small', label: '작게', zoom: 0.9 },
-  { id: 'normal', label: '보통', zoom: 1 },
-  { id: 'large', label: '크게', zoom: 1.15 },
+  { id: 'small', zoom: 0.9 },
+  { id: 'normal', zoom: 1 },
+  { id: 'large', zoom: 1.15 },
 ] as const
 
 const get = (key: string, fallback: string) => {
@@ -40,6 +41,7 @@ export function applyTextSize() {
 
 /** 저장된 설정을 화면과 모델 연결에 적용한다 (시작할 때 한 번) */
 export function applySettings() {
+  applyLang()
   applyTextSize()
   llm.setModel(modelId())
 }

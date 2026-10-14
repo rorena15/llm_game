@@ -8,6 +8,7 @@ import type { FactSpec, InferenceSpec, Scenario, TurnResult } from '../engine/ty
 import { gradeOf, score, type Grade } from './grade'
 import { checkHealth } from './health'
 import { logError } from './log'
+import { msg } from '../i18n'
 
 export const LOGIN_FAIL_SUSPICION = 10
 
@@ -106,7 +107,8 @@ export class MissionRun {
     if (this.hasCard(card.id)) return false
     this.cards = [...this.cards, card]
     this.unseen++
-    const title = card.kind === 'clue' ? '단서 수집' : card.kind === 'fact' ? '대화에서 단서 발견' : '추론 완성'
+    const g = msg().game
+    const title = card.kind === 'clue' ? g.noticeClue : card.kind === 'fact' ? g.noticeFact : g.noticeInference
     this.notify(card.kind, title, card.label)
     return true
   }
@@ -192,7 +194,7 @@ export class MissionRun {
       const before = this.suspicion
       const r = await this.session.turn(text, { leverageCards })
       if (before < ALARM_AT && r.state.suspicion >= ALARM_AT && !r.gameOver)
-        this.notify('warn', '경계 위험', `${this.scenario.npc.name}이(가) 의심하기 시작했습니다`)
+        this.notify('warn', msg().game.noticeWarnTitle, msg().game.noticeSuspicious(this.scenario.npc.name))
       const j = r.judgment
       this.push({
         from: 'npc',
@@ -210,7 +212,7 @@ export class MissionRun {
       logError('turn', e)
       void checkHealth()
       // 실패한 턴은 모델 쪽 대화 기록(session.history)에 남지 않으니 다시 보내면 된다
-      this.push({ from: 'system', text: '대화 모델이 응답하지 않습니다. 잠시 뒤 다시 보내 주세요.' })
+      this.push({ from: 'system', text: msg().game.chatModelDown })
       return null
     } finally {
       this.busy = false
@@ -228,7 +230,7 @@ export class MissionRun {
       return true
     }
     this.loginFails++
-    this.notify('warn', '접속 거부', `보안 경계 +${LOGIN_FAIL_SUSPICION}`)
+    this.notify('warn', msg().game.noticeLoginDenied, msg().game.noticeAlertUp(LOGIN_FAIL_SUSPICION))
     if (this.session.penalize(LOGIN_FAIL_SUSPICION)) this.fail()
     this.emit()
     return false
@@ -236,7 +238,7 @@ export class MissionRun {
 
   private fail() {
     this.status = 'failed'
-    this.push({ from: 'system', text: '[보안 경보] 수상한 접근이 감지되어 접속이 차단되었습니다.' })
+    this.push({ from: 'system', text: msg().game.chatSecurityAlarm })
   }
 
   /** 단서는 그대로 두고 대화·의심·친밀만 처음으로 (§6.4 "이어서 다시") */
@@ -290,7 +292,7 @@ export class MissionRun {
         // 새 추론 카드를 재료와 이어 둔다 (보드에 선으로 보이게)
         for (const r of inf.requires) this.links = [...this.links, { a: r, b: inf.id }]
         made.push(inf)
-        if (inf.unlocks?.length) this.notify('hint', '로그인 힌트 열림', '사내망 접속 화면에서 확인하세요')
+        if (inf.unlocks?.length) this.notify('hint', msg().game.noticeHintTitle, msg().game.noticeHintText)
         grew = true
       }
     }

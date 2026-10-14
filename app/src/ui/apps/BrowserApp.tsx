@@ -1,16 +1,18 @@
 import { useState, type ReactNode } from 'react'
 import { normalizeUrl, useRun, type MissionRun } from '../../game/run'
 import { findPage, HOME, SHARED_SITES, URL_IN_TEXT } from '../../game/sites'
+import { useT } from '../../i18n'
 import { Site } from '../sites'
 import { brand, siteTitle } from '../sites/parse'
 import { SearchSite } from '../sites/SearchSite'
-import { isSearchHost, looksLikeUrl, parseSearch, SEARCH_HOME, SEARCH_NAME, searchUrl } from '../sites/search'
+import { isSearchHost, looksLikeUrl, parseSearch, SEARCH_HOME, searchName, searchUrl } from '../sites/search'
 
 const host = (key: string) => key.split('/')[0].replace(/^www\./, '')
 const path = (key: string) => key.split('/').slice(1).join('/')
 
 export function BrowserApp({ run }: { run: MissionRun }) {
   useRun(run)
+  const t = useT().apps.browser
   const { history, index } = run.browser
   const current = index >= 0 ? history[index] : null
   // 주소창은 이동할 때마다 지금 주소로 맞추고, 그 사이에는 플레이어가 고친다
@@ -40,30 +42,30 @@ export function BrowserApp({ run }: { run: MissionRun }) {
   const query = current ? parseSearch(current) : null
   const label = (u: string) => {
     const q = parseSearch(u)
-    if (q !== null) return `${q} - ${SEARCH_NAME} 검색`
-    if (isSearchHost(u)) return SEARCH_NAME
+    if (q !== null) return t.searchTitle(q, searchName())
+    if (isSearchHost(u)) return searchName()
     const p = findPage(sites, u)
     return p ? siteTitle(host(normalizeUrl(p.key)), p.body, path(normalizeUrl(p.key))) : u
   }
 
   const tabTitle = showHistory
-    ? '방문 기록'
+    ? t.history
     : current === null
-      ? '새 탭'
+      ? t.newTab
       : onSearch
         ? label(current)
         : page
         ? siteTitle(host(normalizeUrl(page.key)), page.body, path(normalizeUrl(page.key)))
         : knownHosts.has(host(current))
-          ? '404 Not Found'
-          : '사이트에 연결할 수 없음'
+          ? t.notFoundTitle
+          : t.unreachable
   const tabHost = showHistory || current === null ? null : host(current)
 
   let content: ReactNode
   if (showHistory)
     content = (
       <div className="newtab history">
-        <h2>방문 기록</h2>
+        <h2>{t.history}</h2>
         <ul>
           {visited.map((u) => {
             return (
@@ -84,7 +86,7 @@ export function BrowserApp({ run }: { run: MissionRun }) {
       <div className="newtab">
         <span className="nb-logo big">
           <i>🧭</i>
-          {SEARCH_NAME}
+          {searchName()}
         </span>
         <form
           className="search"
@@ -96,7 +98,7 @@ export function BrowserApp({ run }: { run: MissionRun }) {
           <input
             value={url}
             onChange={(e) => setDraft({ for: current, text: e.target.value })}
-            placeholder="나침반 검색 또는 주소 입력"
+            placeholder={t.newTabPlaceholder}
             spellCheck={false}
           />
         </form>
@@ -133,10 +135,10 @@ export function BrowserApp({ run }: { run: MissionRun }) {
     content = (
       <div className="site-404">
         <h1>404</h1>
-        <p>요청하신 페이지를 찾을 수 없습니다.</p>
+        <p>{t.notFoundText}</p>
         <small>{current}</small>
         <button className="link-word" onClick={() => go(host(current) === host(HOME) ? HOME : `www.${host(current)}`)}>
-          첫 화면으로
+          {t.toHome}
         </button>
       </div>
     )
@@ -144,13 +146,15 @@ export function BrowserApp({ run }: { run: MissionRun }) {
     content = (
       <div className="neterr">
         <div className="neterr-icon">☹</div>
-        <h2>사이트에 연결할 수 없음</h2>
+        <h2>{t.unreachable}</h2>
         <p>
-          <b>{host(current)}</b>의 서버 IP 주소를 찾을 수 없습니다.
+          {t.dnsPre}
+          <b>{host(current)}</b>
+          {t.dnsPost}
         </p>
         <ul>
-          <li>주소에 오타가 있는지 확인하세요.</li>
-          <li>방문 기록에서 전에 열었던 주소를 찾아보세요.</li>
+          <li>{t.tipTypo}</li>
+          <li>{t.tipHistory}</li>
         </ul>
         <code>ERR_NAME_NOT_RESOLVED</code>
       </div>
@@ -177,37 +181,37 @@ export function BrowserApp({ run }: { run: MissionRun }) {
           go(url)
         }}
       >
-        <button type="button" className="nav" title="뒤로" disabled={index <= 0} onClick={() => run.goBack()}>
+        <button type="button" className="nav" title={t.back} disabled={index <= 0} onClick={() => run.goBack()}>
           ←
         </button>
         <button
           type="button"
           className="nav"
-          title="앞으로"
+          title={t.forward}
           disabled={index >= history.length - 1}
           onClick={() => run.goForward()}
         >
           →
         </button>
-        <button type="button" className="nav" title="홈" onClick={() => go(HOME)}>
+        <button type="button" className="nav" title={t.home} onClick={() => go(HOME)}>
           ⌂
         </button>
         <div className="omnibox">
-          <span className="lock" title={current ? '보안 연결' : undefined}>
+          <span className="lock" title={current ? t.secure : undefined}>
             {current && (page || onSearch) ? '🔒' : current ? 'ⓘ' : '🔍'}
           </span>
           <input
             value={url}
             onChange={(e) => setDraft({ for: current, text: e.target.value })}
             onFocus={(e) => e.currentTarget.select()}
-            placeholder="검색어 또는 주소 입력"
+            placeholder={t.urlPlaceholder}
             spellCheck={false}
           />
         </div>
         <button
           type="button"
           className={`nav${showHistory ? ' on' : ''}`}
-          title="방문 기록"
+          title={t.history}
           disabled={!visited.length}
           onClick={() => setShowHistory((v) => !v)}
         >

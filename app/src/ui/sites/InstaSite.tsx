@@ -1,6 +1,7 @@
 // SNS 프로필 (instargram): 프로필 머리, 하이라이트 동그라미와 스토리 보기, 게시물 격자
 import { useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { useT } from '../../i18n'
 import { T } from './common'
 import { firstEmoji, sections, seeded, type SiteProps } from './parse'
 
@@ -13,9 +14,8 @@ const GRADIENTS = [
   'linear-gradient(135deg, #fddb92, #d1fdff)',
 ]
 
-const count = (n: number) => (n >= 10000 ? `${(n / 10000).toFixed(1)}만` : n.toLocaleString('ko-KR'))
-
 export function InstaSite(p: SiteProps) {
+  const t = useT().sites.insta
   const { parts } = sections(p.body)
   const intro = parts.find((s) => s.tag === null)?.lines ?? []
   const handleLine = intro.find((l) => l.trim().startsWith('@'))
@@ -45,7 +45,7 @@ export function InstaSite(p: SiteProps) {
     <article className="s-insta">
       <header className="ig-top">
         <span className="ig-logo">Instargram</span>
-        <span className="ig-search">🔍 검색</span>
+        <span className="ig-search">🔍 {t.search}</span>
         <span className="ig-icons">⌂ ✈ ♡</span>
       </header>
 
@@ -57,19 +57,19 @@ export function InstaSite(p: SiteProps) {
           <div className="ig-name">
             <b>{handle}</b>
             <button className={`ig-btn${following ? '' : ' primary'}`} onClick={() => setFollowing((f) => !f)}>
-              {following ? '팔로잉' : '팔로우'}
+              {following ? t.followingBtn : t.follow}
             </button>
-            <button className="ig-btn">메시지</button>
+            <button className="ig-btn">{t.message}</button>
           </div>
           <ul className="ig-stats">
             <li>
-              게시물 <b>{posts.length}</b>
+              {t.posts} <b>{posts.length}</b>
             </li>
             <li>
-              팔로워 <b>{count(followers)}</b>
+              {t.followers} <b>{t.count(followers)}</b>
             </li>
             <li>
-              팔로우 <b>{count(followingN)}</b>
+              {t.following} <b>{t.count(followingN)}</b>
             </li>
           </ul>
           <div className="ig-bio">
@@ -88,7 +88,7 @@ export function InstaSite(p: SiteProps) {
             <div key={h} className="ig-hl">
               <button
                 className="ig-avatar small"
-                title={stories[h] ? '스토리 보기' : h}
+                title={stories[h] ? t.viewStory : h}
                 onClick={() => stories[h] && setOpen(h)}
                 style={{ background: GRADIENTS[i % GRADIENTS.length] }}
               >
@@ -103,9 +103,9 @@ export function InstaSite(p: SiteProps) {
       )}
 
       <div className="ig-tabs">
-        <span className="on">▦ 게시물</span>
-        <span>▶ 릴스</span>
-        <span>◫ 태그됨</span>
+        <span className="on">▦ {t.tabPosts}</span>
+        <span>▶ {t.reels}</span>
+        <span>◫ {t.tagged}</span>
       </div>
       <section className="ig-grid">
         {posts.map((l, i) => {
@@ -155,7 +155,7 @@ export function InstaSite(p: SiteProps) {
               <small>
                 <T p={p} text={open} />
               </small>
-              <button onClick={() => setOpen(null)} aria-label="닫기">
+              <button onClick={() => setOpen(null)} aria-label={t.close}>
                 ×
               </button>
             </div>

@@ -1,0 +1,61 @@
+// UI strings (English): screens. Same shape as ../ko/screens.ts
+import type { screens as Ko } from '../ko/screens'
+
+export const screens: typeof Ko = {
+  title: {
+    newVersion: (v: string) => `Version ${v} is out. Get it from the itch.io page.`,
+    tagline: 'A few words open any door',
+    locked: 'Locked: finish the previous mission',
+    tutorial: 'Tutorial',
+    settings: 'Settings',
+  },
+  briefing: {
+    start: 'Begin operation',
+  },
+  result: {
+    points: (n: number) => `${n} pts`,
+    time: 'Time',
+    minutes: (n: number) => `${n} min`,
+    turns: 'Messages',
+    turnsValue: (n: number) => `${n}`,
+    maxSuspicion: 'Peak suspicion',
+    loginFails: 'Failed logins',
+    wrongLinks: 'Wrong links',
+    retries: 'Retries',
+    times: (n: number) => `${n}`,
+    newMail: 'Check new mail',
+  },
+  settings: {
+    title: 'Settings',
+    model: 'Dialogue model',
+    models: {
+      'se-kanana-8b': { label: 'High quality (8B)', note: '6 GB VRAM or more recommended' },
+      'se-kanana-2.1b': { label: 'Light (2.1B)', note: 'For other PCs, including CPU-only' },
+    },
+    speed: 'Text speed',
+    speeds: { slow: 'Slow', normal: 'Normal', fast: 'Fast', instant: 'Instant' },
+    size: 'Text size',
+    sizes: { small: 'Small', normal: 'Normal', large: 'Large' },
+    sound: 'Sound',
+    soundOn: 'On',
+    soundOff: 'Mute',
+    volumes: { master: 'Master', bgm: 'Music', sfx: 'Effects', key: 'Typing' },
+    report: 'Report a problem',
+    reportBody:
+      'If the game freezes or acts strangely, let us know in the comments on the itch.io game page. Attaching the error log file (game.log) helps a lot in finding the cause.',
+    licenses: 'Licenses',
+  },
+  licenses: {
+    title: 'Licenses',
+    intro: 'This game uses the components below. Select a name to see the full license text.',
+    readFail: 'Could not read the license file.',
+    tauri: 'MIT License or Apache License 2.0',
+  },
+  ending: {
+    newMail: '1 new mail',
+    next: 'Continue',
+    thanks: 'Thank you for playing.',
+    toTitle: 'Back to title',
+    from: (sender: string) => `From: ${sender}`,
+  },
+}

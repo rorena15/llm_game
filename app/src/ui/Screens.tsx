@@ -4,7 +4,8 @@ import { useSave } from '../game/save'
 import { useEffect } from 'react'
 import { play } from '../game/sound'
 import { APP_VERSION, useNewVersion } from '../game/version'
-import { checkHealth, HEALTH_TEXT, useHealth } from '../game/health'
+import { checkHealth, useHealth } from '../game/health'
+import { useT } from '../i18n'
 import { MailCard } from './Ending'
 
 const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n))
@@ -20,14 +21,15 @@ interface TitleProps {
 /** 미션은 난이도 순. 앞 미션을 깨야 다음이 열린다 (§2) */
 export function TitleScreen({ missions, unlockAll, onPick, onSettings }: TitleProps) {
   const save = useSave()
+  const t = useT()
   const latest = useNewVersion()
   return (
     <div className="screen title">
-      {latest && <p className="banner-info">새 버전 {latest}이 나왔습니다. itch.io 페이지에서 받을 수 있습니다.</p>}
+      {latest && <p className="banner-info">{t.screens.title.newVersion(latest)}</p>}
       <h1>
         SOCIAL<span>_</span>ENGINEER
       </h1>
-      <p className="sub">말 몇 마디로 열리는 문</p>
+      <p className="sub">{t.screens.title.tagline}</p>
       <ul className="missions">
         {missions.map((m, i) => {
           const rec = save.mission(m.id)
@@ -35,9 +37,9 @@ export function TitleScreen({ missions, unlockAll, onPick, onSettings }: TitlePr
           return (
             <li key={m.id}>
               <button onClick={() => onPick(m.id)} disabled={!open} className={rec.cleared ? 'cleared' : ''}>
-                <b>{open ? m.title : '잠김: 앞 미션을 완료하세요'}</b>
+                <b>{open ? m.title : t.screens.title.locked}</b>
                 <span>
-                  {m.difficulty > 0 ? stars(m.difficulty) : '튜토리얼'}
+                  {m.difficulty > 0 ? stars(m.difficulty) : t.screens.title.tutorial}
                   {rec.best && <em className={`grade g${rec.best}`}>{rec.best}</em>}
                 </span>
               </button>
@@ -46,7 +48,7 @@ export function TitleScreen({ missions, unlockAll, onPick, onSettings }: TitlePr
         })}
       </ul>
       <button className="ghost title-settings" onClick={onSettings}>
-        설정
+        {t.screens.title.settings}
       </button>
       <small className="version">v{APP_VERSION}</small>
     </div>
@@ -54,6 +56,7 @@ export function TitleScreen({ missions, unlockAll, onPick, onSettings }: TitlePr
 }
 
 export function BriefingScreen({ spec, onStart, onBack }: { spec: ScenarioSpec; onStart: () => void; onBack: () => void }) {
+  const t = useT()
   return (
     <div className="screen briefing">
       <div className="dialog">
@@ -62,9 +65,9 @@ export function BriefingScreen({ spec, onStart, onBack }: { spec: ScenarioSpec; 
         <h2>{spec.title}</h2>
         <pre>{spec.briefing}</pre>
         <div className="actions">
-          <button onClick={onStart}>작전 시작</button>
+          <button onClick={onStart}>{t.screens.briefing.start}</button>
           <button className="ghost" onClick={onBack}>
-            돌아가기
+            {t.common.back}
           </button>
         </div>
       </div>
@@ -80,6 +83,8 @@ interface ResultProps {
 }
 
 export function ResultScreen({ run, onBack, onEnding }: ResultProps) {
+  const t = useT()
+  const r = t.screens.result
   const sc = run.scenario
   const mins = Math.max(1, Math.round(((run.clearedAt ?? Date.now()) - run.startedAt) / 60000))
   const grade = run.grade
@@ -92,7 +97,7 @@ export function ResultScreen({ run, onBack, onEnding }: ResultProps) {
         <p className="sub">{sc.title}</p>
         <div className={`grade-big g${grade}`}>
           <b>{grade}</b>
-          <small>{run.score}점</small>
+          <small>{r.points(run.score)}</small>
         </div>
         {sc.secretDocuments.map((d, i) => (
           <pre key={i} className="secret">
@@ -100,23 +105,23 @@ export function ResultScreen({ run, onBack, onEnding }: ResultProps) {
           </pre>
         ))}
         <dl className="stats">
-          <dt>걸린 시간</dt>
-          <dd>{mins}분</dd>
-          <dt>대화</dt>
-          <dd>{turns}마디</dd>
-          <dt>최대 경계</dt>
+          <dt>{r.time}</dt>
+          <dd>{r.minutes(mins)}</dd>
+          <dt>{r.turns}</dt>
+          <dd>{r.turnsValue(turns)}</dd>
+          <dt>{r.maxSuspicion}</dt>
           <dd>{run.session.state.maxSuspicion}</dd>
-          <dt>로그인 실패</dt>
-          <dd>{run.loginFails}회</dd>
-          <dt>헛짚은 연결</dt>
-          <dd>{run.wrongLinks}회</dd>
-          <dt>다시 접근</dt>
-          <dd>{run.retries}회</dd>
+          <dt>{r.loginFails}</dt>
+          <dd>{r.times(run.loginFails)}</dd>
+          <dt>{r.wrongLinks}</dt>
+          <dd>{r.times(run.wrongLinks)}</dd>
+          <dt>{r.retries}</dt>
+          <dd>{r.times(run.retries)}</dd>
         </dl>
         <div className="actions">
-          {onEnding && <button onClick={onEnding}>새 메일 확인</button>}
+          {onEnding && <button onClick={onEnding}>{r.newMail}</button>}
           <button className={onEnding ? 'ghost' : ''} onClick={onBack}>
-            미션 선택으로
+            {t.common.toMissions}
           </button>
         </div>
       </div>
@@ -127,11 +132,12 @@ export function ResultScreen({ run, onBack, onEnding }: ResultProps) {
 /** 대화 모델이 준비되지 않았으면 알리고 다시 확인할 수 있게 한다 */
 export function HealthBanner() {
   const h = useHealth()
+  const t = useT()
   if (h === 'ok') return null
   return (
     <div className={`banner-warn${h === 'checking' ? ' dim' : ''}`}>
-      <span>{HEALTH_TEXT[h]}</span>
-      {h !== 'checking' && <button onClick={() => void checkHealth()}>다시 확인</button>}
+      <span>{t.common.health[h]}</span>
+      {h !== 'checking' && <button onClick={() => void checkHealth()}>{t.common.retryCheck}</button>}
     </div>
   )
 }

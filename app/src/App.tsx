@@ -5,6 +5,7 @@ import { MissionRun, useRun } from './game/run'
 import { save, useSave } from './game/save'
 import { llm, SCENARIOS } from './game/scenarios'
 import { ENDING } from './game/story'
+import { msg } from './i18n'
 import { DevPanel } from './ui/DevPanel'
 import { Desktop } from './ui/Desktop'
 import { EndingScreen } from './ui/Ending'
@@ -18,8 +19,6 @@ type Screen =
   | { name: 'ending' }
   | { name: 'settings' }
   | { name: 'licenses' }
-
-const PLAYER = '나'
 
 /** 새로 시작할 때마다 지난번과 다른 변형 (§7.1). 고른 변형은 저장한다. variantId는 개발자 패널이 정할 때만 */
 function startRun(id: string, variantId?: string): MissionRun {
@@ -103,13 +102,13 @@ function Play({ run, debug, onQuit, onRestart, onEnding }: PlayProps) {
     <>
       <Desktop
         run={run}
-        playerName={PLAYER}
+        playerName={msg().desktop.playerName}
         debug={debug}
         onQuit={onQuit}
         onRestart={onRestart}
         answerChanges={SCENARIOS[run.scenario.id].variants.length > 1}
       />
-      {debug && <div className="debug-badge">변형 {run.scenario.variantId} · 비밀번호 {run.scenario.passwordValue}</div>}
+      {debug && <div className="debug-badge">{msg().desktop.debugBadge(run.scenario.variantId, run.scenario.passwordValue)}</div>}
     </>
   )
 }

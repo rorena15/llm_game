@@ -6,11 +6,11 @@ export type Sfx = 'key' | 'notice' | 'clue' | 'inference' | 'error' | 'granted' 
 
 /** 볼륨 종류. 전체가 나머지 셋에 곱해진다 */
 export type VolumeKind = 'master' | 'bgm' | 'sfx' | 'key'
-export const VOLUMES: { id: VolumeKind; label: string; fallback: number }[] = [
-  { id: 'master', label: '전체', fallback: 80 },
-  { id: 'bgm', label: '배경음', fallback: 70 },
-  { id: 'sfx', label: '효과음', fallback: 80 },
-  { id: 'key', label: '타자음', fallback: 60 },
+export const VOLUMES: { id: VolumeKind; fallback: number }[] = [
+  { id: 'master', fallback: 80 },
+  { id: 'bgm', fallback: 70 },
+  { id: 'sfx', fallback: 80 },
+  { id: 'key', fallback: 60 },
 ]
 
 /** 볼륨 100일 때 실제 크기 */

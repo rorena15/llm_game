@@ -1,11 +1,14 @@
 // 학교 홈페이지 (hanbit-es.kr): 교표와 학교 이름, 위쪽 메뉴, 게시판 글 보기, 수상자 표, 아래 알림
 import type { ReactNode } from 'react'
+import { useT } from '../../i18n'
 import { T } from './common'
 import { cells, sections, seeded, type SiteProps } from './parse'
 
+// 현재 메뉴 판별은 페이지 글(한국어)과 비교하므로 한국어 목록을 두고, 보이는 이름만 번역한다
 const GNB = ['학교 소개', '학교 소식', '교육 활동', '학부모 마당', '열린 마당']
 
 export function SchoolSite(p: SiteProps) {
+  const t = useT().sites.school
   const { head, parts } = sections(p.body)
   const [school, board = '학교 소식'] = head.split('·').map((s) => s.trim())
   const [post, ...more] = parts.filter((s) => s.tag !== null)
@@ -21,8 +24,8 @@ export function SchoolSite(p: SiteProps) {
         <table key={`t${out.length}`} className="sch-table">
           <thead>
             <tr>
-              <th>구분</th>
-              <th colSpan={rows[0].length - 1}>내용</th>
+              <th>{t.category}</th>
+              <th colSpan={rows[0].length - 1}>{t.details}</th>
             </tr>
           </thead>
           <tbody>
@@ -60,18 +63,18 @@ export function SchoolSite(p: SiteProps) {
         <span className="sch-emblem">{school[0]}</span>
         <div>
           <b>{school}</b>
-          <small>꿈을 키우는 즐거운 배움터</small>
+          <small>{t.slogan}</small>
         </div>
       </header>
       <nav className="sch-gnb">
-        {GNB.map((g) => (
+        {GNB.map((g, gi) => (
           <span key={g} className={g === board ? 'on' : ''}>
-            {g}
+            {t.gnb[gi]}
           </span>
         ))}
       </nav>
       <div className="sch-body">
-        <small className="crumb">홈 › {board}</small>
+        <small className="crumb">{t.home} › {board}</small>
         <h1 className="sch-board">{board}</h1>
         {post ? (
           <div className="sch-post">
@@ -82,8 +85,8 @@ export function SchoolSite(p: SiteProps) {
               </b>
             </div>
             <div className="sch-meta">
-              <span>작성자 교무실</span>
-              <span>조회 {views}</span>
+              <span>{t.author}</span>
+              <span>{t.views(views)}</span>
             </div>
             <div className="sch-content">{body(post.lines)}</div>
           </div>
@@ -107,7 +110,7 @@ export function SchoolSite(p: SiteProps) {
         )}
       </div>
       <footer className="sch-foot">
-        {school} · 행정실 · 교무실
+        {t.footer(school)}
         <br />
         Copyright © {school}. All rights reserved.
       </footer>

@@ -1,17 +1,14 @@
 import { useState } from 'react'
 import type { MailFolder } from '../../engine/types'
 import { useRun, type MissionRun } from '../../game/run'
+import { useT } from '../../i18n'
 import { ClueText } from '../ClueText'
 
-const FOLDERS: { id: MailFolder; label: string }[] = [
-  { id: 'inbox', label: '받은편지함' },
-  { id: 'sent', label: '보낸편지함' },
-  { id: 'drafts', label: '임시보관함' },
-  { id: 'trash', label: '휴지통' },
-]
+const FOLDERS: MailFolder[] = ['inbox', 'sent', 'drafts', 'trash']
 
 export function EmailApp({ run }: { run: MissionRun }) {
   useRun(run)
+  const t = useT().apps.mail
   const { emails, clues } = run.scenario
   const [folder, setFolder] = useState<MailFolder>('inbox')
   const [query, setQuery] = useState('')
@@ -35,27 +32,27 @@ export function EmailApp({ run }: { run: MissionRun }) {
   return (
     <div className="email">
       <nav className="mail-folders">
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="메일 검색" spellCheck={false} />
-        {FOLDERS.map((f) => {
-          const n = unread(f.id)
-          const count = all.filter(({ m }) => (m.folder ?? 'inbox') === f.id).length
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.search} spellCheck={false} />
+        {FOLDERS.map((id) => {
+          const n = unread(id)
+          const count = all.filter(({ m }) => (m.folder ?? 'inbox') === id).length
           return (
             <button
-              key={f.id}
-              className={!q && folder === f.id ? 'on' : ''}
+              key={id}
+              className={!q && folder === id ? 'on' : ''}
               onClick={() => {
                 setQuery('')
-                setFolder(f.id)
+                setFolder(id)
               }}
             >
-              {f.label}
+              {t[id]}
               <span>{n ? <b>{n}</b> : count || ''}</span>
             </button>
           )
         })}
       </nav>
       <ul className="mail-list">
-        {shown.length === 0 && <li className="empty">{q ? '찾는 메일이 없습니다.' : '메일이 없습니다.'}</li>}
+        {shown.length === 0 && <li className="empty">{q ? t.noMatch : t.empty}</li>}
         {shown.map(({ m, i }) => (
           <li key={i} className={`${i === sel ? 'sel' : ''}${run.readMails.has(i) ? '' : ' unread'}`} onClick={() => open(i)}>
             <b>{m.sender}</b>
@@ -68,7 +65,7 @@ export function EmailApp({ run }: { run: MissionRun }) {
         <article className="mail-body">
           <h3>{mail.subject}</h3>
           <p className="from">
-            {mail.folder === 'sent' || mail.folder === 'drafts' ? '작성' : '보낸 사람'}: {mail.sender}
+            {mail.folder === 'sent' || mail.folder === 'drafts' ? t.author : t.sender}: {mail.sender}
             {mail.date && <time> · {mail.date}</time>}
           </p>
           <p className="text">
@@ -82,7 +79,7 @@ export function EmailApp({ run }: { run: MissionRun }) {
           </p>
         </article>
       ) : (
-        <p className="hint">받은 메일이 없습니다.</p>
+        <p className="hint">{t.noMail}</p>
       )}
     </div>
   )

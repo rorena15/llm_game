@@ -2,6 +2,7 @@
 // 연혁, 표, 조직도(본부 → 팀 → 구성원, 인원 합계)
 import { useState, type ReactNode } from 'react'
 import { normalizeUrl } from '../../game/run'
+import { useT } from '../../i18n'
 import { Go, T } from './common'
 import { cells, NAV_LINE, sections, seeded, type Section, type SiteProps } from './parse'
 
@@ -47,6 +48,7 @@ const KV = /^([^:：]{1,10})[:：]\s*(.+)$/
 const DATE_TAG = /^\d{4}\.\d{2}\.\d{2}$/
 
 export function CorpSite(p: SiteProps) {
+  const t = useT().sites.corp
   const brand = p.host.split('.')[0]
   const brandName = brand === 'corpx' ? 'CorpX' : brand
   const home = `www.${p.host}`
@@ -146,7 +148,7 @@ export function CorpSite(p: SiteProps) {
                   <Go key={i} p={p} url={l.url} className="corp-card">
                     <b>{title}</b>
                     {desc && <small>{desc}</small>}
-                    <i>자세히 보기 →</i>
+                    <i>{t.detail}</i>
                   </Go>
                 )
               })}
@@ -228,7 +230,7 @@ export function CorpSite(p: SiteProps) {
         <section className="corp-band">
           <small>
             <Go p={p} url={home}>
-              홈
+              {t.home}
             </Go>{' '}
             › {pageTitle}
           </small>
@@ -260,9 +262,9 @@ export function CorpSite(p: SiteProps) {
         {isHome && noticeTitles.length > 0 && noticeUrl && (
           <section className="corp-sec">
             <h2>
-              알림
+              {t.notices}
               <Go p={p} url={noticeUrl} className="more">
-                더 보기 +
+                {t.more}
               </Go>
             </h2>
             <ul className="corp-mini">
@@ -281,9 +283,9 @@ export function CorpSite(p: SiteProps) {
 
       <footer className="corp-foot">
         <b>{brandName}</b>
-        <span>개인정보처리방침 · 이용약관 · 윤리경영 · 고객센터 02-555-0100</span>
-        <small>주식회사 {brandName} · 서울 강남구 테헤란로 CorpX 타워</small>
-        <small>© 2024 {brandName} Corp. All rights reserved.</small>
+        <span>{t.footerLinks}</span>
+        <small>{t.footerAddress(brandName)}</small>
+        <small>{t.copyright(brandName)}</small>
       </footer>
     </article>
   )
@@ -291,6 +293,7 @@ export function CorpSite(p: SiteProps) {
 
 /** 게시판: 번호·꼬리표·제목·조회. 제목을 누르면 본문이 펼쳐진다 (처음에는 맨 위 글만) */
 function Board({ p, items, render }: { p: SiteProps; items: Section[]; render: (lines: string[]) => ReactNode[] }) {
+  const t = useT().sites.corp
   const [open, setOpen] = useState<Set<number>>(() => new Set([0]))
   const toggle = (i: number) =>
     setOpen((o) => {
@@ -302,9 +305,9 @@ function Board({ p, items, render }: { p: SiteProps; items: Section[]; render: (
   return (
     <div className="corp-board">
       <div className="board-head">
-        <span>번호</span>
-        <span>제목</span>
-        <span>조회</span>
+        <span>{t.boardNo}</span>
+        <span>{t.boardTitle}</span>
+        <span>{t.boardViews}</span>
       </div>
       <ul>
         {items.map((s, i) => {
@@ -332,6 +335,7 @@ function Board({ p, items, render }: { p: SiteProps; items: Section[]; render: (
 }
 
 function OrgChart({ p, roots }: { p: SiteProps; roots: OrgNode[] }) {
+  const t = useT().sites.corp
   const total = headcount(roots)
   const [ceo, ...divisions] = roots
   const teamCount = roots.reduce((a, r) => a + r.kids.length, 0)
@@ -339,7 +343,8 @@ function OrgChart({ p, roots }: { p: SiteProps; roots: OrgNode[] }) {
   return (
     <div className="corp-org">
       <p className="org-summary">
-        임직원 <b>{total}명</b> · 본부 {divisions.length}개 · 부서 {teamCount}개
+        {t.employees} <b>{t.people(total)}</b>
+        {t.orgRest(divisions.length, teamCount)}
       </p>
       {ceo && (
         <div className="org-ceo">
@@ -353,7 +358,7 @@ function OrgChart({ p, roots }: { p: SiteProps; roots: OrgNode[] }) {
                 <div key={i} className="org-card">
                   <small>{text(k.dept)}</small>
                   <b>{text(k.name)}</b>
-                  {k.count !== null && <em>{k.count}명</em>}
+                  {k.count !== null && <em>{t.people(k.count)}</em>}
                 </div>
               ))}
             </div>
@@ -366,7 +371,7 @@ function OrgChart({ p, roots }: { p: SiteProps; roots: OrgNode[] }) {
             <header>
               <b>{text(d.dept)}</b>
               <small>{text(d.name)}</small>
-              <em>{teamSum(d) + 1}명</em>
+              <em>{t.people(teamSum(d) + 1)}</em>
             </header>
             <ul>
               {d.kids.map((t, j) => (

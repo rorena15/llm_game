@@ -1,4 +1,5 @@
 import { useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
+import { useT } from '../i18n'
 
 export interface WinPos {
   x: number
@@ -36,6 +37,7 @@ type Edge = 'r' | 'b' | 'rb'
 /** 끌어서 옮기고, 오른쪽·아래 가장자리를 끌어 크기를 바꾸는 창. 위치·크기·순서는 데스크톱이 관리한다.
  * 최소화한 창은 내용이 사라지지 않게 숨기기만 한다 */
 export function Window(p: Props) {
+  const t = useT().desktop.window
   const drag = useRef<{ dx: number; dy: number } | null>(null)
   const resize = useRef<{ edge: Edge; x: number; y: number; w: number; h: number } | null>(null)
 
@@ -87,13 +89,13 @@ export function Window(p: Props) {
       >
         <span>{p.title}</span>
         <div className="win-buttons">
-          <button className="min" onClick={p.onMinimize} aria-label="최소화" title="최소화">
+          <button className="min" onClick={p.onMinimize} aria-label={t.minimize} title={t.minimize}>
             ─
           </button>
-          <button className="max" onClick={p.onToggleMax} aria-label={p.maximized ? '이전 크기로' : '최대화'} title={p.maximized ? '이전 크기로' : '최대화'}>
+          <button className="max" onClick={p.onToggleMax} aria-label={p.maximized ? t.restore : t.maximize} title={p.maximized ? t.restore : t.maximize}>
             {p.maximized ? '❐' : '□'}
           </button>
-          <button className="close" onClick={p.onClose} aria-label="닫기" title="닫기">
+          <button className="close" onClick={p.onClose} aria-label={t.close} title={t.close}>
             ×
           </button>
         </div>

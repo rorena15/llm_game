@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ALARM_AT } from '../engine/rules'
 import { useRun, type MissionRun, type Notice } from '../game/run'
 import { useSave } from '../game/save'
+import { localeTag, useT } from '../i18n'
 import { play, setSoundOn, soundOn, startBgm, stopBgm, VOLUMES, type Sfx } from '../game/sound'
 import { Volume } from './Settings'
 import { BoardApp } from './apps/BoardApp'
@@ -13,12 +14,12 @@ import { Window, type WinPos, type WinSize } from './Window'
 
 type AppId = 'messenger' | 'email' | 'browser' | 'board' | 'server'
 
-const APPS: Record<AppId, { title: string; icon: string; w: number; h: number; at: WinPos }> = {
-  email: { title: '메일', icon: '✉', w: 780, h: 440, at: { x: 130, y: 40 } },
-  messenger: { title: '사내 메신저', icon: '💬', w: 460, h: 560, at: { x: 520, y: 70 } },
-  browser: { title: '브라우저', icon: '🌐', w: 760, h: 500, at: { x: 170, y: 70 } },
-  board: { title: '수사보드', icon: '📌', w: 640, h: 460, at: { x: 220, y: 90 } },
-  server: { title: '사내망 접속', icon: '🖥', w: 420, h: 320, at: { x: 600, y: 160 } },
+const APPS: Record<AppId, { icon: string; w: number; h: number; at: WinPos }> = {
+  email: { icon: '✉', w: 780, h: 440, at: { x: 130, y: 40 } },
+  messenger: { icon: '💬', w: 460, h: 560, at: { x: 520, y: 70 } },
+  browser: { icon: '🌐', w: 760, h: 500, at: { x: 170, y: 70 } },
+  board: { icon: '📌', w: 640, h: 460, at: { x: 220, y: 90 } },
+  server: { icon: '🖥', w: 420, h: 320, at: { x: 600, y: 160 } },
 }
 const ORDER: AppId[] = ['email', 'messenger', 'browser', 'board', 'server']
 
@@ -62,6 +63,8 @@ interface Props {
 
 export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChanges }: Props) {
   useRun(run)
+  const tt = useT()
+  const t = tt.desktop
   const [wins, setWins] = useState<OpenWin[]>([newWin('email', 1)])
   const [now, setNow] = useState(() => new Date())
   const [volOpen, setVolOpen] = useState(false)
@@ -140,7 +143,7 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
         {ORDER.map((id) => (
           <button key={id} className="icon" onDoubleClick={() => open(id)} onClick={(e) => e.detail === 0 && open(id)}>
             <span>{APPS[id].icon}</span>
-            {APPS[id].title}
+            {t.apps[id]}
           </button>
         ))}
       </div>
@@ -148,7 +151,7 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
       {wins.map((w) => (
         <Window
           key={w.id}
-          title={APPS[w.id].title}
+          title={t.apps[w.id]}
           pos={w.pos}
           size={w.size}
           z={w.z}
@@ -167,7 +170,7 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
 
       <footer className="taskbar">
         <button className="quit" onClick={onQuit}>
-          미션 포기
+          {t.quit}
         </button>
         <div className="tasks">
           {ORDER.map((id) => (
@@ -179,13 +182,13 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
               })()}
               onClick={() => taskClick(id)}
             >
-              {APPS[id].icon} {APPS[id].title}
+              {APPS[id].icon} {t.apps[id]}
               {id === 'board' && run.unseen > 0 && <span className="badge">{run.unseen}</span>}
             </button>
           ))}
         </div>
-        <div className={`suspicion${bump ? ' bump' : ''}`} title={`의심도 ${s}`}>
-          <span>보안 경계</span>
+        <div className={`suspicion${bump ? ' bump' : ''}`} title={t.suspicionTitle(s)}>
+          <span>{t.alert}</span>
           <div className="bar">
             <div className="fill" style={{ width: `${s}%` }} />
           </div>
@@ -193,7 +196,7 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
         <div className="tray-sound">
           <button
             className={`sound-toggle${volOpen ? ' on' : ''}`}
-            title="볼륨"
+            title={t.volume}
             onClick={() => setVolOpen((v) => !v)}
           >
             {soundOn() ? '🔊' : '🔇'}
@@ -202,17 +205,17 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
             <div className="volume-pop">
               <label className="mute">
                 <input type="checkbox" checked={!soundOn()} onChange={(e) => setSoundOn(!e.target.checked)} />
-                음소거
+                {t.mute}
               </label>
               <div className={`volumes${soundOn() ? '' : ' muted'}`}>
                 {VOLUMES.map((v) => (
-                  <Volume key={v.id} kind={v.id} label={v.label} />
+                  <Volume key={v.id} kind={v.id} label={tt.screens.settings.volumes[v.id]} />
                 ))}
               </div>
             </div>
           )}
         </div>
-        <time>{now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</time>
+        <time>{now.toLocaleTimeString(localeTag(), { hour: '2-digit', minute: '2-digit' })}</time>
       </footer>
 
       <div className="notices">
@@ -226,7 +229,7 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
 
       {run.guide.length > 0 && (
         <aside className="guide">
-          <h3>안내</h3>
+          <h3>{t.guide}</h3>
           <ol>
             {run.guide.map((g, i) => {
               const current = !g.done && run.guide.slice(0, i).every((x) => x.done)
@@ -243,25 +246,25 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
       {run.status === 'failed' && (
         <div className="overlay">
           <div className="dialog danger">
-            <h2>접속 차단</h2>
-            <p>{run.scenario.npc.name}이(가) 수상함을 느끼고 보안팀에 알렸습니다.</p>
+            <h2>{t.blocked.title}</h2>
+            <p>{t.blocked.body(run.scenario.npc.name)}</p>
             <div className="choices">
               <button onClick={() => run.retryKeepClues()}>
-                <b>이어서 다시</b>
-                <span>모은 단서와 추론은 그대로, 대화와 경계는 처음으로. 등급이 한 단계 내려갑니다.</span>
+                <b>{t.blocked.keepTitle}</b>
+                <span>{t.blocked.keepDesc}</span>
               </button>
               <button onClick={onRestart}>
-                <b>완전히 새로</b>
+                <b>{t.blocked.freshTitle}</b>
                 <span>
                   {answerChanges
-                    ? '단서도 대화도 처음부터. 대상의 사정이 달라져 정답도 바뀝니다. 감점은 없습니다.'
-                    : '단서도 대화도 처음부터 시작합니다. 감점은 없습니다.'}
+                    ? t.blocked.freshDescChanges
+                    : t.blocked.freshDesc}
                 </span>
               </button>
             </div>
             <div className="actions">
               <button className="ghost" onClick={onQuit}>
-                미션 선택으로
+                {tt.common.toMissions}
               </button>
             </div>
           </div>

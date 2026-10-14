@@ -21,6 +21,7 @@ app/                 게임 (Tauri + React + TS)
   src/game/          미션 한 판의 상태(MissionRun), 시나리오·모델 연결
   src/ui/            데스크톱, 창, 앱 화면
   src/ui/sites/      브라우저 속 사이트 틀 (회사·SNS·학교·골프장, 그 밖은 기본 틀)
+  src/i18n/          화면 문구 (ko/·en/ 영역별 문구 묶음)
   scenarios/         미션 데이터 (JSON, 변형 포함)
   story/             엔딩 문구(ending.json), 모든 미션 공통 웹페이지(sites.json)
   eval/convos/       모델 평가용 대화 세트
@@ -80,6 +81,10 @@ ollama create se-kanana-8b -f Modelfile.kanana-8b
 | `npm run eval -- se-kanana-8b se-kanana-2.1b` | 평가 대화 세트를 모델별로 돌려 요약표와 기록 남김 (`app/eval/runs/`) |
 | `npm run lint` | ESLint |
 | `npm run build` | 타입 검사 + 웹 빌드 |
+
+## 화면 문구와 언어
+
+화면에 보이는 문구는 코드에 직접 쓰지 않고 `app/src/i18n/ko/<영역>.ts`에 넣은 뒤 컴포넌트에서 `useT()`(컴포넌트 밖에서는 `msg()`)로 읽습니다. 같은 이름의 `app/src/i18n/en/<영역>.ts`에 영어 문구를 같은 모양으로 넣어야 하며, 빠지면 `npx tsc -b`가 실패합니다. 값을 끼워 넣는 문구는 함수로 씁니다. 언어는 설정 화면에서 고르고 저장 파일의 `lang`에 남습니다. 지금은 화면 문구만 영어가 있고 미션·이야기 내용은 한국어뿐이라, 영어는 개발 빌드에서만 고를 수 있습니다. 영어판 계획은 설계안 §17에 있습니다.
 
 ## 미션 만들기
 

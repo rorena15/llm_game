@@ -1,4 +1,5 @@
 // 사이트 틀이 함께 쓰는 것: 본문 나누기, 꾸밈용 숫자·색, 탭 제목
+import { msg } from '../../i18n'
 import type { ClueSpec } from '../../engine/types'
 import type { MissionRun } from '../../game/run'
 
@@ -76,7 +77,7 @@ export function siteTitle(host: string, body: string, path: string): string {
   const head = body.split('\n')[0].trim()
   if (host === 'instargram.com') {
     const handle = body.match(/^@(\S+)/m)?.[1] ?? path
-    return `${handle} • Instargram 사진 및 동영상`
+    return msg().sites.insta.tabTitle(handle)
   }
   return head
 }

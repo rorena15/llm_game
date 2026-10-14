@@ -1,10 +1,12 @@
 // 브라우저 속 검색 포털 "나침반". 지금 미션에서 열 수 있는 웹페이지(미션 사이트 + 공통 CorpX)만 찾는다.
 // 본문 글자로 찾으므로, 단서가 되는 이름·아이디를 알아야 그 사이트가 나온다
+import { msg } from '../../i18n'
 import { normalizeUrl } from '../../game/run'
 import { siteTitle } from './parse'
 
 export const SEARCH_HOME = 'www.nachimban.com'
-export const SEARCH_NAME = '나침반'
+/** 포털 이름 (언어별) */
+export const searchName = () => msg().sites.search.name
 
 export const searchUrl = (q: string) => `${SEARCH_HOME}/search?q=${q.trim()}`
 

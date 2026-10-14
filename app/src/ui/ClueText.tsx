@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { ClueSpec } from '../engine/types'
 import { URL_IN_TEXT } from '../game/sites'
+import { msg } from '../i18n'
 
 interface Props {
   text: string
@@ -33,6 +34,7 @@ function linkify(text: string, onLink: Props['onLink'], key: () => number): Reac
 
 /** 본문에서 단서 낱말을 눌러서 수집할 수 있게 표시한다 */
 export function ClueText({ text, clues, collected, onClue, onLink }: Props) {
+  const t = msg().apps.clue
   let k = 0
   const key = () => k++
   const withKey = clues.filter((c) => c.keyword && text.includes(c.keyword))
@@ -57,7 +59,7 @@ export function ClueText({ text, clues, collected, onClue, onLink }: Props) {
       <button
         key={key()}
         className={`clue-word${got ? ' got' : ''}`}
-        title={got ? `수집함: ${c.label}` : '단서로 수집'}
+        title={got ? t.collected(c.label) : t.collect}
         onClick={() => onClue(c.id)}
       >
         {c.keyword}

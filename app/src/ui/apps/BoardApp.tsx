@@ -13,18 +13,18 @@ import {
 import '@xyflow/react/dist/style.css'
 import { useEffect, useMemo, useState } from 'react'
 import { useRun, type Card, type MissionRun } from '../../game/run'
-
-const KIND: Record<string, string> = { clue: '문서', fact: '대화', inference: '추론' }
+import { useT } from '../../i18n'
 
 type CardNode = Node<{ card: Card; final: boolean }, 'card'>
 
 function CardView({ data }: NodeProps<CardNode>) {
   const { card, final } = data
+  const t = useT().apps.board
   return (
     <div className={`card ${card.kind}${final ? ' final' : ''}`}>
       <Handle type="source" position={Position.Right} id="r" />
       <Handle type="source" position={Position.Left} id="l" />
-      <small>{final ? '조합 완성' : KIND[card.kind]}</small>
+      <small>{final ? t.finalCard : t.kind[card.kind]}</small>
       <b>{card.label}</b>
       <p>{card.text}</p>
     </div>
@@ -40,6 +40,7 @@ function defaultPos(card: Card, index: number) {
 
 export function BoardApp({ run, visible = true }: { run: MissionRun; visible?: boolean }) {
   useRun(run)
+  const t = useT().apps.board
   const [toast, setToast] = useState<{ text: string; bad: boolean } | null>(null)
   useEffect(() => {
     if (!toast) return
@@ -88,9 +89,7 @@ export function BoardApp({ run, visible = true }: { run: MissionRun; visible?: b
   if (!run.cards.length) {
     return (
       <div className="board">
-        <p className="hint">
-          아직 모은 단서가 없습니다. 메일·웹페이지의 밑줄 친 낱말이나 대화 속 단서를 눌러 모으세요.
-        </p>
+        <p className="hint">{t.empty}</p>
       </div>
     )
   }
@@ -107,7 +106,7 @@ export function BoardApp({ run, visible = true }: { run: MissionRun; visible?: b
           if (!source || !target) return
           const r = run.link(source, target)
           if (!r.ok) {
-            if (r.reason === 'wrong') setToast({ text: '연관 없음', bad: true })
+            if (r.reason === 'wrong') setToast({ text: t.noRelation, bad: true })
             return
           }
         }}
@@ -121,7 +120,7 @@ export function BoardApp({ run, visible = true }: { run: MissionRun; visible?: b
       >
         <Background gap={18} size={1} color="#ffffff14" />
       </ReactFlow>
-      <p className="board-help">카드 옆 점을 끌어 다른 카드에 이으면 추론을 시도합니다. 틀린 연결: {run.wrongLinks}회</p>
+      <p className="board-help">{t.help(run.wrongLinks)}</p>
       {toast && <div className={`toast${toast.bad ? ' bad' : ''}`}>{toast.text}</div>}
     </div>
   )

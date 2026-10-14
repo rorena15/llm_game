@@ -153,6 +153,6 @@ export class SaveStore {
 export const save = new SaveStore(isTauri() ? tauriBackend : localBackend)
 
 export function useSave(store: SaveStore = save) {
-  useSyncExternalStore(store.subscribe, store.getVersion)
+  useSyncExternalStore(store.subscribe, store.getVersion, store.getVersion)
   return store
 }

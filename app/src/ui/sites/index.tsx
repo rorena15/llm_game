@@ -1,6 +1,7 @@
 // 브라우저 속 웹페이지. 본문은 시나리오의 일반 텍스트이고, 도메인마다 그 사이트다운 틀로 그린다.
 // 틀이 없는 도메인은 GenericSite. 어느 틀이든 단서 낱말은 모두 눌리게 그려야 한다 (sites.test.tsx)
 import type { ReactNode } from 'react'
+import { useT } from '../../i18n'
 import { ClubSite } from './ClubSite'
 import { Go, T } from './common'
 import { brand, NAV_LINE, sections, type SiteProps } from './parse'
@@ -25,6 +26,7 @@ export function Site(p: SiteProps) {
 
 /** 틀이 없는 사이트: 머리띠, 소제목, 목록, 메뉴 줄 */
 function GenericSite(p: SiteProps) {
+  const t = useT().sites.generic
   const { head, parts } = sections(p.body)
   return (
     <article className="site">
@@ -64,7 +66,7 @@ function GenericSite(p: SiteProps) {
           )
         })}
       </div>
-      <footer className="site-foot">© 2024 {p.host}. All rights reserved.</footer>
+      <footer className="site-foot">{t.copyright(p.host)}</footer>
     </article>
   )
 }

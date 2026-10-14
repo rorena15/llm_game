@@ -3,9 +3,10 @@ import { ALARM_AT } from '../../engine/rules'
 import { useRun, type ChatMsg, type MissionRun } from '../../game/run'
 import { typeMs } from '../../game/settings'
 import { play } from '../../game/sound'
+import { useT, localeTag } from '../../i18n'
 import { HealthBanner } from '../Screens'
 
-const hhmm = (t: number) => new Date(t).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' })
+const hhmm = (t: number) => new Date(t).toLocaleTimeString(localeTag(), { hour: 'numeric', minute: '2-digit' })
 const sameMinute = (a: number, b: number) => Math.floor(a / 60000) === Math.floor(b / 60000)
 
 /** 이름 끝의 직급을 뺀 소속 ("CorpX 인사팀 부장, 20년차…" → "인사팀") */
@@ -24,6 +25,7 @@ function avatarColor(name: string) {
 
 export function MessengerApp({ run, playerName, debug }: { run: MissionRun; playerName: string; debug: boolean }) {
   useRun(run)
+  const t = useT().apps.messenger
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState<{ id: number; shown: number } | null>(null)
   const seen = useRef(run.chat.length ? run.chat[run.chat.length - 1].id : -1)
@@ -46,19 +48,19 @@ export function MessengerApp({ run, playerName, debug }: { run: MissionRun; play
   const lastMine = [...run.chat].reverse().find((m) => m.from === 'player')
   useEffect(() => {
     if (!lastMine || lastMine.id <= readUpTo) return
-    const t = setTimeout(() => setReadUpTo(lastMine.id), 600 + Math.random() * 900)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setReadUpTo(lastMine.id), 600 + Math.random() * 900)
+    return () => clearTimeout(timer)
   }, [lastMine, readUpTo])
 
   useEffect(() => {
     if (!typing) return
     const msg = run.chat.find((m) => m.id === typing.id)
     if (!msg || typing.shown >= msg.text.length || typeMs() === 0) return setTyping(null)
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       if (typing.shown % 2 === 0 && msg.text[typing.shown] !== ' ') play('key')
       setTyping({ ...typing, shown: typing.shown + 1 })
     }, typeMs())
-    return () => clearTimeout(t)
+    return () => clearTimeout(timer)
   }, [typing, run.chat])
 
   useEffect(() => {
@@ -90,14 +92,14 @@ export function MessengerApp({ run, playerName, debug }: { run: MissionRun; play
           </small>
         </div>
         <span className={`presence ${presence}`}>
-          {presence === 'off' ? '오프라인' : presence === 'typing' ? '입력 중…' : '대화 가능'}
+          {presence === 'off' ? t.off : presence === 'typing' ? t.typing : t.online}
         </span>
       </header>
 
       {!run.scenario.script && <HealthBanner />}
       <div className="log" ref={logRef}>
-        <div className="day">오늘</div>
-        {run.chat.length === 0 && <p className="hint">{npc}에게 메시지를 보내 보세요.</p>}
+        <div className="day">{t.today}</div>
+        {run.chat.length === 0 && <p className="hint">{t.sayHello(npc)}</p>}
         {run.chat.map((m, i) => {
           if (m.from === 'system')
             return (
@@ -130,7 +132,7 @@ export function MessengerApp({ run, playerName, debug }: { run: MissionRun; play
                 {!isTyping &&
                   m.clues?.map((c) => (
                     <button key={c.id} className="clue-chip" onClick={() => run.collectFact(c)} title={c.text}>
-                      단서: {c.label}
+                      {t.clue(c.label)}
                     </button>
                   ))}
                 {debug && !isTyping && m.debug && <small className="debug">{m.debug}</small>}
@@ -144,7 +146,7 @@ export function MessengerApp({ run, playerName, debug }: { run: MissionRun; play
               {npc[0]}
             </span>
             <div className="msg-col">
-              <p className="bubble dots" aria-label="입력 중">
+              <p className="bubble dots" aria-label={t.typingLabel}>
                 <i />
                 <i />
                 <i />
@@ -172,14 +174,14 @@ export function MessengerApp({ run, playerName, debug }: { run: MissionRun; play
               send()
             }
           }}
-          placeholder={playing ? `${npc}에게 메시지 보내기` : '대화가 끊겼습니다'}
+          placeholder={playing ? t.placeholder(npc) : t.disconnected}
           maxLength={200}
           disabled={run.busy || !playing}
           autoFocus
         />
         <div className="composer-bar">
-          <small>{input.length ? `${input.length}/200` : 'Enter 전송 · Shift+Enter 줄바꿈'}</small>
-          <button disabled={run.busy || !playing || !input.trim()}>전송</button>
+          <small>{input.length ? `${input.length}/200` : t.sendHint}</small>
+          <button disabled={run.busy || !playing || !input.trim()}>{t.send}</button>
         </div>
       </form>
     </div>

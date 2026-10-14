@@ -31,8 +31,3 @@ export function useHealth(): Health {
   )
 }
 
-export const HEALTH_TEXT: Record<Exclude<Health, 'ok'>, string> = {
-  checking: '대화 모델을 확인하는 중입니다…',
-  down: '대화 모델 서버에 연결할 수 없습니다. 모델 서버가 실행 중인지 확인해 주세요. 튜토리얼은 모델 없이 할 수 있습니다.',
-  nomodel: '모델 서버는 켜져 있지만 대화 모델이 올라와 있지 않습니다. 설정에서 모델을 확인해 주세요.',
-}

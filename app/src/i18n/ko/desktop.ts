@@ -1,0 +1,33 @@
+// 화면 문구 (한국어): 데스크톱, 창
+export const desktop = {
+  apps: {
+    email: '메일',
+    messenger: '사내 메신저',
+    browser: '브라우저',
+    board: '수사보드',
+    server: '사내망 접속',
+  },
+  playerName: '나',
+  debugBadge: (variant: string, password: string) => `변형 ${variant} · 비밀번호 ${password}`,
+  quit: '미션 포기',
+  suspicionTitle: (n: number) => `의심도 ${n}`,
+  alert: '보안 경계',
+  volume: '볼륨',
+  mute: '음소거',
+  guide: '안내',
+  blocked: {
+    title: '접속 차단',
+    body: (name: string) => `${name}이(가) 수상함을 느끼고 보안팀에 알렸습니다.`,
+    keepTitle: '이어서 다시',
+    keepDesc: '모은 단서와 추론은 그대로, 대화와 경계는 처음으로. 등급이 한 단계 내려갑니다.',
+    freshTitle: '완전히 새로',
+    freshDescChanges: '단서도 대화도 처음부터. 대상의 사정이 달라져 정답도 바뀝니다. 감점은 없습니다.',
+    freshDesc: '단서도 대화도 처음부터 시작합니다. 감점은 없습니다.',
+  },
+  window: {
+    minimize: '최소화',
+    maximize: '최대화',
+    restore: '이전 크기로',
+    close: '닫기',
+  },
+}

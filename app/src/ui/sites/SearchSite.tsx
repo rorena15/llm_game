@@ -1,7 +1,8 @@
 // 검색 포털 화면: 첫 화면(로고와 검색창), 결과 목록
 import { useState } from 'react'
 import { brand } from './parse'
-import { search, SEARCH_NAME, searchUrl } from './search'
+import { useT } from '../../i18n'
+import { search, searchName, searchUrl } from './search'
 
 interface Props {
   query: string | null
@@ -10,15 +11,17 @@ interface Props {
 }
 
 function Logo({ big }: { big?: boolean }) {
+  useT()
   return (
     <span className={`nb-logo${big ? ' big' : ''}`}>
       <i>🧭</i>
-      {SEARCH_NAME}
+      {searchName()}
     </span>
   )
 }
 
 function SearchBox({ initial, go, big }: { initial: string; go: (u: string) => void; big?: boolean }) {
+  const t = useT().sites.search
   const [q, setQ] = useState(initial)
   return (
     <form
@@ -28,8 +31,8 @@ function SearchBox({ initial, go, big }: { initial: string; go: (u: string) => v
         if (q.trim()) go(searchUrl(q))
       }}
     >
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="검색어를 입력하세요" spellCheck={false} />
-      <button>검색</button>
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.placeholder} spellCheck={false} />
+      <button>{t.button}</button>
     </form>
   )
 }
@@ -37,12 +40,13 @@ function SearchBox({ initial, go, big }: { initial: string; go: (u: string) => v
 const host = (url: string) => url.split('/')[0].replace(/^www\./, '')
 
 export function SearchSite({ query, pages, go }: Props) {
+  const t = useT().sites.search
   if (query === null)
     return (
       <article className="s-search home">
         <Logo big />
         <SearchBox initial="" go={go} big />
-        <p className="nb-tip">사람 이름, 아이디, 학교·회사 이름으로 찾아보세요.</p>
+        <p className="nb-tip">{t.homeTip}</p>
       </article>
     )
 
@@ -56,15 +60,15 @@ export function SearchSite({ query, pages, go }: Props) {
         <SearchBox key={query} initial={query} go={go} />
       </header>
       <div className="nb-tabs">
-        <span className="on">통합</span>
-        <span>이미지</span>
-        <span>뉴스</span>
-        <span>지도</span>
+        <span className="on">{t.tabAll}</span>
+        <span>{t.tabImages}</span>
+        <span>{t.tabNews}</span>
+        <span>{t.tabMaps}</span>
       </div>
       <div className="nb-results">
         {results.length ? (
           <>
-            <small className="nb-count">검색 결과 {results.length}건</small>
+            <small className="nb-count">{t.resultCount(results.length)}</small>
             {results.map((r) => (
               <div key={r.url} className="nb-result">
                 <div className="nb-site">
@@ -85,15 +89,15 @@ export function SearchSite({ query, pages, go }: Props) {
           </>
         ) : (
           <div className="nb-empty">
-            <b>'{query}'에 대한 검색 결과가 없습니다.</b>
+            <b>{t.noResults(query)}</b>
             <ul>
-              <li>낱말의 철자가 맞는지, 더 짧은 낱말로도 찾아보세요.</li>
-              <li>메일이나 대화에서 알게 된 이름이나 아이디로 찾아보세요.</li>
+              <li>{t.tip1}</li>
+              <li>{t.tip2}</li>
             </ul>
           </div>
         )}
       </div>
-      <footer className="nb-foot">© {SEARCH_NAME}</footer>
+      <footer className="nb-foot">© {searchName()}</footer>
     </article>
   )
 }

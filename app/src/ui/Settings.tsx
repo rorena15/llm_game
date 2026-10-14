@@ -6,6 +6,8 @@ import { useSave } from '../game/save'
 import { MODELS, modelId, setSetting, TEXT_SIZES, TEXT_SPEEDS, textSize, textSpeed } from '../game/settings'
 import { play, setSoundOn, setVolume, soundOn, volume, VOLUMES, type VolumeKind } from '../game/sound'
 import { APP_VERSION } from '../game/version'
+import { CONTENT_READY, LANGS, lang, setLang, useT } from '../i18n'
+import { DEV_ENABLED } from '../game/dev'
 import { HealthBanner } from './Screens'
 
 function Choice<T extends { id: string; label: string }>({
@@ -53,60 +55,71 @@ export function Volume({ kind, label }: { kind: VolumeKind; label: string }) {
 
 export function SettingsScreen({ onBack, onLicenses }: { onBack: () => void; onLicenses: () => void }) {
   useSave()
+  const tAll = useT()
+  const t = tAll.screens
+  const tc = tAll.common
   const [logDir, setLogDir] = useState<string | null>(null)
   useEffect(() => {
     if (isTauri()) void appLogDir().then(setLogDir).catch(() => setLogDir(null))
   }, [])
-  const model = MODELS.find((m) => m.id === modelId())
+  const model = t.settings.models[modelId() as keyof typeof t.settings.models] as { note: string } | undefined
 
   return (
     <div className="screen settings">
       <div className="dialog">
-        <h2>설정</h2>
+        <h2>{t.settings.title}</h2>
         <dl className="settings-list">
-          <dt>대화 모델</dt>
+          <dt>언어 · Language</dt>
           <dd>
-            <Choice options={MODELS} value={modelId()} onPick={(id) => setSetting('model', id)} />
+            <Choice
+              options={LANGS.filter((l) => DEV_ENABLED || CONTENT_READY.includes(l.id))}
+              value={lang()}
+              onPick={(id) => setLang(id as (typeof LANGS)[number]['id'])}
+            />
+            {!CONTENT_READY.includes(lang()) && <small>UI only. Mission text is not translated yet.</small>}
+          </dd>
+          <dt>{t.settings.model}</dt>
+          <dd>
+            <Choice options={MODELS.map((m) => ({ id: m.id, label: t.settings.models[m.id].label }))} value={modelId()} onPick={(id) => setSetting('model', id)} />
             {model && <small>{model.note}</small>}
             <HealthBanner />
           </dd>
-          <dt>대사 속도</dt>
+          <dt>{t.settings.speed}</dt>
           <dd>
-            <Choice options={TEXT_SPEEDS} value={textSpeed()} onPick={(id) => setSetting('textSpeed', id)} />
+            <Choice options={TEXT_SPEEDS.map((s) => ({ id: s.id, label: t.settings.speeds[s.id] }))} value={textSpeed()} onPick={(id) => setSetting('textSpeed', id)} />
           </dd>
-          <dt>글자 크기</dt>
+          <dt>{t.settings.size}</dt>
           <dd>
-            <Choice options={TEXT_SIZES} value={textSize()} onPick={(id) => setSetting('textSize', id)} />
+            <Choice options={TEXT_SIZES.map((s) => ({ id: s.id, label: t.settings.sizes[s.id] }))} value={textSize()} onPick={(id) => setSetting('textSize', id)} />
           </dd>
-          <dt>소리</dt>
+          <dt>{t.settings.sound}</dt>
           <dd>
             <Choice
               options={[
-                { id: 'on', label: '켜기' },
-                { id: 'off', label: '음소거' },
+                { id: 'on', label: t.settings.soundOn },
+                { id: 'off', label: t.settings.soundOff },
               ]}
               value={soundOn() ? 'on' : 'off'}
               onPick={(id) => setSoundOn(id === 'on')}
             />
             <div className={`volumes${soundOn() ? '' : ' muted'}`}>
               {VOLUMES.map((v) => (
-                <Volume key={v.id} kind={v.id} label={v.label} />
+                <Volume key={v.id} kind={v.id} label={t.settings.volumes[v.id]} />
               ))}
             </div>
           </dd>
-          <dt>문제 신고</dt>
+          <dt>{t.settings.report}</dt>
           <dd>
             <p>
-              게임이 멈추거나 이상하게 동작하면 itch.io 게임 페이지의 댓글로 알려 주세요. 오류 기록 파일(game.log)을 함께
-              올려 주시면 원인을 찾는 데 큰 도움이 됩니다.
+              {t.settings.reportBody}
             </p>
             {logDir && <code className="path">{logDir}</code>}
           </dd>
         </dl>
         <div className="actions">
-          <button onClick={onBack}>돌아가기</button>
+          <button onClick={onBack}>{tc.back}</button>
           <button className="ghost" onClick={onLicenses}>
-            라이선스
+            {t.settings.licenses}
           </button>
         </div>
         <small className="version">v{APP_VERSION}</small>
@@ -116,15 +129,18 @@ export function SettingsScreen({ onBack, onLicenses }: { onBack: () => void; onL
 }
 
 /** 함께 배포하는 구성 요소. 전문은 public/licenses/에 원본 그대로 둔다 */
-const COMPONENTS = [
+const COMPONENTS: { name: string; by: string; license: string | null; file: string }[] = [
   { name: 'Kanana 1.5', by: 'Kakao Corp.', license: 'Apache License 2.0', file: 'apache-2.0.txt' },
   { name: 'llama.cpp', by: 'The ggml authors', license: 'MIT License', file: 'llama.cpp.txt' },
-  { name: 'Tauri', by: 'Tauri Apps Contributors', license: 'MIT License 또는 Apache License 2.0', file: 'tauri-mit.txt' },
+  { name: 'Tauri', by: 'Tauri Apps Contributors', license: null, file: 'tauri-mit.txt' },
   { name: 'React', by: 'Meta Platforms, Inc. and affiliates', license: 'MIT License', file: 'react.txt' },
   { name: 'React Flow', by: 'webkid GmbH', license: 'MIT License', file: 'react-flow.txt' },
 ]
 
 export function LicenseScreen({ onBack }: { onBack: () => void }) {
+  const tAll = useT()
+  const t = tAll.screens
+  const tc = tAll.common
   const [open, setOpen] = useState<string | null>(null)
   const [text, setText] = useState('')
   useEffect(() => {
@@ -133,17 +149,17 @@ export function LicenseScreen({ onBack }: { onBack: () => void }) {
     fetch(`licenses/${open}`)
       .then((r) => r.text())
       .then((t) => alive && setText(t))
-      .catch(() => alive && setText('라이선스 파일을 읽지 못했습니다.'))
+      .catch(() => alive && setText(t.licenses.readFail))
     return () => {
       alive = false
     }
-  }, [open])
+  }, [open, t.licenses.readFail])
 
   return (
     <div className="screen settings">
       <div className="dialog">
-        <h2>라이선스</h2>
-        <p className="sub">이 게임은 아래 구성 요소를 사용합니다. 이름을 누르면 라이선스 전문이 보입니다.</p>
+        <h2>{t.licenses.title}</h2>
+        <p className="sub">{t.licenses.intro}</p>
         <ul className="licenses">
           {COMPONENTS.map((c) => (
             <li key={c.name}>
@@ -156,7 +172,7 @@ export function LicenseScreen({ onBack }: { onBack: () => void }) {
               >
                 <b>{c.name}</b>
                 <span>
-                  {c.by} · {c.license}
+                  {c.by} · {c.license ?? t.licenses.tauri}
                 </span>
               </button>
             </li>
@@ -164,7 +180,7 @@ export function LicenseScreen({ onBack }: { onBack: () => void }) {
         </ul>
         {open && <pre className="license-text">{text}</pre>}
         <div className="actions">
-          <button onClick={onBack}>돌아가기</button>
+          <button onClick={onBack}>{tc.back}</button>
         </div>
       </div>
     </div>

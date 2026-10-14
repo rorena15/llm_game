@@ -1,10 +1,13 @@
 // 골프장 홈페이지 (greenhill-cc.com): 짙은 초록과 금색, 세리프 글꼴, 순위표
+import { useT } from '../../i18n'
 import { T } from './common'
 import { cells, sections, type SiteProps } from './parse'
 
+// 현재 메뉴 판별은 페이지 글(한국어)과 비교하므로 한국어 목록을 두고, 보이는 이름만 번역한다
 const GNB = ['클럽 소개', '코스 안내', '예약', '회원 기록실', '오시는 길']
 
 export function ClubSite(p: SiteProps) {
+  const t = useT().sites.club
   const { head, parts } = sections(p.body)
   const [club, page = ''] = head.split('·').map((s) => s.trim())
   const en = p.host.split('.')[0].replace(/-cc$/, '').toUpperCase()
@@ -17,9 +20,9 @@ export function ClubSite(p: SiteProps) {
           <small>COUNTRY CLUB</small>
         </div>
         <nav>
-          {GNB.map((g) => (
+          {GNB.map((g, gi) => (
             <span key={g} className={g === page ? 'on' : ''}>
-              {g}
+              {t.gnb[gi]}
             </span>
           ))}
         </nav>
@@ -44,9 +47,9 @@ export function ClubSite(p: SiteProps) {
                 <table className="club-board">
                   <thead>
                     <tr>
-                      <th>순위</th>
-                      <th>회원</th>
-                      <th>스코어</th>
+                      <th>{t.rank}</th>
+                      <th>{t.member}</th>
+                      <th>{t.score}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -82,7 +85,7 @@ export function ClubSite(p: SiteProps) {
       </div>
       <footer className="club-foot">
         <b>{club}</b>
-        <small>회원 전용 · 예약 문의 프런트 데스크</small>
+        <small>{t.footer}</small>
       </footer>
     </article>
   )
