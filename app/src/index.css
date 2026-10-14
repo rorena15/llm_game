@@ -58,10 +58,15 @@ input {
   border: 0;
   border-radius: 4px;
 }
-.actions button.ghost {
+button.ghost {
+  padding: 8px 16px;
   color: var(--text);
   background: transparent;
   border: 1px solid var(--line);
+  border-radius: 4px;
+}
+button.ghost:hover {
+  border-color: var(--accent);
 }
 button:disabled {
   opacity: 0.4;
