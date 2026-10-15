@@ -6,6 +6,7 @@ export const screens = {
     locked: '잠김: 앞 미션을 완료하세요',
     tutorial: '튜토리얼',
     settings: '설정',
+    challengeCount: (n: number, total: number) => `도전 ${n}/${total}`,
   },
   briefing: {
     start: '작전 시작',
@@ -22,6 +23,14 @@ export const screens = {
     retries: '다시 접근',
     times: (n: number) => `${n}회`,
     newMail: '새 메일 확인',
+    challenges: '도전 과제',
+    challenge: {
+      quick: (n: number) => `${n}마디 안에 클리어`,
+      calm: (n: number) => `경계 ${n} 넘지 않기 (다시 접근 없이)`,
+      oneShot: () => '로그인 한 번에 성공',
+      honest: () => '사칭·핑계 없이 클리어',
+    },
+    newChallenge: '새로 달성',
   },
   settings: {
     title: '설정',

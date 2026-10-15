@@ -1,4 +1,5 @@
 import type { ScenarioSpec } from '../engine/types'
+import { CALM_MAX, CHALLENGES, QUICK_TURNS } from '../game/challenge'
 import type { MissionRun } from '../game/run'
 import { useSave } from '../game/save'
 import { useEffect } from 'react'
@@ -42,6 +43,11 @@ export function TitleScreen({ missions, unlockAll, onPick, onSettings }: TitlePr
                 <b>{open ? m.title : t.screens.title.locked}</b>
                 <span>
                   {m.difficulty > 0 ? stars(m.difficulty) : t.screens.title.tutorial}
+                  {rec.cleared && !m.script && (
+                    <small className={`challenge-count${rec.challenges?.length === CHALLENGES.length ? ' all' : ''}`}>
+                      {t.screens.title.challengeCount(rec.challenges?.length ?? 0, CHALLENGES.length)}
+                    </small>
+                  )}
                   {rec.best && <em className={`grade g${rec.best}`}>{rec.best}</em>}
                 </span>
               </button>
@@ -85,6 +91,7 @@ interface ResultProps {
 }
 
 export function ResultScreen({ run, onBack, onEnding }: ResultProps) {
+  const save = useSave()
   const t = useT()
   const r = t.screens.result
   const sc = run.scenario
@@ -111,6 +118,25 @@ export function ResultScreen({ run, onBack, onEnding }: ResultProps) {
             {d}
           </pre>
         ))}
+        {!sc.script && (
+          <div className="challenges">
+            <b>{r.challenges}</b>
+            <ul>
+              {CHALLENGES.map((c) => {
+                const now = run.challenges.includes(c)
+                const ever = now || (save.mission(sc.id).challenges ?? []).includes(c)
+                const isNew = run.newChallenges.includes(c)
+                return (
+                  <li key={c} className={`${now ? 'done' : ever ? 'past' : ''}${isNew ? ' new' : ''}`}>
+                    <span>{now || ever ? '✓' : '·'}</span>
+                    {r.challenge[c](c === 'quick' ? QUICK_TURNS : CALM_MAX)}
+                    {isNew && <em>{r.newChallenge}</em>}
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        )}
         <dl className="stats">
           <dt>{r.time}</dt>
           <dd>{r.minutes(mins)}</dd>

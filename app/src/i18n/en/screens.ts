@@ -8,6 +8,7 @@ export const screens: typeof Ko = {
     locked: 'Locked: finish the previous mission',
     tutorial: 'Tutorial',
     settings: 'Settings',
+    challengeCount: (n: number, total: number) => `Challenges ${n}/${total}`,
   },
   briefing: {
     start: 'Begin operation',
@@ -24,6 +25,14 @@ export const screens: typeof Ko = {
     retries: 'Retries',
     times: (n: number) => `${n}`,
     newMail: 'Check new mail',
+    challenges: 'Challenges',
+    challenge: {
+      quick: (n: number) => `Clear within ${n} messages`,
+      calm: (n: number) => `Keep suspicion at ${n} or below (no retries)`,
+      oneShot: () => 'Log in on the first try',
+      honest: () => 'Clear without posing as anyone or making excuses',
+    },
+    newChallenge: 'New',
   },
   settings: {
     title: 'Settings',

@@ -95,7 +95,10 @@ function Play({ run, debug, onQuit, onRestart, onEnding }: PlayProps) {
   useRun(run)
   const cleared = run.status === 'cleared'
   useEffect(() => {
-    if (cleared) save.recordClear(run.scenario.id, run.grade, run.score)
+    if (!cleared) return
+    // 개발 모드의 StrictMode는 효과를 두 번 돌린다. 두 번째는 빈 목록이라 덮어쓰지 않는다
+    const fresh = save.recordClear(run.scenario.id, run.grade, run.score, run.challenges)
+    if (fresh.length) run.newChallenges = fresh
   }, [cleared, run])
   if (cleared) return <ResultScreen run={run} onBack={onQuit} onEnding={onEnding} />
   return (

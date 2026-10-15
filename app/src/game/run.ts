@@ -5,6 +5,7 @@ import { ALARM_AT } from '../engine/rules'
 import { ScriptedSession } from '../engine/scripted'
 import { Session, type Talker } from '../engine/session'
 import type { FactSpec, InferenceSpec, Scenario, TurnResult } from '../engine/types'
+import { achieved, type ChallengeId } from './challenge'
 import { gradeOf, score, type Grade } from './grade'
 import { checkHealth } from './health'
 import { logError } from './log'
@@ -64,6 +65,10 @@ export class MissionRun {
   chat: ChatMsg[] = []
   loginFails = 0
   retries = 0
+  /** 도전 과제용: 보낸 대화 수(다시 접근해도 이어서 셈), 사칭 판정을 받은 적 있나, 이번에 처음 달성한 과제 */
+  turns = 0
+  pretextUsed = false
+  newChallenges: ChallengeId[] = []
   status: RunStatus = 'playing'
   busy = false
   notices: Notice[] = []
@@ -193,6 +198,8 @@ export class MissionRun {
         .map((i) => ({ id: i.id, label: i.label }))
       const before = this.suspicion
       const r = await this.session.turn(text, { leverageCards })
+      this.turns++
+      if (r.judgment.tactic === 'pretext') this.pretextUsed = true
       if (before < ALARM_AT && r.state.suspicion >= ALARM_AT && !r.gameOver)
         this.notify('warn', msg().game.noticeWarnTitle, msg().game.noticeSuspicious(this.scenario.npc.name))
       const j = r.judgment
@@ -382,6 +389,18 @@ export class MissionRun {
 
   get grade(): Grade {
     return gradeOf(this.score)
+  }
+
+  /** 이 판에서 달성한 도전 과제. 튜토리얼에는 없다 */
+  get challenges(): ChallengeId[] {
+    if (this.scenario.script) return []
+    return achieved({
+      turns: this.turns,
+      maxSuspicion: this.session.state.maxSuspicion,
+      retries: this.retries,
+      loginFails: this.loginFails,
+      pretext: this.pretextUsed,
+    })
   }
 
   /** 튜토리얼 안내: 단계마다 끝났는지 */

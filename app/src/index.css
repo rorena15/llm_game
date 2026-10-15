@@ -2099,3 +2099,49 @@ button:disabled {
     animation: none;
   }
 }
+
+/* 도전 과제 ({x.challenge}) */
+.challenges {
+  margin: 0 0 14px;
+  font-size: 13px;
+}
+.challenges ul {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.challenges li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--dim);
+}
+.challenges li > span {
+  width: 14px;
+  text-align: center;
+}
+.challenges li.done {
+  color: var(--accent);
+}
+.challenges li.past {
+  color: var(--fg, inherit);
+  opacity: 0.75;
+}
+.challenges li em {
+  padding: 0 6px;
+  font-size: 11px;
+  font-style: normal;
+  color: var(--bg);
+  background: var(--warn);
+  border-radius: 8px;
+  animation: chip-pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) 0.9s both;
+}
+.missions .challenge-count {
+  margin-left: 8px;
+  color: var(--dim);
+}
+.missions .challenge-count.all {
+  color: var(--warn);
+}

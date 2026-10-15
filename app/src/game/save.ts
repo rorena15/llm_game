@@ -2,6 +2,7 @@
 // 데스크톱 앱에서는 앱 데이터 폴더의 save.json, 브라우저 실행에서는 localStorage
 import { invoke, isTauri } from '@tauri-apps/api/core'
 import { useSyncExternalStore } from 'react'
+import { CHALLENGES, type ChallengeId } from './challenge'
 import { better, type Grade } from './grade'
 
 export interface MissionRecord {
@@ -10,6 +11,8 @@ export interface MissionRecord {
   bestScore?: number
   /** 지금 진행 중인(마지막으로 시작한) 변형. 다음에 새로 시작할 때 이것과 다른 변형을 고른다 */
   variant?: string
+  /** 지금까지 달성한 도전 과제 ({x.challenge}) */
+  challenges?: ChallengeId[]
 }
 
 /** 설정 화면({pack})이 채운다 */
@@ -119,21 +122,26 @@ export class SaveStore {
     this.update(id, { variant })
   }
 
-  /** 클리어 기록. 더 좋은 등급일 때만 최고 기록을 바꾼다. 다음 판은 다른 변형이 되도록 지금 변형은 그대로 둔다 */
-  recordClear(id: string, grade: Grade, points: number) {
+  /** 클리어 기록. 더 좋은 등급일 때만 최고 기록을 바꾼다. 다음 판은 다른 변형이 되도록 지금 변형은 그대로 둔다.
+   *  도전 과제는 지금까지 달성한 것에 더하고, 이번에 처음 달성한 것을 돌려준다 */
+  recordClear(id: string, grade: Grade, points: number, challenges: ChallengeId[] = []): ChallengeId[] {
     const m = this.mission(id)
+    const had = new Set(m.challenges ?? [])
+    const fresh = challenges.filter((c) => !had.has(c))
     const patch: Partial<MissionRecord> = { cleared: true }
     if (better(grade, m.best) || (grade === m.best && points > (m.bestScore ?? -1))) {
       patch.best = grade
       patch.bestScore = points
     }
+    if (fresh.length) patch.challenges = CHALLENGES.filter((c) => had.has(c) || fresh.includes(c))
     this.update(id, patch)
+    return fresh
   }
 
   /** 개발자 패널: 주어진 미션을 모두 S로 클리어한 기록 */
   devClearAll(ids: string[]) {
     const missions = { ...this.data.missions }
-    for (const id of ids) missions[id] = { ...this.mission(id), cleared: true, best: 'S', bestScore: 100 }
+    for (const id of ids) missions[id] = { ...this.mission(id), cleared: true, best: 'S', bestScore: 100, challenges: [...CHALLENGES] }
     this.data = { ...this.data, missions }
     this.persist()
   }
