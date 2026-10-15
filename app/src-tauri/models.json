@@ -1,0 +1,19 @@
+{
+  "release": "https://github.com/rorena15/llm_game/releases/download/models-v1",
+  "models": [
+    {
+      "id": "se-kanana-8b",
+      "files": [
+        { "name": "se-kanana-8b-00001-of-00003.gguf", "size": 1886829536, "sha256": "399f45b7b780559676cc9390a1b83933b102f559eebf38d232e317a86e414cdc" },
+        { "name": "se-kanana-8b-00002-of-00003.gguf", "size": 1888804736, "sha256": "0afae660e3409587c3694507a728462b44766c1e0d021b8253d0593518274d2d" },
+        { "name": "se-kanana-8b-00003-of-00003.gguf", "size": 1145131520, "sha256": "a78f16b88d3e7ec07a05ad38362f2bf3e06ee8962787b170822be01f8fb47c92" }
+      ]
+    },
+    {
+      "id": "se-kanana-2.1b",
+      "files": [
+        { "name": "se-kanana-2.1b-00001-of-00001.gguf", "size": 1522796896, "sha256": "e7e6ab76f1960a30e632699b4dcfb98bf29b6e795c04002502d2592a0abf5f2f" }
+      ]
+    }
+  ]
+}

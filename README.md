@@ -27,7 +27,8 @@ app/                 게임 (Tauri + React + TS)
   story/             엔딩 문구(ending.json), 모든 미션 공통 웹페이지(sites.json)
   eval/convos/       모델 평가용 대화 세트
   tools/             시나리오 검증, 대화 실행, 평가 실행 (Node)
-  src-tauri/         데스크톱 앱 껍데기 (Rust)
+  src-tauri/         데스크톱 앱 껍데기 (Rust): 저장, 로그, llama-server 실행, 모델 다운로드
+  src-tauri/models.json  배포본이 받을 모델 조각 목록 (주소, 크기, sha256)
 train/               모델 준비 (배포본에 들어가지 않음)
   modelfiles/        Ollama Modelfile
   out/               변환한 GGUF (git 제외)
@@ -69,7 +70,15 @@ cd train/modelfiles
 ollama create se-kanana-8b -f Modelfile.kanana-8b
 ```
 
-배포본에서는 Ollama 대신 `llama-server`를 앱에 함께 넣을 예정입니다 (같은 OpenAI 호환 API라 주소만 바뀝니다).
+### 배포본의 모델 실행
+
+배포본(데스크톱 앱)은 Ollama 대신 앱에 함께 든 `llama-server`(llama.cpp Vulkan 빌드)를 씁니다. 같은 OpenAI 호환 API라 엔진 코드는 그대로입니다.
+
+- `npm run fetch-llama`가 고정한 llama.cpp 빌드를 받아 체크섬을 확인하고 `app/src-tauri/llama/`에 둡니다(git 제외). `tauri dev`와 `tauri build` 앞에 자동으로 돌고, 이미 같은 빌드가 있으면 넘어갑니다. 빌드를 바꾸려면 `app/tools/fetch-llama.ts`의 `BUILD`와 `SHA256`을 같이 고칩니다.
+- 처음 실행하면 타이틀 화면에서 모델을 받습니다. 그래픽카드 VRAM이 6GB 이상이면 8B, 아니면 2.1B를 권합니다. 받는 동안 튜토리얼을 할 수 있고, 멈췄다가 이어 받을 수 있으며, 조각마다 sha256을 확인합니다. 모델은 `%APPDATA%\com.socialengineer.game\models\`에 저장됩니다.
+- 모델 파일은 GitHub 릴리스 `models-v1`에 2GiB 미만 조각(`llama-gguf-split --split-max-size 1900M`)으로 올립니다. 조각을 바꾸면 `app/src-tauri/models.json`의 크기와 sha256을 고칩니다.
+- 서버는 실행할 때마다 빈 포트와 새 API 키로 뜨고, GPU로 뜨지 않으면 CPU(`--device none`)로 다시 뜹니다. 게임이 꺼지면(비정상 종료 포함) 같이 꺼집니다. 서버 기록은 로그 폴더의 `llama-server.log`에 남습니다.
+- 개발 빌드는 기본으로 Ollama를 씁니다. 개발 빌드에서 배포본처럼 llama-server를 쓰려면 `VITE_SIDECAR=1 npm run tauri dev`로 실행합니다. 받을 곳을 바꾸려면 `SE_MODEL_RELEASE=<주소>`를 줍니다 (로컬 서버로 시험할 때).
 
 ## 개발 명령 (`app/`에서)
 
@@ -80,6 +89,7 @@ ollama create se-kanana-8b -f Modelfile.kanana-8b
 | `npm run story` | 이야기 원고(docs/이야기.md "7. 원고")를 게임 데이터에 넣기. `-- --export`는 반대로 지금 데이터로 원고를 새로 씀 |
 | `npm run chat -- mission_1 a < 대사.txt` | 실제 모델에 대사를 차례로 보내 판정·응답 보기 (`--lang en`이면 영어 시나리오) |
 | `npm run eval -- se-kanana-8b se-kanana-2.1b` | 평가 대화 세트를 모델별로 돌려 요약표와 기록 남김 (`app/eval/runs/`). `--lang en`이면 `eval/convos/en/`과 `scenarios/en/`으로 |
+| `npm run fetch-llama` | 배포본에 넣을 llama-server 받기 (`src-tauri/llama/`) |
 | `npm run lint` | ESLint |
 | `npm run build` | 타입 검사 + 웹 빌드 |
 

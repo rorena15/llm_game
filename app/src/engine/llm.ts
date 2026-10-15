@@ -18,6 +18,7 @@ export type LlmHealth = 'ok' | 'down' | 'nomodel'
 export class OpenAICompatLlm implements Llm {
   private baseUrl: string
   private model: string
+  private apiKey = ''
 
   constructor(baseUrl: string, model: string) {
     this.baseUrl = baseUrl
@@ -32,10 +33,23 @@ export class OpenAICompatLlm implements Llm {
     this.model = model
   }
 
+  /** 배포본은 llama-server를 띄운 뒤 그 포트와 API 키로 바꾼다 */
+  setServer(baseUrl: string, apiKey = '') {
+    this.baseUrl = baseUrl
+    this.apiKey = apiKey
+  }
+
+  private headers(): Record<string, string> {
+    return this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {}
+  }
+
   /** 서버가 떠 있고 모델이 올라와 있는지 (OpenAI 호환 /v1/models, Ollama·llama-server 모두 지원) */
   async ping(timeoutMs = 3000): Promise<LlmHealth> {
     try {
-      const res = await fetch(`${this.baseUrl.replace(/\/$/, '')}/v1/models`, { signal: AbortSignal.timeout(timeoutMs) })
+      const res = await fetch(`${this.baseUrl.replace(/\/$/, '')}/v1/models`, {
+        headers: this.headers(),
+        signal: AbortSignal.timeout(timeoutMs),
+      })
       if (!res.ok) return 'down'
       const data = (await res.json()) as { data?: { id: string }[] }
       const ids = (data.data ?? []).map((m) => m.id)
@@ -49,7 +63,7 @@ export class OpenAICompatLlm implements Llm {
   async chat(messages: ChatMessage[], opts: ChatOptions = {}): Promise<string> {
     const res = await fetch(`${this.baseUrl.replace(/\/$/, '')}/v1/chat/completions`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...this.headers() },
       signal: opts.signal,
       body: JSON.stringify({
         model: this.model,

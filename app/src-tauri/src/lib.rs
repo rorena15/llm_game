@@ -3,6 +3,9 @@ use std::path::PathBuf;
 
 use tauri::Manager;
 
+mod llama;
+mod models;
+
 /// 앱 데이터 폴더의 save.json (진행 저장, 설계안 §12)
 fn save_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
   let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
@@ -60,7 +63,24 @@ pub fn run() {
       }
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![load_save, write_save, append_log])
-    .run(tauri::generate_context!())
-    .expect("error while running tauri application");
+    .manage(llama::Server::default())
+    .invoke_handler(tauri::generate_handler![
+      load_save,
+      write_save,
+      append_log,
+      llama::gpu_info,
+      llama::start_server,
+      llama::server_alive,
+      models::model_status,
+      models::download_model,
+      models::cancel_download,
+    ])
+    .build(tauri::generate_context!())
+    .expect("error while running tauri application")
+    .run(|app, event| {
+      // 게임을 끄면 llama-server도 끈다
+      if let tauri::RunEvent::Exit = event {
+        app.state::<llama::Server>().stop();
+      }
+    });
 }

@@ -9,6 +9,8 @@ import { APP_VERSION } from '../game/version'
 import { CONTENT_READY, LANGS, lang, setLang, useT } from '../i18n'
 import { DEV_ENABLED } from '../game/dev'
 import { HealthBanner } from './Screens'
+import { ModelSetup } from './ModelSetup'
+import { modelInfo, SIDECAR, useRuntime } from '../game/runtime'
 
 function Choice<T extends { id: string; label: string }>({
   options,
@@ -55,6 +57,7 @@ export function Volume({ kind, label }: { kind: VolumeKind; label: string }) {
 
 export function SettingsScreen({ onBack, onLicenses }: { onBack: () => void; onLicenses: () => void }) {
   useSave()
+  useRuntime()
   const tAll = useT()
   const t = tAll.screens
   const tc = tAll.common
@@ -80,8 +83,16 @@ export function SettingsScreen({ onBack, onLicenses }: { onBack: () => void; onL
           </dd>
           <dt>{t.settings.model}</dt>
           <dd>
-            <Choice options={MODELS.map((m) => ({ id: m.id, label: t.settings.models[m.id].label }))} value={modelId()} onPick={(id) => setSetting('model', id)} />
+            <Choice
+              options={MODELS.map((m) => ({
+                id: m.id,
+                label: t.settings.models[m.id].label + (SIDECAR && !modelInfo(m.id)?.ready ? ` · ${t.setup.notDownloaded}` : ''),
+              }))}
+              value={modelId()}
+              onPick={(id) => setSetting('model', id)}
+            />
             {model && <small>{model.note}</small>}
+            <ModelSetup />
             <HealthBanner />
           </dd>
           <dt>{t.settings.speed}</dt>

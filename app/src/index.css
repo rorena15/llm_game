@@ -1967,3 +1967,56 @@ button:disabled {
 .dev-panel button.link:hover {
   text-decoration: underline;
 }
+
+/* 모델 받기 ({pack}) */
+.model-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(520px, 100%);
+  margin: 0 auto 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  font-size: 13px;
+  text-align: left;
+}
+.model-setup.dim {
+  border-color: var(--dim);
+  color: var(--dim);
+}
+.model-setup p {
+  margin: 0;
+}
+.model-setup small {
+  color: var(--dim);
+}
+.model-setup .warn {
+  color: var(--warn);
+}
+.model-setup .row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.model-setup .row > span {
+  flex: 1;
+}
+.model-setup button em {
+  margin-left: 6px;
+  font-style: normal;
+  font-size: 11px;
+  opacity: 0.8;
+}
+.model-setup .bar {
+  height: 6px;
+  border-radius: 3px;
+  background: #ffffff14;
+  overflow: hidden;
+}
+.model-setup .bar > div {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.25s;
+}

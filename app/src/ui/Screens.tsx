@@ -7,6 +7,7 @@ import { APP_VERSION, useNewVersion } from '../game/version'
 import { checkHealth, useHealth } from '../game/health'
 import { useT } from '../i18n'
 import { MailCard } from './Ending'
+import { ModelSetup } from './ModelSetup'
 
 const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n))
 
@@ -30,6 +31,7 @@ export function TitleScreen({ missions, unlockAll, onPick, onSettings }: TitlePr
         SOCIAL<span>_</span>ENGINEER
       </h1>
       <p className="sub">{t.screens.title.tagline}</p>
+      <ModelSetup />
       <ul className="missions">
         {missions.map((m, i) => {
           const rec = save.mission(m.id)

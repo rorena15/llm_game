@@ -13,7 +13,8 @@
     "test": "vitest run",
     "chat": "tsx tools/chat-cli.ts",
     "eval": "tsx tools/eval-run.ts",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "fetch-llama": "tsx tools/fetch-llama.ts"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.3",

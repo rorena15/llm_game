@@ -1,6 +1,7 @@
 // 설정 ({pack}): 값은 진행 저장의 settings에 둔다. 기본값과 화면에 적용하는 일만 여기서
 import { applyLang } from '../i18n'
 import { checkHealth } from './health'
+import { SIDECAR, switchModel } from './runtime'
 import { save } from './save'
 import { llm } from './scenarios'
 
@@ -51,6 +52,7 @@ export function setSetting(key: 'textSpeed' | 'textSize' | 'model', value: strin
   if (key === 'textSize') applyTextSize()
   if (key === 'model') {
     llm.setModel(value)
-    void checkHealth()
+    if (SIDECAR) void switchModel(value)
+    else void checkHealth()
   }
 }

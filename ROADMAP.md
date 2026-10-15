@@ -56,7 +56,7 @@ stage: prototype
 - [ ] {en.content} 영어 내용 파일: 시나리오·사이트·이야기 원고 번역(사용자 검수), 언어 사이 구조 일치 검사, 이름은 Kim Cheolsu 방식 ~XL @decided(2026-10-14) @start(2026-10-14)
 
 ### 배포
-- [ ] {pack} 배포 묶음: llama-server(Vulkan·CPU) 동봉, 첫 실행 모델 다운로드, 설정 화면, 라이선스 화면 ~L @decided(2026-10-12) @start(2026-10-13)
+- [ ] {pack} 배포 묶음: llama-server(Vulkan·CPU) 동봉, 첫 실행 모델 다운로드, 설정 화면, 라이선스 화면 ~L @decided(2026-10-12) @start(2026-10-13) — 2026-10-15 llama-server 동봉·실행(GPU→CPU 대체, API 키, 게임과 수명 묶기), 모델 다운로드(이어받기·체크섬·VRAM 추천) 완료. 남음: 모델 조각을 GitHub 릴리스 models-v1에 올리기, 설치본(tauri build)으로 처음부터 확인
 - [ ] {robust} 오류 대응: 모델 서버·다운로드 실패 안내, 사양 경고, 오류 로그와 신고 안내, 새 버전 알림 ~M @decided(2026-10-12) @start(2026-10-13)
 - [ ] {qa} 깨끗한 Windows에서 설치부터 엔딩까지, 모든 변형 직접 플레이 ~M @decided(2026-10-12)
 - [ ] {playtest} 외부 플레이테스터 3명 이상, 막힌 지점 수정 ~M @decided(2026-10-12)
