@@ -1,29 +1,34 @@
 // 대화 세트(eval/convos/*.txt)를 모델마다 돌려 기록과 요약을 남긴다.
-// 실행: npm run eval -- <모델1> [모델2 ...]   (LLM_URL 기본 http://localhost:11434)
+// 실행: npm run eval -- <모델1> [모델2 ...] [--lang en]   (LLM_URL 기본 http://localhost:11434)
 // 대화 파일 이름은 <시나리오 앞부분>_<이름>.txt, 예: m1_flatter.txt → mission_1
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+// --lang en이면 eval/convos/en/의 대화를 scenarios/en/의 시나리오로 돌린다
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { OpenAICompatLlm } from '../src/engine/llm'
 import { applyVariant } from '../src/engine/scenario'
 import { Session } from '../src/engine/session'
 import type { ScenarioSpec, TurnResult } from '../src/engine/types'
+import { convoDir, loadSpec, ROOT, takeLang } from './content'
 
-const ROOT = join(import.meta.dirname, '..')
-const models = process.argv.slice(2)
+const { lang, rest: models } = takeLang(process.argv.slice(2))
 if (!models.length) {
   console.error('모델 이름을 하나 이상 주세요')
   process.exit(1)
 }
 const url = process.env.LLM_URL ?? 'http://localhost:11434'
 const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')
-const outDir = join(ROOT, 'eval', 'runs', stamp)
+const outDir = join(ROOT, 'eval', 'runs', lang === 'ko' ? stamp : `${stamp}-${lang}`)
+const CONVOS = convoDir(lang)
+if (!existsSync(CONVOS)) {
+  console.error(`대화 세트 폴더가 없음: ${CONVOS}`)
+  process.exit(1)
+}
 mkdirSync(outDir, { recursive: true })
 
-const convos = readdirSync(join(ROOT, 'eval', 'convos')).filter((f) => f.endsWith('.txt'))
+const convos = readdirSync(CONVOS).filter((f) => f.endsWith('.txt'))
 const scenarioFor = (file: string): ScenarioSpec => {
   const n = file.match(/^m(\d+)_/)?.[1]
-  const id = n ? `mission_${n}` : 'tutorial'
-  return JSON.parse(readFileSync(join(ROOT, 'scenarios', `${id}.json`), 'utf8'))
+  return loadSpec(n ? `mission_${n}` : 'tutorial', lang)
 }
 
 interface Sum {
@@ -45,7 +50,7 @@ for (const model of models) {
   for (const file of convos) {
     const spec = scenarioFor(file)
     const session = new Session(applyVariant(spec, spec.variants[0]), llm)
-    const lines = readFileSync(join(ROOT, 'eval', 'convos', file), 'utf8').split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
+    const lines = readFileSync(join(CONVOS, file), 'utf8').split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
     log.push(`\n=== ${file} ===`)
     for (const line of lines) {
       const t0 = performance.now()

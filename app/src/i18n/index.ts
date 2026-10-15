@@ -2,11 +2,12 @@
 // (타입으로 검사: 빠진 문구가 있으면 tsc가 실패한다). 끼워 넣을 값이 있는 문구는 함수로 쓴다.
 //
 // 이 파일이 다루는 것은 화면 문구뿐이다. 시나리오·이야기·NPC 프롬프트는 내용 파일 쪽에서 언어별로 둔다 (설계안 §17).
+import type { Lang } from '../engine/types'
 import { save, useSave } from '../game/save'
 import { ko } from './ko'
 import { en } from './en'
 
-export type Lang = 'ko' | 'en'
+export type { Lang }
 export type Messages = typeof ko
 
 const MESSAGES: Record<Lang, Messages> = { ko, en }

@@ -3,8 +3,12 @@
 export const TACTICS = ['flatter', 'rush', 'empathy', 'pretext', 'ask', 'chat', 'hostile'] as const
 export type Tactic = (typeof TACTICS)[number]
 
-/** hage 하게체 · haeyo 해요체 · hapsho 합쇼체 · banmal 반말 */
-export type Speech = 'hage' | 'haeyo' | 'hapsho' | 'banmal'
+/** 내용 언어. 시나리오 파일이 놓인 폴더로 정해진다 (scenarios/ = ko, scenarios/en/ = en) */
+export type Lang = 'ko' | 'en'
+
+/** 한국어: hage 하게체 · haeyo 해요체 · hapsho 합쇼체 · banmal 반말
+ *  영어: formal · neutral · casual (설계안 §17.3) */
+export type Speech = 'hage' | 'haeyo' | 'hapsho' | 'banmal' | 'formal' | 'neutral' | 'casual'
 
 export type FactLevel = 'free' | 'guarded' | 'secret'
 
@@ -99,6 +103,8 @@ export interface GuideStep {
 /** 시나리오 파일 그대로 (자리 표시 {{key}} 포함) */
 export interface ScenarioSpec {
   id: string
+  /** 없으면 ko. 불러오는 쪽(withLang)이 폴더에 맞춰 채운다 */
+  lang?: Lang
   title: string
   difficulty: number
   briefing: string

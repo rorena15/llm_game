@@ -51,7 +51,7 @@ stage: prototype
 
 ### 영어판 (설계안 §17, 2026-10-14 v1.0에 포함하기로)
 - [x] {i18n} 화면 문구를 한국어·영어 문구 묶음으로, 설정에 언어 선택 ~M @decided(2026-10-14) @start(2026-10-14) @done(2026-10-14)
-- [ ] {en.engine} 영어 판정·대사 프롬프트, 격식 등급, guard 언어별 규칙 ~M @decided(2026-10-14) @start(2026-10-14) — 영어 프롬프트 문구는 Claude 작성이 안전 분류기에 막혀 사용자가 쓰기로 할지 정하는 중, 구조는 Claude
+- [ ] {en.engine} 영어 판정·대사 프롬프트, 격식 등급, guard 언어별 규칙 ~M @decided(2026-10-14) @start(2026-10-14) — 2026-10-15 구조 완료 (언어별 문구 틀 src/engine/lang, formal·neutral·casual, guard 영어 규칙, scenarios/en 불러오기, --lang en, 구조 일치 검사). 남음: 사용자가 en.ts 문구 작성
 - [ ] {en.eval} 영어 평가 세트 + 모델 기준선 (Claude가 직접 실행) ~M @decided(2026-10-14) @start(2026-10-14)
 - [ ] {en.content} 영어 내용 파일: 시나리오·사이트·이야기 원고 번역(사용자 검수), 언어 사이 구조 일치 검사, 이름은 Kim Cheolsu 방식 ~XL @decided(2026-10-14) @start(2026-10-14)
 

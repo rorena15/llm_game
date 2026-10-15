@@ -18,11 +18,12 @@
 ```
 app/                 게임 (Tauri + React + TS)
   src/engine/        NPC 엔진. UI에 의존하지 않는 순수 TS (판정 → 수치표 → 대사 → 검사)
+  src/engine/lang/   판정·대사 프롬프트 문구 (ko.ts, en.ts)
   src/game/          미션 한 판의 상태(MissionRun), 시나리오·모델 연결
   src/ui/            데스크톱, 창, 앱 화면
   src/ui/sites/      브라우저 속 사이트 틀 (회사·SNS·학교·골프장, 그 밖은 기본 틀)
   src/i18n/          화면 문구 (ko/·en/ 영역별 문구 묶음)
-  scenarios/         미션 데이터 (JSON, 변형 포함)
+  scenarios/         미션 데이터 (JSON, 변형 포함). 영어판은 scenarios/en/
   story/             엔딩 문구(ending.json), 모든 미션 공통 웹페이지(sites.json)
   eval/convos/       모델 평가용 대화 세트
   tools/             시나리오 검증, 대화 실행, 평가 실행 (Node)
@@ -77,14 +78,16 @@ ollama create se-kanana-8b -f Modelfile.kanana-8b
 | `npm test` | 엔진·보드 테스트 (모델 없이, 가짜 모델로) |
 | `npm run validate` | 시나리오 형식과 미션 설계 규칙 검사 (변형마다) |
 | `npm run story` | 이야기 원고(docs/이야기.md "7. 원고")를 게임 데이터에 넣기. `-- --export`는 반대로 지금 데이터로 원고를 새로 씀 |
-| `npm run chat -- mission_1 a < 대사.txt` | 실제 모델에 대사를 차례로 보내 판정·응답 보기 |
-| `npm run eval -- se-kanana-8b se-kanana-2.1b` | 평가 대화 세트를 모델별로 돌려 요약표와 기록 남김 (`app/eval/runs/`) |
+| `npm run chat -- mission_1 a < 대사.txt` | 실제 모델에 대사를 차례로 보내 판정·응답 보기 (`--lang en`이면 영어 시나리오) |
+| `npm run eval -- se-kanana-8b se-kanana-2.1b` | 평가 대화 세트를 모델별로 돌려 요약표와 기록 남김 (`app/eval/runs/`). `--lang en`이면 `eval/convos/en/`과 `scenarios/en/`으로 |
 | `npm run lint` | ESLint |
 | `npm run build` | 타입 검사 + 웹 빌드 |
 
 ## 화면 문구와 언어
 
 화면에 보이는 문구는 코드에 직접 쓰지 않고 `app/src/i18n/ko/<영역>.ts`에 넣은 뒤 컴포넌트에서 `useT()`(컴포넌트 밖에서는 `msg()`)로 읽습니다. 같은 이름의 `app/src/i18n/en/<영역>.ts`에 영어 문구를 같은 모양으로 넣어야 하며, 빠지면 `npx tsc -b`가 실패합니다. 값을 끼워 넣는 문구는 함수로 씁니다. 언어는 설정 화면에서 고르고 저장 파일의 `lang`에 남습니다. 지금은 화면 문구만 영어가 있고 미션·이야기 내용은 한국어뿐이라, 영어는 개발 빌드에서만 고를 수 있습니다. 영어판 계획은 설계안 §17에 있습니다.
+
+NPC 대화의 언어는 시나리오 파일이 놓인 폴더로 정해집니다. `app/scenarios/en/<id>.json`은 영어 시나리오이고, 영어로 고른 상태에서 이 파일이 있는 미션은 영어로, 없는 미션은 한국어로 열립니다. 영어 시나리오의 말투 등급(`npc.speech`)은 `formal`·`neutral`·`casual` 중 하나입니다. 판정·대사 프롬프트 문구는 `app/src/engine/lang/ko.ts`·`en.ts`에 있고, `en.ts`에 빈 칸이 남아 있으면 영어 시나리오의 대화는 시작하지 않습니다. `npm run validate`는 영어 시나리오가 같은 이름의 한국어 파일과 구조(사실·단서·추론 id와 연결, 비밀번호 조각, 변형 id와 비밀번호, 사이트 주소)가 같은지도 검사합니다.
 
 ## 미션 만들기
 

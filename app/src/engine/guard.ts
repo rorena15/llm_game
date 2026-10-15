@@ -1,10 +1,13 @@
 // 대사 검사 (§5.4 ④). 실패 사유 목록을 돌려준다. 빈 배열이면 통과
 import type { FactSpec, Scenario, Speech } from './types'
 
+/** 대사 길이 한도. 영어는 같은 내용이 글자 수로 더 길다 */
 export const MAX_LEN = 220
+export const MAX_LEN_EN = 400
 
 const HANJA = /[一-鿿㐀-䶿]/
 const KANA = /[぀-ヿ]/
+const HANGUL = /[가-힣ㄱ-ㅎㅏ-ㅣ]/
 /** 영어 낱말 3개 이상 연속 = 영어 문장 */
 const ENGLISH_RUN = /[A-Za-z]{2,}[,.!?]?(\s+[A-Za-z]{2,}[,.!?]?){2,}/
 /** 같은 낱말이 붙어서 두 번 ("랙 랙의") */
@@ -16,7 +19,7 @@ const BANMAL_END = /(야|어|아|지|냐|니|거든|잖아|해|돼|래|군|구�
 const norm = (s: string) => s.toLowerCase().replace(/[\s_\-.!]/g, '')
 
 function containsKey(text: string, key: string): boolean {
-  return text.includes(key) || (key.length >= 4 && norm(text).includes(norm(key)))
+  return text.toLowerCase().includes(key.toLowerCase()) || (key.length >= 4 && norm(text).includes(norm(key)))
 }
 
 /** 문장 끝 어미로 말투 등급을 거칠게 검사 */
@@ -59,7 +62,8 @@ export function guard({ text, scenario, allowed, mustReveal }: GuardInput): stri
   const fails: string[] = []
   const t = text.trim()
   if (!t) return ['empty']
-  if (t.length > MAX_LEN) fails.push('too_long')
+  const en = scenario.lang === 'en'
+  if (t.length > (en ? MAX_LEN_EN : MAX_LEN)) fails.push('too_long')
 
   if (containsKey(t, scenario.passwordValue)) fails.push('leak:password')
   for (const f of scenario.facts) {
@@ -72,8 +76,13 @@ export function guard({ text, scenario, allowed, mustReveal }: GuardInput): stri
 
   if (HANJA.test(t)) fails.push('hanja')
   if (KANA.test(t)) fails.push('kana')
-  if (ENGLISH_RUN.test(t)) fails.push('english')
   if (REPEAT.test(t)) fails.push('repeat')
-  if (speechViolations(t, scenario.npc.speech).length) fails.push('speech')
+  if (en) {
+    // 영어판: 이름도 로마자로 쓰니 한글은 한 글자도 나오면 안 된다. 말투 검사는 하지 않는다 (§17.3)
+    if (HANGUL.test(t)) fails.push('hangul')
+  } else {
+    if (ENGLISH_RUN.test(t)) fails.push('english')
+    if (speechViolations(t, scenario.npc.speech).length) fails.push('speech')
+  }
   return [...new Set(fails)]
 }

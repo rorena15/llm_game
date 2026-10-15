@@ -1,14 +1,16 @@
 // 시나리오 검증: 형식과 설계안 §7 미션 설계 규칙을 변형마다 검사한다.
-// 실행: npm run validate [파일...]
-import { readdirSync, readFileSync } from 'node:fs'
-import { basename, join } from 'node:path'
+// 영어 시나리오(scenarios/en/)는 같은 이름의 한국어 파일과 구조가 같은지도 본다 (설계안 §17.2).
+// 실행: npm run validate [파일...]   (파일을 주면 그 파일만, 경로에 /en/이 있으면 영어로 본다)
+import { existsSync } from 'node:fs'
+import { basename, join, sep } from 'node:path'
+import { SPEECHES } from '../src/engine/lang'
 import { applyDecision, decide } from '../src/engine/rules'
 import { applyVariant, unfilledSlots } from '../src/engine/scenario'
 import { newState } from '../src/engine/session'
-import type { Scenario, ScenarioSpec, Tactic } from '../src/engine/types'
+import type { Lang, Scenario, ScenarioSpec, Tactic } from '../src/engine/types'
 import { TACTICS } from '../src/engine/types'
+import { readSpec, scenarioDir, scenarioFiles } from './content'
 
-const DIR = join(import.meta.dirname, '..', 'scenarios')
 const MAX_TURNS_TO_REVEAL = 8
 const MIN_VARIANTS = 3
 
@@ -24,6 +26,9 @@ function checkSpec(spec: ScenarioSpec): string[] {
   spec.inferences.forEach((i) => add(i.id, 'inference'))
 
   if (!spec.npc.fallbackLines?.normal?.length) e.push('npc.fallbackLines.normal 비어 있음')
+  const lang = spec.lang ?? 'ko'
+  if (!SPEECHES[lang].includes(spec.npc.speech))
+    e.push(`npc.speech ${spec.npc.speech}: ${lang}에서 쓸 수 없음 (${SPEECHES[lang].join(', ')})`)
   for (const t of Object.keys(spec.npc.weak)) if (!TACTICS.includes(t as Tactic)) e.push(`npc.weak 알 수 없는 tactic: ${t}`)
   for (const f of spec.facts) {
     if (f.level === 'guarded' && !f.keys?.length) e.push(`guarded 사실에 keys 없음: ${f.id}`)
@@ -129,23 +134,75 @@ function checkVariant(spec: ScenarioSpec, vi: number): string[] {
   return e
 }
 
-const files = process.argv.slice(2).length
-  ? process.argv.slice(2)
-  : readdirSync(DIR).filter((f) => f.endsWith('.json')).map((f) => join(DIR, f))
+/** 언어 사이에 같아야 하는 뼈대. 글·키워드·표시 값은 빼고 id와 연결만 남긴다 */
+function skeleton(spec: ScenarioSpec) {
+  return {
+    difficulty: spec.difficulty,
+    weak: spec.npc.weak,
+    rules: spec.npc.rules.length,
+    facts: spec.facts.map((f) => ({ id: f.id, level: f.level, when: f.when ?? null, keys: (f.keys ?? []).length > 0 })),
+    clues: spec.clues.map((c) => ({ id: c.id, source: c.source, keyword: !!c.keyword })),
+    inferences: spec.inferences.map((i) => ({
+      id: i.id,
+      requires: i.requires,
+      unlocks: i.unlocks ?? [],
+      leverage: !!i.leverage,
+      final: !!i.final,
+    })),
+    pieces: spec.password.pieces,
+    variants: spec.variants.map((v) => ({ id: v.id, password: v.password, slots: Object.keys(v.values).sort() })),
+    loginHints: Object.keys(spec.loginHints).sort(),
+    emails: spec.emails.map((m) => m.folder ?? 'inbox'),
+    websites: Object.keys(spec.websites).sort(),
+    secretDocuments: spec.secretDocuments.length,
+    script: spec.script ? { rules: spec.script.rules.map((r) => r.fact ?? null) } : null,
+    guide: spec.guide?.map((g) => ({ cards: g.cards ?? [], login: !!g.login })) ?? null,
+  }
+}
+
+/** 두 값의 다른 곳을 경로로 (처음 몇 개만) */
+function diff(a: unknown, b: unknown, path = ''): string[] {
+  if (JSON.stringify(a) === JSON.stringify(b)) return []
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    const keys = [...new Set([...Object.keys(a), ...Object.keys(b)])]
+    return keys.flatMap((k) =>
+      diff((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k], Array.isArray(a) ? `${path}[${k}]` : path ? `${path}.${k}` : k),
+    )
+  }
+  return [`${path || '(전체)'}: ko ${JSON.stringify(a)} / 이 파일 ${JSON.stringify(b)}`]
+}
+
+function checkSameAsKorean(spec: ScenarioSpec): string[] {
+  const koFile = join(scenarioDir('ko'), `${spec.id}.json`)
+  if (!existsSync(koFile)) return [`같은 id의 한국어 파일이 없음: ${spec.id}.json`]
+  return diff(skeleton(readSpec(koFile, 'ko')), skeleton(spec))
+    .slice(0, 20)
+    .map((d) => `한국어와 구조가 다름: ${d}`)
+}
+
+const langOf = (file: string): Lang => (file.split(sep).join('/').includes('/en/') ? 'en' : 'ko')
+const args = process.argv.slice(2)
+const files = args.length ? args : [...scenarioFiles('ko'), ...scenarioFiles('en')]
 
 let failed = 0
 for (const file of files) {
-  const spec = JSON.parse(readFileSync(file, 'utf8')) as ScenarioSpec
-  const errors = [...checkSpec(spec), ...spec.variants.flatMap((_, i) => checkVariant(spec, i))]
+  const lang = langOf(file)
+  const spec = readSpec(file, lang)
+  const errors = [
+    ...checkSpec(spec),
+    ...spec.variants.flatMap((_, i) => checkVariant(spec, i)),
+    ...(lang === 'ko' ? [] : checkSameAsKorean(spec)),
+  ]
+  const name = lang === 'ko' ? basename(file) : `${lang}/${basename(file)}`
   if (errors.length) {
     failed++
-    console.log(`✗ ${basename(file)}`)
+    console.log(`✗ ${name}`)
     for (const m of errors) console.log(`  - ${m}`)
   } else {
     const turns = spec.facts
       .filter((f) => f.level === 'guarded')
       .map((f) => `${f.id} ${turnsToReveal(applyVariant(spec, spec.variants[0]), f.id)}턴`)
-    console.log(`✓ ${basename(file)} (변형 ${spec.variants.length}개${turns.length ? `, 공개까지 ${turns.join(', ')}` : ''})`)
+    console.log(`✓ ${name} (변형 ${spec.variants.length}개${turns.length ? `, 공개까지 ${turns.join(', ')}` : ''})`)
   }
 }
 process.exit(failed ? 1 : 0)

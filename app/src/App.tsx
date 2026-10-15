@@ -3,7 +3,7 @@ import { applyVariant, pickVariant } from './engine/scenario'
 import { useDevFlags } from './game/dev'
 import { MissionRun, useRun } from './game/run'
 import { save, useSave } from './game/save'
-import { llm, SCENARIOS } from './game/scenarios'
+import { llm, scenarios } from './game/scenarios'
 import { ENDING } from './game/story'
 import { msg } from './i18n'
 import { DevPanel } from './ui/DevPanel'
@@ -22,7 +22,7 @@ type Screen =
 
 /** 새로 시작할 때마다 지난번과 다른 변형 (§7.1). 고른 변형은 저장한다. variantId는 개발자 패널이 정할 때만 */
 function startRun(id: string, variantId?: string): MissionRun {
-  const spec = SCENARIOS[id]
+  const spec = scenarios()[id]
   const variant = spec.variants.find((v) => v.id === variantId) ?? pickVariant(spec, save.mission(id).variant)
   save.startVariant(id, variant.id)
   return new MissionRun(applyVariant(spec, variant), llm)
@@ -32,7 +32,7 @@ export default function App() {
   useSave()
   const dev = useDevFlags()
   const [screen, setScreen] = useState<Screen>({ name: 'title' })
-  const missions = Object.values(SCENARIOS).sort((a, b) => a.difficulty - b.difficulty)
+  const missions = Object.values(scenarios()).sort((a, b) => a.difficulty - b.difficulty)
   const play = (id: string, variant?: string) => setScreen({ name: 'play', run: startRun(id, variant) })
 
   let body: ReactNode
@@ -46,7 +46,7 @@ export default function App() {
       />
     )
   else if (screen.name === 'briefing') {
-    const spec = SCENARIOS[screen.id]
+    const spec = scenarios()[screen.id]
     body = (
       <BriefingScreen spec={spec} onBack={() => setScreen({ name: 'title' })} onStart={() => play(spec.id)} />
     )
@@ -106,7 +106,7 @@ function Play({ run, debug, onQuit, onRestart, onEnding }: PlayProps) {
         debug={debug}
         onQuit={onQuit}
         onRestart={onRestart}
-        answerChanges={SCENARIOS[run.scenario.id].variants.length > 1}
+        answerChanges={scenarios()[run.scenario.id].variants.length > 1}
       />
       {debug && <div className="debug-badge">{msg().desktop.debugBadge(run.scenario.variantId, run.scenario.passwordValue)}</div>}
     </>

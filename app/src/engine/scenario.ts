@@ -1,4 +1,4 @@
-import type { Scenario, ScenarioSpec, VariantSpec } from './types'
+import type { Lang, Scenario, ScenarioSpec, VariantSpec } from './types'
 
 const SLOT = /\{\{(\w+)\}\}/g
 
@@ -40,4 +40,10 @@ export function unfilledSlots(s: Scenario): string[] {
   }
   walk(s)
   return [...found]
+}
+
+/** 시나리오에 내용 언어를 붙인다. 파일 안에 lang이 있으면 폴더와 같아야 한다 */
+export function withLang(spec: ScenarioSpec, lang: Lang): ScenarioSpec {
+  if (spec.lang && spec.lang !== lang) throw new Error(`${spec.id}: 파일의 lang(${spec.lang})이 폴더(${lang})와 다름`)
+  return { ...spec, lang }
 }
