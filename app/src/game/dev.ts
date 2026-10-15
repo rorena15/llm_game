@@ -11,12 +11,14 @@ export interface DevFlags {
   showDebug: boolean
   /** 브리핑을 건너뛰고 바로 데스크톱으로 */
   skipBriefing: boolean
+  /** 켤 때 시작 트레일러를 건너뛰기 */
+  skipIntro: boolean
   /** 패널을 펼쳐 둘지 */
   open: boolean
 }
 
 const KEY = 'social-engineer.dev'
-const DEFAULTS: DevFlags = { unlockAll: true, showDebug: true, skipBriefing: false, open: false }
+const DEFAULTS: DevFlags = { unlockAll: true, showDebug: true, skipBriefing: false, skipIntro: false, open: false }
 
 function load(): DevFlags {
   try {

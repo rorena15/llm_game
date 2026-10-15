@@ -10,10 +10,14 @@ import { DevPanel } from './ui/DevPanel'
 import { Desktop } from './ui/Desktop'
 import { EndingScreen } from './ui/Ending'
 import { LicenseScreen, SettingsScreen } from './ui/Settings'
-import { BriefingScreen, ResultScreen, TitleScreen } from './ui/Screens'
+import { Intro } from './ui/Intro'
+import { BriefingScreen, MissionSelectScreen, ResultScreen } from './ui/Screens'
+import { TitleScreen } from './ui/Title'
 
 type Screen =
+  | { name: 'intro' }
   | { name: 'title' }
+  | { name: 'missions' }
   | { name: 'briefing'; id: string }
   | { name: 'play'; run: MissionRun }
   | { name: 'ending' }
@@ -31,24 +35,36 @@ function startRun(id: string, variantId?: string): MissionRun {
 export default function App() {
   useSave()
   const dev = useDevFlags()
-  const [screen, setScreen] = useState<Screen>({ name: 'title' })
+  // 켤 때마다 트레일러부터. 개발 중에는 패널에서 끌 수 있다
+  const [screen, setScreen] = useState<Screen>(dev.skipIntro ? { name: 'title' } : { name: 'intro' })
   const missions = Object.values(scenarios()).sort((a, b) => a.difficulty - b.difficulty)
   const play = (id: string, variant?: string) => setScreen({ name: 'play', run: startRun(id, variant) })
 
+  const brief = (id: string) => (dev.skipBriefing ? play(id) : setScreen({ name: 'briefing', id }))
   let body: ReactNode
-  if (screen.name === 'title')
+  if (screen.name === 'intro') body = <Intro onDone={() => setScreen({ name: 'title' })} />
+  else if (screen.name === 'title')
     body = (
       <TitleScreen
         missions={missions}
-        unlockAll={dev.unlockAll}
-        onPick={(id) => (dev.skipBriefing ? play(id) : setScreen({ name: 'briefing', id }))}
+        onContinue={brief}
+        onMissions={() => setScreen({ name: 'missions' })}
         onSettings={() => setScreen({ name: 'settings' })}
+      />
+    )
+  else if (screen.name === 'missions')
+    body = (
+      <MissionSelectScreen
+        missions={missions}
+        unlockAll={dev.unlockAll}
+        onPick={brief}
+        onBack={() => setScreen({ name: 'title' })}
       />
     )
   else if (screen.name === 'briefing') {
     const spec = scenarios()[screen.id]
     body = (
-      <BriefingScreen spec={spec} onBack={() => setScreen({ name: 'title' })} onStart={() => play(spec.id)} />
+      <BriefingScreen spec={spec} onBack={() => setScreen({ name: 'missions' })} onStart={() => play(spec.id)} />
     )
   } else if (screen.name === 'settings')
     body = (

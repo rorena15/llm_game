@@ -8,7 +8,7 @@ import { SHARED_SITES } from '../game/sites'
 import { SEARCH_HOME } from './sites/search'
 import { useSave } from '../game/save'
 
-export type DevJump = 'title' | 'settings' | 'licenses' | 'ending'
+export type DevJump = 'intro' | 'title' | 'missions' | 'settings' | 'licenses' | 'ending'
 
 interface Props {
   missions: ScenarioSpec[]
@@ -23,6 +23,7 @@ const FLAGS: { key: Exclude<keyof DevFlags, 'open'>; label: string }[] = [
   { key: 'unlockAll', label: '미션 잠금 해제' },
   { key: 'showDebug', label: '판정·정답 표시' },
   { key: 'skipBriefing', label: '브리핑 건너뛰기' },
+  { key: 'skipIntro', label: '시작 트레일러 건너뛰기' },
 ]
 
 export function DevPanel(props: Props) {
@@ -78,7 +79,9 @@ function Body({ missions, screen, run, onJump, onBriefing, onStart, flags }: Pro
       <section>
         <h4>화면</h4>
         <div className="row">
+          <button onClick={() => onJump('intro')}>트레일러</button>
           <button onClick={() => onJump('title')}>타이틀</button>
+          <button onClick={() => onJump('missions')}>작전 선택</button>
           <button onClick={() => onJump('settings')}>설정</button>
           <button onClick={() => onJump('licenses')}>라이선스</button>
           <button onClick={() => onJump('ending')}>엔딩</button>

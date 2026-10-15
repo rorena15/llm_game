@@ -9,6 +9,28 @@ export const screens: typeof Ko = {
     tutorial: 'Tutorial',
     settings: 'Settings',
     challengeCount: (n: number, total: number) => `Challenges ${n}/${total}`,
+    continue: 'Continue',
+    newGame: 'New game',
+    missions: 'Select mission',
+    quit: 'Quit',
+    pick: 'Select mission',
+    hint: '↑↓ select · Enter confirm',
+  },
+  intro: {
+    press: 'Press any key',
+    skip: 'Skip: any key',
+    boot: [
+      'CORPX INTRANET  v4.2',
+      'Opening remote session ........ done',
+      'Firewall ...................... no way through',
+      'Server vulnerabilities ........ none',
+      'Remaining route ............... people',
+    ],
+    chat: [
+      { from: 'player', text: "Hi, this is IT. We're checking accounts today. Got a minute?" },
+      { from: 'npc', text: 'Oh, sure. What is it?' },
+      { from: 'player', text: 'Just a few quick questions to confirm.' },
+    ],
   },
   briefing: {
     start: 'Begin operation',

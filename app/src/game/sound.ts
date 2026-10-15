@@ -2,7 +2,7 @@
 // 브라우저는 사용자가 한 번 누르기 전에는 소리를 막으므로, 첫 클릭·키 입력 때 AudioContext를 깨운다
 import { save } from './save'
 
-export type Sfx = 'key' | 'notice' | 'clue' | 'inference' | 'error' | 'granted' | 'alarm' | 'slip' | 'link' | 'stamp'
+export type Sfx = 'key' | 'notice' | 'clue' | 'inference' | 'error' | 'granted' | 'alarm' | 'slip' | 'link' | 'stamp' | 'boot' | 'glitch' | 'boom' | 'hover' | 'select' | 'blip'
 
 /** 볼륨 종류. 전체가 나머지 셋에 곱해진다 */
 export type VolumeKind = 'master' | 'bgm' | 'sfx' | 'key'
@@ -111,10 +111,15 @@ function tick(c: AudioContext, vol: number, out?: GainNode) {
   src.start()
 }
 
-export function play(s: Sfx) {
+export function play(s: Sfx, retried = false) {
   if (!soundOn()) return
   const c = audio()
-  if (!c || !buses || c.state !== 'running') return
+  if (!c || !buses) return
+  // 첫 키 입력 순간에는 오디오가 아직 깨어나는 중이다. 깨어나면 한 번만 다시 튼다
+  if (c.state !== 'running') {
+    if (!retried) void c.resume().then(() => play(s, true))
+    return
+  }
   if (s !== 'key' && volume('sfx') === 0) return
   switch (s) {
     case 'key':
@@ -150,7 +155,44 @@ export function play(s: Sfx) {
       // 등급이 찍히는 쿵
       tone(c, 110, 0, 0.3, 'sine', 0.35, 55)
       return tick(c, 0.6, buses.sfx)
+    case 'boot':
+      // 브라운관이 켜지는 소리: 높은 휘파람이 내려앉고 낮은 웅 소리
+      tone(c, 7800, 0, 0.5, 'sine', 0.03, 6200)
+      tone(c, 60, 0, 0.9, 'sawtooth', 0.12, 50)
+      return noise(c, 0.35, 0.15, 1800)
+    case 'glitch':
+      for (let i = 0; i < 6; i++) tone(c, 200 + Math.random() * 1800, i * 0.045, 0.04, 'square', 0.06)
+      return noise(c, 0.4, 0.3, 3000)
+    case 'boom':
+      // 로고가 찍히는 쿵: 낮게 떨어지는 사인파와 잔향 같은 잡음
+      tone(c, 90, 0, 1.6, 'sine', 0.5, 32)
+      tone(c, 45, 0, 1.8, 'triangle', 0.3, 28)
+      return noise(c, 1.2, 0.22, 600)
+    case 'hover':
+      return tone(c, 1760, 0, 0.03, 'sine', 0.05)
+    case 'select':
+      tone(c, 880, 0, 0.06, 'square', 0.06)
+      return tone(c, 1320, 0.05, 0.1, 'square', 0.05)
+    case 'blip':
+      return tone(c, 1200 + Math.random() * 400, 0, 0.025, 'square', 0.03)
   }
+}
+
+/** 걸러 낸 잡음: 길이(초), 크기, 저역 통과 주파수. 끝으로 갈수록 줄어든다 */
+function noise(c: AudioContext, dur: number, vol: number, cutoff: number) {
+  const len = Math.floor(c.sampleRate * dur)
+  const buf = c.createBuffer(1, len, c.sampleRate)
+  const d = buf.getChannelData(0)
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 2
+  const src = c.createBufferSource()
+  const f = c.createBiquadFilter()
+  const g = c.createGain()
+  src.buffer = buf
+  f.type = 'lowpass'
+  f.frequency.value = cutoff
+  g.gain.value = vol
+  src.connect(f).connect(g).connect(buses!.sfx)
+  src.start()
 }
 
 let heartbeat: ReturnType<typeof setInterval> | null = null

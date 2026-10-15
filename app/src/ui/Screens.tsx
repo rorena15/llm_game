@@ -4,7 +4,6 @@ import type { MissionRun } from '../game/run'
 import { useSave } from '../game/save'
 import { useEffect } from 'react'
 import { play } from '../game/sound'
-import { APP_VERSION, useNewVersion } from '../game/version'
 import { checkHealth, useHealth } from '../game/health'
 import { useT } from '../i18n'
 import { MailCard } from './Ending'
@@ -12,26 +11,21 @@ import { ModelSetup } from './ModelSetup'
 
 const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n))
 
-interface TitleProps {
+interface MissionSelectProps {
   missions: ScenarioSpec[]
   /** 개발용: 잠긴 미션도 고를 수 있게 */
   unlockAll?: boolean
   onPick: (id: string) => void
-  onSettings: () => void
+  onBack: () => void
 }
 
-/** 미션은 난이도 순. 앞 미션을 깨야 다음이 열린다 (§2) */
-export function TitleScreen({ missions, unlockAll, onPick, onSettings }: TitleProps) {
+/** 작전 선택. 미션은 난이도 순이고, 앞 미션을 깨야 다음이 열린다 (§2) */
+export function MissionSelectScreen({ missions, unlockAll, onPick, onBack }: MissionSelectProps) {
   const save = useSave()
   const t = useT()
-  const latest = useNewVersion()
   return (
-    <div className="screen title">
-      {latest && <p className="banner-info">{t.screens.title.newVersion(latest)}</p>}
-      <h1>
-        SOCIAL<span>_</span>ENGINEER
-      </h1>
-      <p className="sub">{t.screens.title.tagline}</p>
+    <div className="screen title mission-select">
+      <h2 className="screen-head">{t.screens.title.pick}</h2>
       <ModelSetup />
       <ul className="missions">
         {missions.map((m, i) => {
@@ -55,10 +49,9 @@ export function TitleScreen({ missions, unlockAll, onPick, onSettings }: TitlePr
           )
         })}
       </ul>
-      <button className="ghost title-settings" onClick={onSettings}>
-        {t.screens.title.settings}
+      <button className="ghost title-settings" onClick={onBack}>
+        {t.common.back}
       </button>
-      <small className="version">v{APP_VERSION}</small>
     </div>
   )
 }

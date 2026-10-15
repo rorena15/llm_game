@@ -7,6 +7,28 @@ export const screens = {
     tutorial: '튜토리얼',
     settings: '설정',
     challengeCount: (n: number, total: number) => `도전 ${n}/${total}`,
+    continue: '이어하기',
+    newGame: '새로 시작',
+    missions: '작전 선택',
+    quit: '종료',
+    pick: '작전 선택',
+    hint: '↑↓ 고르기 · Enter 확인',
+  },
+  intro: {
+    press: '아무 키나 누르세요',
+    skip: '건너뛰기: 아무 키',
+    boot: [
+      'CORPX INTRANET  v4.2',
+      '원격 세션 연결 중 ............ 완료',
+      '방화벽 ........................ 우회 불가',
+      '서버 취약점 .................... 없음',
+      '남은 경로 ...................... 사람',
+    ],
+    chat: [
+      { from: 'player', text: '부장님, 시스템팀입니다. 계정 점검 중인데 잠깐 괜찮으세요?' },
+      { from: 'npc', text: '아, 네. 무슨 일이죠?' },
+      { from: 'player', text: '확인차 몇 가지만 여쭤볼게요.' },
+    ],
   },
   briefing: {
     start: '작전 시작',
