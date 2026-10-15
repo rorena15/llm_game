@@ -2,7 +2,7 @@
 // 브라우저는 사용자가 한 번 누르기 전에는 소리를 막으므로, 첫 클릭·키 입력 때 AudioContext를 깨운다
 import { save } from './save'
 
-export type Sfx = 'key' | 'notice' | 'clue' | 'inference' | 'error' | 'granted' | 'alarm'
+export type Sfx = 'key' | 'notice' | 'clue' | 'inference' | 'error' | 'granted' | 'alarm' | 'slip' | 'link' | 'stamp'
 
 /** 볼륨 종류. 전체가 나머지 셋에 곱해진다 */
 export type VolumeKind = 'master' | 'bgm' | 'sfx' | 'key'
@@ -94,8 +94,8 @@ function tone(c: AudioContext, freq: number, at: number, dur: number, type: Osci
   o.stop(t + dur + 0.02)
 }
 
-/** 걸러 낸 잡음 한 토막 (키보드 딸깍) */
-function tick(c: AudioContext, vol: number) {
+/** 걸러 낸 잡음 한 토막 (키보드 딸깍). 효과음으로 쓸 때는 out을 준다 */
+function tick(c: AudioContext, vol: number, out?: GainNode) {
   const len = Math.floor(c.sampleRate * 0.025)
   const buf = c.createBuffer(1, len, c.sampleRate)
   const d = buf.getChannelData(0)
@@ -107,7 +107,7 @@ function tick(c: AudioContext, vol: number) {
   f.type = 'bandpass'
   f.frequency.value = 2500 + Math.random() * 1500
   g.gain.value = vol
-  src.connect(f).connect(g).connect(buses!.key)
+  src.connect(f).connect(g).connect(out ?? buses!.key)
   src.start()
 }
 
@@ -137,7 +137,38 @@ export function play(s: Sfx) {
     case 'alarm':
       for (let i = 0; i < 3; i++) tone(c, 880, i * 0.32, 0.22, 'sawtooth', 0.08, 620)
       return
+    case 'slip':
+      // NPC가 비밀을 흘린 순간: 낮게 떨어졌다가 밝게 올라가는 두 음
+      tone(c, 330, 0, 0.14, 'sine', 0.16, 247)
+      tone(c, 740, 0.12, 0.28, 'triangle', 0.2)
+      return tone(c, 1109, 0.2, 0.36, 'sine', 0.12)
+    case 'link':
+      // 보드 카드가 맞물리는 딸깍
+      tick(c, 0.9, buses.sfx)
+      return tone(c, 1320, 0, 0.05, 'square', 0.05)
+    case 'stamp':
+      // 등급이 찍히는 쿵
+      tone(c, 110, 0, 0.3, 'sine', 0.35, 55)
+      return tick(c, 0.6, buses.sfx)
   }
+}
+
+let heartbeat: ReturnType<typeof setInterval> | null = null
+
+/** 경계가 높을 때 깔리는 심장 소리. bpm이 0이면 멈춘다 */
+export function setHeartbeat(bpm: number) {
+  if (heartbeat) clearInterval(heartbeat)
+  heartbeat = null
+  if (bpm <= 0) return
+  const beat = () => {
+    if (!soundOn()) return
+    const c = audio()
+    if (!c || !buses || c.state !== 'running' || volume('sfx') === 0) return
+    tone(c, 62, 0, 0.16, 'sine', 0.3, 45)
+    tone(c, 58, 0.2, 0.2, 'sine', 0.22, 42)
+  }
+  beat()
+  heartbeat = setInterval(beat, 60000 / bpm)
 }
 
 /** 낮게 깔리는 배경음: 어긋난 두 음과 걸러 낸 잡음 (사무실 기계 소리 느낌) */

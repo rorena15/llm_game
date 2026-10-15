@@ -2020,3 +2020,82 @@ button:disabled {
   background: var(--accent);
   transition: width 0.25s;
 }
+
+/* 손맛 ({x.juice}) */
+/* NPC가 흘린 핵심 낱말 */
+.messenger mark.slip {
+  padding: 0 2px;
+  color: inherit;
+  background: linear-gradient(transparent 55%, #ffd84a 55%);
+  border-radius: 2px;
+  animation: slip-in 0.6s ease-out;
+}
+@keyframes slip-in {
+  from {
+    background-size: 0 100%;
+  }
+  to {
+    background-size: 100% 100%;
+  }
+}
+.messenger mark.slip {
+  background-repeat: no-repeat;
+}
+/* 단서 칩이 튀어나옴 */
+.clue-chip {
+  animation: chip-pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+@keyframes chip-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* 보드: 방금 생긴 추론 카드 */
+.board .card.fresh {
+  animation: card-snap 1.2s ease-out;
+}
+@keyframes card-snap {
+  0% {
+    transform: scale(0.6);
+    box-shadow: 0 0 0 #e8d24a00;
+  }
+  25% {
+    transform: scale(1.08);
+    box-shadow: 0 0 36px #e8d24acc;
+  }
+  100% {
+    transform: none;
+    box-shadow: 0 0 0 #e8d24a00;
+  }
+}
+/* 결과: 등급 도장 */
+.grade-big.stamp b {
+  display: inline-block;
+  animation: stamp 0.55s cubic-bezier(0.2, 0.8, 0.3, 1.2) 0.2s both;
+}
+@keyframes stamp {
+  from {
+    opacity: 0;
+    transform: scale(3) rotate(-12deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.92) rotate(2deg);
+  }
+  to {
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clue-chip,
+  .board .card.fresh,
+  .grade-big.stamp b,
+  .messenger mark.slip {
+    animation: none;
+  }
+}

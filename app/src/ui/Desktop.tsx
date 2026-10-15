@@ -3,7 +3,7 @@ import { ALARM_AT } from '../engine/rules'
 import { useRun, type MissionRun, type Notice } from '../game/run'
 import { useSave } from '../game/save'
 import { localeTag, useT } from '../i18n'
-import { play, setSoundOn, soundOn, startBgm, stopBgm, VOLUMES, type Sfx } from '../game/sound'
+import { play, setHeartbeat, setSoundOn, soundOn, startBgm, stopBgm, VOLUMES, type Sfx } from '../game/sound'
 import { Volume } from './Settings'
 import { BoardApp } from './apps/BoardApp'
 import { BrowserApp } from './apps/BrowserApp'
@@ -94,6 +94,12 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
     if (alarmed && !wasAlarmed.current) play('alarm')
     wasAlarmed.current = alarmed
   }, [alarmed])
+  // 위험 수위부터 심장 소리. 경계가 오를수록 빨라진다 (80 → 분당 84, 100 → 132)
+  const bpm = alarmed && run.status === 'playing' ? Math.round(84 + (run.suspicion - ALARM_AT) * 2.4) : 0
+  useEffect(() => {
+    setHeartbeat(bpm)
+    return () => setHeartbeat(0)
+  }, [bpm])
   useEffect(() => {
     if (!bump) return
     const t = setTimeout(() => setBump(false), 600)

@@ -13,15 +13,16 @@ import {
 import '@xyflow/react/dist/style.css'
 import { useEffect, useMemo, useState } from 'react'
 import { useRun, type Card, type MissionRun } from '../../game/run'
+import { play } from '../../game/sound'
 import { useT } from '../../i18n'
 
-type CardNode = Node<{ card: Card; final: boolean }, 'card'>
+type CardNode = Node<{ card: Card; final: boolean; fresh: boolean }, 'card'>
 
 function CardView({ data }: NodeProps<CardNode>) {
-  const { card, final } = data
+  const { card, final, fresh } = data
   const t = useT().apps.board
   return (
-    <div className={`card ${card.kind}${final ? ' final' : ''}`}>
+    <div className={`card ${card.kind}${final ? ' final' : ''}${fresh ? ' fresh' : ''}`}>
       <Handle type="source" position={Position.Right} id="r" />
       <Handle type="source" position={Position.Left} id="l" />
       <small>{final ? t.finalCard : t.kind[card.kind]}</small>
@@ -53,6 +54,14 @@ export function BoardApp({ run, visible = true }: { run: MissionRun; visible?: b
     if (visible) run.markSeen()
   }, [run, run.cards.length, visible])
 
+  // 방금 맞물려 생긴 추론 카드는 잠깐 빛난다
+  const [fresh, setFresh] = useState<ReadonlySet<string>>(new Set())
+  useEffect(() => {
+    if (!fresh.size) return
+    const timer = setTimeout(() => setFresh(new Set()), 1400)
+    return () => clearTimeout(timer)
+  }, [fresh])
+
   const finals = useMemo(() => new Set(run.scenario.inferences.filter((i) => i.final).map((i) => i.id)), [run.scenario])
   const [nodes, setNodes] = useState<CardNode[]>([])
 
@@ -66,11 +75,11 @@ export function BoardApp({ run, visible = true }: { run: MissionRun; visible?: b
           id: card.id,
           type: 'card',
           position: old?.position ?? run.positions[card.id] ?? defaultPos(card, sameKind >= 0 ? sameKind : i),
-          data: { card, final: finals.has(card.id) },
+          data: { card, final: finals.has(card.id), fresh: fresh.has(card.id) },
         }
       }),
     )
-  }, [run.cards, run.positions, finals])
+  }, [run.cards, run.positions, finals, fresh])
 
   const edges: Edge[] = run.links.map((l) => ({
     id: `${l.a}--${l.b}`,
@@ -109,6 +118,8 @@ export function BoardApp({ run, visible = true }: { run: MissionRun; visible?: b
             if (r.reason === 'wrong') setToast({ text: t.noRelation, bad: true })
             return
           }
+          play('link')
+          if (r.made.length) setFresh(new Set(r.made.map((i) => i.id)))
         }}
         colorMode="dark"
         fitView

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ALARM_AT } from '../../engine/rules'
 import { useRun, type ChatMsg, type MissionRun } from '../../game/run'
 import { typeMs } from '../../game/settings'
@@ -14,6 +14,22 @@ function department(persona: string, name: string): string {
   const head = persona.split(/[,.]/)[0].replace(/^CorpX\s*/, '').trim()
   const rank = name.split(' ').slice(1).join(' ')
   return rank && head.endsWith(rank) ? head.slice(0, -rank.length).trim() : head
+}
+
+/** 대사 속에서 흘린 핵심 낱말(사실의 keys)을 강조한다 */
+function withSlips(text: string, clues: ChatMsg['clues']): ReactNode {
+  const keys = (clues ?? []).flatMap((c) => c.keys ?? []).filter((k) => k && text.includes(k))
+  if (!keys.length) return text
+  const esc = keys.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).sort((a, b) => b.length - a.length)
+  return text.split(new RegExp(`(${esc.join('|')})`)).map((part, i) =>
+    keys.includes(part) ? (
+      <mark key={i} className="slip">
+        {part}
+      </mark>
+    ) : (
+      part
+    ),
+  )
 }
 
 /** 이름으로 정하는 아바타 색 */
@@ -51,6 +67,14 @@ export function MessengerApp({ run, playerName, debug }: { run: MissionRun; play
     const timer = setTimeout(() => setReadUpTo(lastMine.id), 600 + Math.random() * 900)
     return () => clearTimeout(timer)
   }, [lastMine, readUpTo])
+
+  // 비밀을 흘린 대사는 다 보인 순간 소리로 알린다
+  const slipped = useRef(seen.current)
+  useEffect(() => {
+    if (typing || !last || last.from !== 'npc' || !last.clues?.length || last.id <= slipped.current) return
+    slipped.current = last.id
+    play('slip')
+  }, [typing, last])
 
   useEffect(() => {
     if (!typing) return
@@ -123,7 +147,7 @@ export function MessengerApp({ run, playerName, debug }: { run: MissionRun; play
               <div className="msg-col">
                 {first && !mine && <span className="who">{npc}</span>}
                 <div className="bubble-row">
-                  <p className="bubble">{isTyping ? m.text.slice(0, typing.shown) : m.text}</p>
+                  <p className="bubble">{isTyping ? m.text.slice(0, typing.shown) : withSlips(m.text, m.clues)}</p>
                   <span className="meta">
                     {mine && !isRead(m) && <b className="unread">1</b>}
                     {lastOfGroup && !isTyping && <time>{hhmm(m.at)}</time>}

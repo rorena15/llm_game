@@ -90,14 +90,19 @@ export function ResultScreen({ run, onBack, onEnding }: ResultProps) {
   const sc = run.scenario
   const mins = Math.max(1, Math.round(((run.clearedAt ?? Date.now()) - run.startedAt) / 60000))
   const grade = run.grade
-  useEffect(() => play('granted'), [])
+  useEffect(() => {
+    play('granted')
+    // 등급 도장이 찍히는 때에 맞춰 (CSS stamp 0.55초 뒤)
+    const timer = setTimeout(() => play('stamp'), 750)
+    return () => clearTimeout(timer)
+  }, [])
   const turns = run.session.state.history.filter((l) => l.role === 'player').length
   return (
     <div className="screen result">
       <div className="dialog">
         <h2>ACCESS GRANTED</h2>
         <p className="sub">{sc.title}</p>
-        <div className={`grade-big g${grade}`}>
+        <div className={`grade-big stamp g${grade}`}>
           <b>{grade}</b>
           <small>{r.points(run.score)}</small>
         </div>
