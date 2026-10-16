@@ -2183,7 +2183,7 @@ button:disabled {
   pointer-events: none;
   animation: crt-on 0.7s ease-out forwards;
 }
-.intro:not(.boot) .crt-on {
+.intro:not(.scene-boot) .crt-on {
   display: none;
 }
 @keyframes crt-on {
@@ -2245,11 +2245,11 @@ button:disabled {
   background: #f1f3f5;
   border-bottom-left-radius: 4px;
 }
-.intro.glitch .intro-chat {
+.intro.scene-glitch .intro-chat {
   animation: glitch-shake 0.12s steps(2) infinite;
   filter: drop-shadow(4px 0 #ff2a6d) drop-shadow(-4px 0 #05d9e8);
 }
-.intro.glitch {
+.intro.scene-glitch {
   animation: glitch-flash 0.8s steps(4);
 }
 @keyframes glitch-shake {
@@ -2440,7 +2440,7 @@ button:disabled {
 @media (prefers-reduced-motion: reduce) {
   .logo::before,
   .logo::after,
-  .intro.glitch .intro-chat,
+  .intro.scene-glitch .intro-chat,
   .intro-logo {
     animation: none;
   }

@@ -219,8 +219,10 @@ export function startBgm() {
   const c = audio()
   if (!c || !buses || bgm || c.state !== 'running') return
   const out = c.createGain()
-  out.gain.setValueAtTime(0, c.currentTime)
-  out.gain.linearRampToValueAtTime(BGM_GAIN, c.currentTime + 3)
+  const t0 = c.currentTime
+  out.gain.value = 0
+  out.gain.setValueAtTime(0, t0)
+  out.gain.linearRampToValueAtTime(BGM_GAIN, t0 + 3)
   out.connect(buses.bgm)
 
   const lp = c.createBiquadFilter()
@@ -246,8 +248,11 @@ export function startBgm() {
   bgm = {
     stop: () => {
       const t = c.currentTime
+      // gain.value는 오디오가 한 번 돌기 전에는 기본값 1을 돌려준다. 켜자마자 끄면(StrictMode, 빠른 화면 전환)
+      // 배경음이 20배로 튀었다가 줄어들었으므로, 지금 크기를 페이드인 곡선에서 계산한다
+      const now = BGM_GAIN * Math.min(1, Math.max(0, (t - t0) / 3))
       out.gain.cancelScheduledValues(t)
-      out.gain.setValueAtTime(out.gain.value, t)
+      out.gain.setValueAtTime(now, t)
       out.gain.linearRampToValueAtTime(0, t + 1)
       ;[...oscs, lfo].forEach((o) => o.stop(t + 1.1))
     },

@@ -79,13 +79,14 @@ export function Intro({ onDone }: { onDone: () => void }) {
 
   if (phase === 'press')
     return (
-      <div className="intro press">
+      <div className="intro scene-press">
         <p className="press-key">{t.press}</p>
       </div>
     )
 
+  // 장면 이름을 그대로 클래스로 쓰면 'logo'가 .logo 스타일과 겹친다
   return (
-    <div className={`intro ${phase}`}>
+    <div className={`intro scene-${phase}`}>
       <div className="crt-on" />
       {phase === 'boot' && (
         <pre className="intro-boot">

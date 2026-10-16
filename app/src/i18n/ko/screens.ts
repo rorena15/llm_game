@@ -2,7 +2,7 @@
 export const screens = {
   title: {
     newVersion: (v: string) => `새 버전 ${v}이 나왔습니다. itch.io 페이지에서 받을 수 있습니다.`,
-    tagline: '말 몇 마디로 열리는 문',
+    tagline: '완벽한 시스템, 완벽한 틈새',
     locked: '잠김: 앞 미션을 완료하세요',
     tutorial: '튜토리얼',
     settings: '설정',
@@ -25,7 +25,7 @@ export const screens = {
       '남은 경로 ...................... 사람',
     ],
     chat: [
-      { from: 'player', text: '부장님, 시스템팀입니다. 계정 점검 중인데 잠깐 괜찮으세요?' },
+      { from: 'player', text: '부장님, IT 보안섹션 팀입니다. \n계정 점검 중인데 잠깐 괜찮으세요?' },
       { from: 'npc', text: '아, 네. 무슨 일이죠?' },
       { from: 'player', text: '확인차 몇 가지만 여쭤볼게요.' },
     ],
@@ -103,7 +103,7 @@ export const screens = {
   ending: {
     newMail: '새 메일 1통',
     next: '계속',
-    thanks: '플레이해 주셔서 고맙습니다.',
+    thanks: '플레이해 주셔서 감사합니다.',
     toTitle: '타이틀로',
     from: (sender: string) => `보낸 사람: ${sender}`,
   },

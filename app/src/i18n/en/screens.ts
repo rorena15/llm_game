@@ -4,7 +4,7 @@ import type { screens as Ko } from '../ko/screens'
 export const screens: typeof Ko = {
   title: {
     newVersion: (v: string) => `Version ${v} is out. Get it from the itch.io page.`,
-    tagline: 'A few words open any door',
+    tagline: 'A perfect system, A perfect loophole',
     locked: 'Locked: finish the previous mission',
     tutorial: 'Tutorial',
     settings: 'Settings',
@@ -27,7 +27,7 @@ export const screens: typeof Ko = {
       'Remaining route ............... people',
     ],
     chat: [
-      { from: 'player', text: "Hi, this is IT. We're checking accounts today. Got a minute?" },
+      { from: 'player', text: "Hi, this is IT Security Section. We're checking accounts today. Got a minute?" },
       { from: 'npc', text: 'Oh, sure. What is it?' },
       { from: 'player', text: 'Just a few quick questions to confirm.' },
     ],
