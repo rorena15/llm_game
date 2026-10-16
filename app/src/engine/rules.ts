@@ -62,8 +62,9 @@ export function decide(
   let s = base.s > 0 ? (base.s * fit.s) / weak + fit.sAdd : base.s + fit.sAdd
   let r = base.r > 0 ? base.r * fit.r * weak : base.r
 
+  const lower = playerText.toLowerCase()
   for (const rule of sc.npc.rules) {
-    if (playerText.includes(rule.keyword)) {
+    if (lower.includes(rule.keyword.toLowerCase())) {
       s += rule.suspicion ?? 0
       r += rule.rapport ?? 0
     }

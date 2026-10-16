@@ -17,8 +17,10 @@ export class ScriptedSession implements Talker {
 
   async turn(playerText: string): Promise<TurnResult> {
     const { rules, default: fallback } = this.scenario.script!
-    const text = playerText.replace(/\s+/g, '')
-    const rule = rules.find((r) => r.keywords.some((k) => text.includes(k.replace(/\s+/g, ''))))
+    // 띄어쓰기와 대소문자를 가리지 않는다 (영어판: Password · password)
+    const squash = (s: string) => s.replace(/\s+/g, '').toLowerCase()
+    const text = squash(playerText)
+    const rule = rules.find((r) => r.keywords.some((k) => text.includes(squash(k))))
     const fact = rule?.fact ? this.scenario.facts.find((f) => f.id === rule.fact) : undefined
     const revealNow = fact && !this.state.revealed.includes(fact.id) ? fact : null
     const dialogue = rule ? rule.reply : fallback[this.defaults++ % fallback.length]
