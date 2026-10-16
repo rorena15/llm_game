@@ -1,5 +1,5 @@
-// llama-server 사이드카 (설계안 §4, §12). 배포본의 resources/llama/에 들어 있는 Vulkan 빌드를 띄운다.
-// GPU가 없거나 Vulkan이 안 되면 화면 쪽이 cpu=true로 다시 띄운다.
+// llama-server 사이드카 (설계안 §4, §12). 배포본의 resources/llama/에 들어 있는 빌드를 띄운다
+// (Windows는 Vulkan, macOS는 Metal). GPU가 없거나 GPU로 안 뜨면 화면 쪽이 cpu=true로 다시 띄운다.
 use std::fs::File;
 use std::net::TcpListener;
 use std::path::{Path, PathBuf};
@@ -99,12 +99,49 @@ pub struct Started {
   key: String,
 }
 
+const EXE: &str = if cfg!(windows) { "llama-server.exe" } else { "llama-server" };
+
 fn exe(app: &AppHandle) -> Result<PathBuf, String> {
-  let path = app.path().resource_dir().map_err(|e| e.to_string())?.join("llama").join("llama-server.exe");
-  if path.exists() {
-    Ok(path)
-  } else {
-    Err(format!("llama-server가 없음: {}", path.display()))
+  let path = app.path().resource_dir().map_err(|e| e.to_string())?.join("llama").join(EXE);
+  if !path.exists() {
+    return Err(format!("llama-server가 없음: {}", path.display()));
+  }
+  // 배포본 리소스로 옮겨지면서 실행 권한이 빠질 수 있다
+  #[cfg(unix)]
+  {
+    use std::os::unix::fs::PermissionsExt;
+    let _ = std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755));
+  }
+  Ok(path)
+}
+
+/// macOS 등에는 Job Object가 없어, 게임이 비정상으로 꺼지면 llama-server가 남을 수 있다.
+/// 띄운 서버의 pid를 적어 두고, 다음에 띄울 때 남아 있으면 끈다
+#[cfg(unix)]
+mod leftover {
+  use std::path::Path;
+  use std::process::Command;
+
+  fn pid_file(dir: &Path) -> std::path::PathBuf {
+    dir.join("llama-server.pid")
+  }
+
+  /// 지난번에 띄운 서버가 아직 돌고 있으면 끈다 (이름이 llama-server인 프로세스만)
+  pub fn kill(dir: &Path) {
+    let Ok(text) = std::fs::read_to_string(pid_file(dir)) else { return };
+    let pid = text.trim();
+    if pid.is_empty() || !pid.chars().all(|c| c.is_ascii_digit()) {
+      return;
+    }
+    let name = Command::new("ps").args(["-p", pid, "-o", "comm="]).output();
+    if matches!(&name, Ok(out) if String::from_utf8_lossy(&out.stdout).contains("llama-server")) {
+      let _ = Command::new("kill").arg(pid).status();
+    }
+    let _ = std::fs::remove_file(pid_file(dir));
+  }
+
+  pub fn remember(dir: &Path, pid: u32) {
+    let _ = std::fs::write(pid_file(dir), pid.to_string());
   }
 }
 
@@ -175,11 +212,15 @@ pub fn start_server(app: AppHandle, server: State<Server>, id: String, cpu: bool
   if cpu {
     cmd.args(["--device", "none"]);
   }
+  #[cfg(unix)]
+  leftover::kill(&log_dir);
   let child = cmd.spawn().map_err(|e| e.to_string())?;
   #[cfg(windows)]
   if let Some(job) = &server.job {
     job.assign(&child);
   }
+  #[cfg(unix)]
+  leftover::remember(&log_dir, child.id());
   *server.child.lock().unwrap() = Some(child);
   Ok(Started { port, key })
 }

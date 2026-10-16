@@ -73,13 +73,14 @@ ollama create se-kanana-8b -f Modelfile.kanana-8b
 
 ### 배포본의 모델 실행
 
-배포본(데스크톱 앱)은 Ollama 대신 앱에 함께 든 `llama-server`(llama.cpp Vulkan 빌드)를 씁니다. 같은 OpenAI 호환 API라 엔진 코드는 그대로입니다.
+배포본(데스크톱 앱)은 Ollama 대신 앱에 함께 든 `llama-server`를 씁니다. Windows는 llama.cpp Vulkan 빌드, macOS(Apple Silicon)는 Metal이 든 arm64 빌드입니다. 같은 OpenAI 호환 API라 엔진 코드는 그대로입니다.
 
-- `npm run fetch-llama`가 고정한 llama.cpp 빌드를 받아 체크섬을 확인하고 `app/src-tauri/llama/`에 둡니다(git 제외). `tauri dev`와 `tauri build` 앞에 자동으로 돌고, 이미 같은 빌드가 있으면 넘어갑니다. 빌드를 바꾸려면 `app/tools/fetch-llama.ts`의 `BUILD`와 `SHA256`을 같이 고칩니다.
+- `npm run fetch-llama`가 고정한 llama.cpp 빌드를 받아 체크섬을 확인하고 `app/src-tauri/llama/`에 둡니다(git 제외). `tauri dev`와 `tauri build` 앞에 자동으로 돌고, 이미 같은 빌드가 있으면 넘어갑니다. 빌드를 바꾸려면 `app/tools/fetch-llama.ts`의 `BUILD`와 플랫폼별 `sha256`을 같이 고칩니다.
 - 사양: 최소 VRAM 4GB 그래픽카드(가벼운 2.1B 모델), 권장 VRAM 6GB 이상(고품질 8B 모델). 그래픽카드 없이 CPU로도 실행되지만 한 턴에 20초 안팎이 걸려 권장하지 않습니다 (설계안 §11).
-- 처음 실행하면 타이틀 화면에서 모델을 받습니다. 그래픽카드 VRAM이 6GB 이상이면 8B, 아니면 2.1B를 권합니다. 받는 동안 튜토리얼을 할 수 있고, 멈췄다가 이어 받을 수 있으며, 조각마다 sha256을 확인합니다. 모델은 `%APPDATA%\com.socialengineer.game\models\`에 저장됩니다.
+- 처음 실행하면 타이틀 화면에서 모델을 받습니다. 그래픽카드 VRAM이 6GB 이상이면 8B, 아니면 2.1B를 권합니다. 받는 동안 튜토리얼을 할 수 있고, 멈췄다가 이어 받을 수 있으며, 조각마다 sha256을 확인합니다. 모델은 Windows는 `%APPDATA%\com.socialengineer.game\models\`, macOS는 `~/Library/Application Support/com.socialengineer.game/models/`에 저장됩니다.
 - 모델 파일은 GitHub 릴리스 `models-v1`에 2GiB 미만 조각(`llama-gguf-split --split-max-size 1900M`)으로 올립니다. 조각을 바꾸면 `app/src-tauri/models.json`의 크기와 sha256을 고칩니다.
-- 서버는 실행할 때마다 빈 포트와 새 API 키로 뜨고, GPU로 뜨지 않으면 CPU(`--device none`)로 다시 뜹니다. 게임이 꺼지면(비정상 종료 포함) 같이 꺼집니다. 서버 기록은 로그 폴더의 `llama-server.log`에 남습니다.
+- 서버는 실행할 때마다 빈 포트와 새 API 키로 뜨고, GPU로 뜨지 않으면 CPU(`--device none`)로 다시 뜹니다. 게임이 꺼지면 같이 꺼집니다. Windows는 비정상 종료 때도 Job Object로 같이 꺼지고, macOS는 남은 서버를 다음에 띄울 때 정리합니다(로그 폴더의 `llama-server.pid`). 서버 기록은 로그 폴더의 `llama-server.log`에 남습니다.
+- macOS 빌드는 GitHub Actions(`.github/workflows/mac.yml`, Apple Silicon)에서 만듭니다. Actions 화면에서 직접 실행하거나, `v`로 시작하는 태그를 올리거나, `remake`에서 맥 빌드에 닿는 파일이 바뀌면 돌고, 결과 `.dmg`는 실행 결과의 Artifacts에서 받습니다. Apple 개발자 서명이 없어 ad-hoc 서명만 하므로, 처음 열 때 Finder에서 앱을 우클릭해 "열기"를 고르거나, "손상되었다"고 나오면 터미널에서 `xattr -cr "/Applications/소셜 엔지니어.app"`을 한 번 실행해야 합니다. 인텔 맥은 지원하지 않습니다.
 - 개발 빌드는 기본으로 Ollama를 씁니다. 개발 빌드에서 배포본처럼 llama-server를 쓰려면 `VITE_SIDECAR=1 npm run tauri dev`로 실행합니다. 받을 곳을 바꾸려면 `SE_MODEL_RELEASE=<주소>`를 줍니다 (로컬 서버로 시험할 때).
 
 ## 개발 명령 (`app/`에서)
