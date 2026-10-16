@@ -61,10 +61,10 @@ stage: prototype
 ### 배포
 - [x] {pack} 배포 묶음: llama-server(Vulkan·CPU) 동봉, 첫 실행 모델 다운로드, 설정 화면, 라이선스 화면 ~L @decided(2026-10-12) @start(2026-10-13) @done(2026-10-16) — 2026-10-15 llama-server 동봉·실행(GPU→CPU 대체, API 키, 게임과 수명 묶기), 모델 다운로드(4연결 동시 받기, 이어받기, 받는 동안 앞 조각 체크섬, VRAM 추천) 완료, 8B 93초(초당 53MB, 회선 상한). 모델 조각을 GitHub 릴리스 models-v1(prerelease)에 올리고 실제 주소에서 이어받기·체크섬 확인. 2026-10-16 설치본(tauri build)으로 처음부터 확인 완료 (사용자)
 - [x] {robust} 오류 대응: 모델 서버·다운로드 실패 안내, 사양 경고, 오류 로그와 신고 안내, 새 버전 알림 ~M @decided(2026-10-12) @start(2026-10-13) @done(2026-10-17). 2026-10-17 사양 경고 추가(8B를 VRAM 6GB 미만·CPU로 돌리면 설정에서 가벼운 모델 권함)로 항목 전부 갖춤
-- [ ] {mac} macOS(Apple Silicon) 빌드: GitHub Actions에서 .dmg, llama.cpp Metal 빌드, 서명 없이 ad-hoc(처음 열기 안내), 사용자 맥에서 실기 확인 ~L @decided(2026-10-17) @start(2026-10-17)
+- [ ] {mac} macOS(Apple Silicon) 빌드: GitHub Actions에서 .dmg, llama.cpp Metal 빌드, 서명 없이 ad-hoc(처음 열기 안내), 사용자 맥에서 실기 확인 ~L @decided(2026-10-17) @start(2026-10-17) — 2026-10-17 GitHub Actions 첫 빌드 통과(run 38949021272, .dmg 15MB, 번들 안 llama-server가 Metal 장치 인식, ad-hoc 서명). 남음: 사용자 맥에서 설치·모델 받기·대화 확인 @paused(2026-10-17)
 - [ ] {qa} 깨끗한 Windows에서 설치부터 엔딩까지, 모든 변형 직접 플레이 ~M @decided(2026-10-12)
 - [ ] {playtest} 외부 플레이테스터 3명 이상(한 명 이상은 영어판을 플레이할 영어 사용자, 2026-10-16), 막힌 지점 수정 ~M @decided(2026-10-12)
-- [ ] {ship} itch.io 페이지(소개, 스크린샷, GIF, 최소 사양, 콘텐츠 안내)와 출시 ~M @decided(2026-10-12) @start(2026-10-17) — 2026-10-17 페이지 글 초안 docs/itch-page.md(한·영). 남음: 게임 자체 라이선스 결정(사용자), 스크린샷 5장·GIF, 업로드
+- [ ] {ship} itch.io 페이지(소개, 스크린샷, GIF, 최소 사양, 콘텐츠 안내)와 출시 ~M @decided(2026-10-12) @start(2026-10-17) — 2026-10-17 페이지 글 초안 docs/itch-page.md(한·영). 2026-10-17 라이선스 결정(All rights reserved, LICENSE), 스크린샷 5장·GIF 한·영(docs/itch/). 남음: itch.io 업로드(맥 실기 확인과 {qa}·{playtest} 뒤)
 
 ## v1.0에 넣지 않음 (배포 기준 §15에 필요 없음)
 - [-] {x.updater} Tauri 자동 업데이트(서명 키) @decided(2026-10-12) @cut(2026-10-12) — 새 버전 알림({robust}) + itch.io 재다운로드로 충분
