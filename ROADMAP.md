@@ -56,13 +56,13 @@ stage: prototype
 - [x] {i18n} 화면 문구를 한국어·영어 문구 묶음으로, 설정에 언어 선택 ~M @decided(2026-10-14) @start(2026-10-14) @done(2026-10-14)
 - [x] {en.engine} 영어 판정·대사 프롬프트, 격식 등급, guard 언어별 규칙 ~M @decided(2026-10-14) @start(2026-10-14) @done(2026-10-16) — 2026-10-15 구조 완료 (언어별 문구 틀 src/engine/lang, formal·neutral·casual, guard 영어 규칙, scenarios/en 불러오기, --lang en, 구조 일치 검사). en.ts 문구는 ko.ts 번역으로 채움 (사용자 결정). 남음: 영어 시나리오로 실제 모델 확인({en.eval}). 2026-10-16 영어 시나리오로 실제 모델 확인 완료, 튜토리얼 낱말·NPC 규칙 낱말 대소문자 무시
 - [x] {en.eval} 영어 평가 세트 + 모델 기준선 (Claude가 직접 실행) ~M @decided(2026-10-14) @start(2026-10-14) @done(2026-10-16) — 2026-10-16 eval/convos/en 10개×변형 3개: 8B·2.1B 모두 147/147 깨끗, 누출 0, 메타 12/12, 8B 중앙 1.5초·2.1B 0.8초. 8B는 약점 대화로 미션 1~4 모두 공개(미션 2는 사실 이름표를 고친 뒤 6/6), 2.1B는 미션 4 판정 약함(한국어와 같음). 영어도 Kanana 그대로 씀
-- [ ] {en.content} 영어 내용 파일: 시나리오·사이트·이야기 원고 번역(사용자 검수), 언어 사이 구조 일치 검사, 이름은 Kim Cheolsu 방식 ~XL @decided(2026-10-14) @start(2026-10-14) — 2026-10-16 초안 완료: 용어집 docs/glossary.en.md, scenarios/en 5개, story/en(sites·ending), 사이트 표시 낱말 언어별(i18n sites.marks), 구조 일치 검사 통과. 남음: 사용자 검수(이야기 원고·미션 2 개인정보 줄기 포함), docs/story.en.md, 검수 뒤 CONTENT_READY에 en @paused(2026-10-16)
+- [ ] {en.content} 영어 내용 파일: 시나리오·사이트·이야기 원고 번역(사용자 검수), 언어 사이 구조 일치 검사, 이름은 Kim Cheolsu 방식 ~XL @decided(2026-10-14) @start(2026-10-14) — 2026-10-16 초안 완료: 용어집 docs/glossary.en.md, scenarios/en 5개, story/en(sites·ending), 사이트 표시 낱말 언어별(i18n sites.marks), 구조 일치 검사 통과. 2026-10-16 Opus 검수(원문 대조, 문장 다듬기, 영어 사이트도 단서·주소·누출 테스트에 넣음) 완료. 남음: 사용자가 docs/영어판_역번역.md로 이야기 부분의 뜻 확인, 확인 뒤 CONTENT_READY에 en. 원어민 확인은 {playtest} @paused(2026-10-16)
 
 ### 배포
 - [x] {pack} 배포 묶음: llama-server(Vulkan·CPU) 동봉, 첫 실행 모델 다운로드, 설정 화면, 라이선스 화면 ~L @decided(2026-10-12) @start(2026-10-13) @done(2026-10-16) — 2026-10-15 llama-server 동봉·실행(GPU→CPU 대체, API 키, 게임과 수명 묶기), 모델 다운로드(4연결 동시 받기, 이어받기, 받는 동안 앞 조각 체크섬, VRAM 추천) 완료, 8B 93초(초당 53MB, 회선 상한). 모델 조각을 GitHub 릴리스 models-v1(prerelease)에 올리고 실제 주소에서 이어받기·체크섬 확인. 2026-10-16 설치본(tauri build)으로 처음부터 확인 완료 (사용자)
 - [ ] {robust} 오류 대응: 모델 서버·다운로드 실패 안내, 사양 경고, 오류 로그와 신고 안내, 새 버전 알림 ~M @decided(2026-10-12) @start(2026-10-13)
 - [ ] {qa} 깨끗한 Windows에서 설치부터 엔딩까지, 모든 변형 직접 플레이 ~M @decided(2026-10-12)
-- [ ] {playtest} 외부 플레이테스터 3명 이상, 막힌 지점 수정 ~M @decided(2026-10-12)
+- [ ] {playtest} 외부 플레이테스터 3명 이상(한 명 이상은 영어판을 플레이할 영어 사용자, 2026-10-16), 막힌 지점 수정 ~M @decided(2026-10-12)
 - [ ] {ship} itch.io 페이지(소개, 스크린샷, GIF, 최소 사양, 콘텐츠 안내)와 출시 ~M @decided(2026-10-12)
 
 ## v1.0에 넣지 않음 (배포 기준 §15에 필요 없음)

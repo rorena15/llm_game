@@ -44,7 +44,7 @@ const teamSum = (n: OrgNode): number => n.kids.reduce((a, k) => a + (k.count ?? 
 const headcount = (roots: OrgNode[]) => roots.reduce((a, r) => a + 1 + teamSum(r), 0)
 
 /** "본사: 서울 강남구" 꼴 */
-const KV = /^([^:：]{1,10})[:：]\s*(.+)$/
+const KV = /^([^:：]{1,20})[:：]\s*(.+)$/
 const DATE_TAG = /^\d{4}\.\d{2}\.\d{2}$/
 
 export function CorpSite(p: SiteProps) {

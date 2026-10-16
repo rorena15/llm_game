@@ -26,7 +26,7 @@
       "id": "first_meet",
       "level": "guarded",
       "label": "The day he first met his wife",
-      "text": "The day I first met my wife, we walked a long time together under the {{sky_ko}}. Anything important, I settle with those words ever since.",
+      "text": "The day I first met my wife, we walked a long time together under the {{sky_ko}}. Ever since, I use those words for anything important.",
       "when": { "rapportMin": 35, "suspicionMax": 60 },
       "keys": ["{{sky_ko}}", "{{sky_en}}"]
     },
@@ -61,7 +61,7 @@
       "id": "inf_final",
       "label": "Complete combination",
       "requires": ["inf_memory", "first_meet", "policy"],
-      "yields": "Write '{{sky_ko}}' in lowercase English words joined by an underscore, and end with _{{year}}",
+      "yields": "Write '{{sky_ko}}' as lowercase words joined by an underscore, then add _{{year}} at the end",
       "unlocks": ["login_hint_2"],
       "final": true
     }
@@ -70,7 +70,7 @@
   "emails": [
     { "sender": "Wife", "subject": "Honey, this weekend", "body": "We've both been so busy lately. Do you remember the day we first met? I'd like us to take a long walk together like that day.", "date": "11/18 21:40" },
     { "sender": "Security Team", "subject": "[Notice] {{year}} password policy", "body": "From {{year}}, intranet passwords must be lowercase English words joined by underscores (_), with _{{year}} added at the end. Example: green_tea_{{year}}", "date": "01/02 09:00" },
-    { "sender": "Kim Cheolsu", "subject": "RE: Password change complete", "body": "They told me to change it again, so I did. This time I used those words that belong to my wife and me, so I won't forget. Heh heh.", "folder": "sent", "date": "01/03 17:25" },
+    { "sender": "Kim Cheolsu", "subject": "RE: Password change complete", "body": "They told me to change it again, so I did. This time I used those words, the ones that belong to my wife and me, so I won't forget. Heh heh.", "folder": "sent", "date": "01/03 17:25" },
     { "sender": "HR Team Oh Jihun", "subject": "Second-half open recruitment: final list of successful candidates", "body": "Director, I've submitted the final list of successful candidates for approval. Please take a look.", "date": "09/13 10:05" },
     { "sender": "Golfzone Mall", "subject": "[Ad] Golf wear season sale, up to 50% off", "body": "Get ready for winter rounds. Season sale runs until this weekend.", "folder": "trash", "date": "11/20 07:00" }
   ],
