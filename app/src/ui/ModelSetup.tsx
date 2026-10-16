@@ -58,6 +58,7 @@ export function ModelSetup() {
     <div className="model-setup">
       <b>{t.title}</b>
       <p>{t.intro}</p>
+      <small>{t.spec}</small>
       <small>{rt.gpus === null ? t.checkingGpu : gpu ? t.gpu(gpu.name, (gpu.total_mib / 1024).toFixed(0)) : t.noGpu}</small>
       {rt.error && <p className="warn">{t.failed(rt.error)}</p>}
       <div className="row">
