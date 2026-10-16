@@ -10,7 +10,7 @@ import { CONTENT_READY, LANGS, lang, setLang, useT } from '../i18n'
 import { DEV_ENABLED } from '../game/dev'
 import { HealthBanner } from './Screens'
 import { ModelSetup } from './ModelSetup'
-import { modelInfo, SIDECAR, useRuntime } from '../game/runtime'
+import { modelInfo, SIDECAR, specWarning, useRuntime } from '../game/runtime'
 
 function Choice<T extends { id: string; label: string }>({
   options,
@@ -92,6 +92,7 @@ export function SettingsScreen({ onBack, onLicenses }: { onBack: () => void; onL
               onPick={(id) => setSetting('model', id)}
             />
             {model && <small>{model.note}</small>}
+            <SpecWarning />
             <ModelSetup />
             <HealthBanner />
           </dd>
@@ -196,4 +197,13 @@ export function LicenseScreen({ onBack }: { onBack: () => void }) {
       </div>
     </div>
   )
+}
+
+/** 고품질 모델이 이 PC에 무거우면 가벼운 모델을 권한다 (배포본에서만: 개발 빌드는 Ollama라 GPU 정보가 없다) */
+function SpecWarning() {
+  useRuntime()
+  const t = useT().screens.settings
+  const w = SIDECAR ? specWarning(modelId()) : null
+  if (!w) return null
+  return <small className="warn">{w.kind === 'cpu' ? t.cpuHeavy : t.lowVram(w.gb)}</small>
 }

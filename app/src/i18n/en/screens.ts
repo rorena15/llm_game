@@ -63,6 +63,8 @@ export const screens: typeof Ko = {
       'se-kanana-8b': { label: 'High quality (8B)', note: '6 GB VRAM or more recommended' },
       'se-kanana-2.1b': { label: 'Light (2.1B)', note: 'For other PCs, including CPU-only' },
     },
+    lowVram: (gb: string) => `This PC's graphics memory (${gb} GB) may be too small for the high-quality model, so it may be slow or fail to run. The light model is recommended.`,
+    cpuHeavy: 'The model is running on the CPU without a graphics card, so the high-quality model will answer very slowly. The light model is recommended.',
     speed: 'Text speed',
     speeds: { slow: 'Slow', normal: 'Normal', fast: 'Fast', instant: 'Instant' },
     size: 'Text size',

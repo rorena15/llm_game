@@ -973,6 +973,10 @@ button:disabled {
 .settings-list small {
   color: var(--dim);
 }
+.settings-list small.warn {
+  display: block;
+  color: var(--warn);
+}
 .seg {
   display: flex;
   flex-wrap: wrap;

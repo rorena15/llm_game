@@ -61,6 +61,9 @@ export const screens = {
       'se-kanana-8b': { label: '고품질 (8B)', note: 'VRAM 6GB 이상 권장' },
       'se-kanana-2.1b': { label: '가벼움 (2.1B)', note: '그 외 PC, CPU 포함' },
     },
+    /** 고품질 모델을 골랐는데 사양이 모자랄 때 ({robust}) */
+    lowVram: (gb: string) => `이 PC의 그래픽카드 메모리(${gb}GB)로는 고품질 모델이 느리거나 실행되지 않을 수 있습니다. 가벼운 모델을 권합니다.`,
+    cpuHeavy: '그래픽카드 없이 CPU로 실행 중이라 고품질 모델은 대답이 많이 느립니다. 가벼운 모델을 권합니다.',
     speed: '대사 속도',
     speeds: { slow: '느리게', normal: '보통', fast: '빠르게', instant: '바로' },
     size: '글자 크기',

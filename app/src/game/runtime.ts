@@ -71,6 +71,18 @@ export function recommended(): string {
   return vram >= VRAM_FOR_8B_MIB ? 'se-kanana-8b' : 'se-kanana-2.1b'
 }
 
+/** 고른 모델이 이 PC에 무거울 때 ({robust}). cpu: CPU로 도는 중 · vram: 그래픽카드 메모리가 모자람 (gb는 가장 큰 VRAM) */
+export function specWarning(
+  model: string,
+  rt: Pick<RuntimeState, 'gpus' | 'server'> = state,
+): { kind: 'cpu' } | { kind: 'vram'; gb: string } | null {
+  if (model !== 'se-kanana-8b') return null
+  if (rt.server === 'cpu') return { kind: 'cpu' }
+  if (!rt.gpus) return null
+  const vram = Math.max(0, ...rt.gpus.map((g) => g.total_mib))
+  return vram < VRAM_FOR_8B_MIB ? { kind: 'vram', gb: (vram / 1024).toFixed(1) } : null
+}
+
 async function refreshModels() {
   set({ models: await invoke<ModelInfo[]>('model_status') })
 }
