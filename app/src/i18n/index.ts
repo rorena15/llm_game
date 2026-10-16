@@ -18,7 +18,7 @@ export const LANGS: { id: Lang; label: string }[] = [
 ]
 
 /** 내용(시나리오·이야기)까지 준비된 언어. 아닌 언어는 개발 빌드에서만 고를 수 있다 */
-export const CONTENT_READY: Lang[] = ['ko']
+export const CONTENT_READY: Lang[] = ['ko', 'en']
 
 export function lang(): Lang {
   const v = save.data.settings.lang
