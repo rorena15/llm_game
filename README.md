@@ -117,4 +117,4 @@ NPC 대화의 언어는 시나리오 파일이 놓인 폴더로 정해집니다.
 
 ## 라이선스
 
-정해지지 않았습니다. 배포 전에 정합니다. 사용 예정인 외부 구성 요소: Kanana 1.5 (Apache 2.0), llama.cpp (MIT), Tauri (MIT/Apache 2.0), React Flow (MIT).
+모든 권리를 보유합니다 (All rights reserved, [LICENSE](LICENSE)). 저장소는 공개되어 있지만 코드와 시나리오, 이야기 글을 허락 없이 복사·수정·배포·사용할 수 없습니다. 게임은 itch.io에서 무료로 받아 플레이할 수 있습니다. 외부 구성 요소는 각자의 라이선스를 따릅니다: Kanana 1.5 (Apache 2.0), llama.cpp (MIT), Tauri (MIT/Apache 2.0), React와 React Flow (MIT). 고지 전문은 `app/public/licenses/`와 게임 안의 라이선스 화면에 있습니다.

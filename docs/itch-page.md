@@ -1,6 +1,6 @@
 # itch.io 페이지 초안
 
-한국어 → 영어 순서입니다. 페이지에는 두 섹션을 이어 붙여 올립니다. [확인 필요] 표시는 올리기 전에 정할 것입니다.
+한국어 → 영어 순서입니다. 페이지에는 두 섹션을 이어 붙여 올립니다.
 
 ---
 
@@ -55,7 +55,7 @@ itch.io 댓글에 남겨 주세요. 로그 폴더(설정 → 로그 폴더 열�
 - 대화 모델: Kakao Kanana 1.5 (Apache 2.0)
 - 모델 실행: llama.cpp (MIT)
 - 앱 틀: Tauri (MIT/Apache 2.0), 화면 구성: React Flow (MIT)
-- 게임 자체의 라이선스: [확인 필요: README에 "정해지지 않음"으로 되어 있어 배포 전에 정해야 함]
+- 이 게임: 무료로 받아 플레이할 수 있으며, 게임의 코드와 글은 모든 권리를 보유합니다 (All rights reserved).
 
 ## 스크린샷 계획 (개발자용, 페이지에는 올리지 않음)
 
@@ -119,4 +119,4 @@ Notices and full license texts for third-party components are on the License scr
 - Language model: Kakao Kanana 1.5 (Apache 2.0)
 - Model runtime: llama.cpp (MIT)
 - App shell: Tauri (MIT/Apache 2.0); board UI: React Flow (MIT)
-- License of the game itself: [확인 필요: not decided yet]
+- This game: free to download and play. All rights reserved for the game's code and text.

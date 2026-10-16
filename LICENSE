@@ -1,0 +1,16 @@
+Copyright (c) 2026 rorena15. All rights reserved.
+
+The source code, scenarios, story text, and other content in this repository
+are published for viewing only. No permission is granted to copy, modify,
+distribute, or use them, in whole or in part, without prior written permission
+from the copyright holder.
+
+The game is distributed free of charge on itch.io. Playing the distributed
+game does not require any additional permission.
+
+Third-party components keep their own licenses; their notices and full texts
+are in app/public/licenses/ and on the in-game License screen:
+- Kanana 1.5 language models (Apache License 2.0)
+- llama.cpp (MIT License)
+- Tauri (MIT License or Apache License 2.0)
+- React and React Flow (MIT License)
