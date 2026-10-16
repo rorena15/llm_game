@@ -28,7 +28,7 @@
       "label": "대표의 생일",
       "text": "다음 주가 대표의 생일이다. {{byear}}년 {{bmd_ko}}생이라 올해 행사가 유난히 크다.",
       "when": { "rapportMin": 55, "suspicionMax": 35, "tactics": ["empathy"] },
-      "keys": ["{{byear}}", "{{bmd_ko}}", "{{bmd_read}}", "{{birth8}}"]
+      "keys": ["{{byear}}", "{{byy}}년생", "{{bmd_ko}}", "{{bmd_read}}", "{{birth8}}"]
     },
     { "id": "pw", "level": "secret", "label": "비밀번호", "text": "{{password}}" }
   ],
@@ -40,9 +40,9 @@
     ]
   },
   "variants": [
-    { "id": "a", "values": { "score": "72", "byear": "1958", "bmd_ko": "3월 15일", "bmd_read": "삼월 십오일", "birth8": "19580315", "password": "72stroke_19580315" }, "password": "72stroke_19580315" },
-    { "id": "b", "values": { "score": "76", "byear": "1961", "bmd_ko": "8월 22일", "bmd_read": "팔월 이십이일", "birth8": "19610822", "password": "76stroke_19610822" }, "password": "76stroke_19610822" },
-    { "id": "c", "values": { "score": "81", "byear": "1956", "bmd_ko": "1월 9일", "bmd_read": "일월 구일", "birth8": "19560109", "password": "81stroke_19560109" }, "password": "81stroke_19560109" }
+    { "id": "a", "values": { "score": "72", "byear": "1958", "byy": "58", "bmd_ko": "3월 15일", "bmd_read": "삼월 십오일", "birth8": "19580315", "password": "72stroke_19580315" }, "password": "72stroke_19580315" },
+    { "id": "b", "values": { "score": "76", "byear": "1961", "byy": "61", "bmd_ko": "8월 22일", "bmd_read": "팔월 이십이일", "birth8": "19610822", "password": "76stroke_19610822" }, "password": "76stroke_19610822" },
+    { "id": "c", "values": { "score": "81", "byear": "1956", "byy": "56", "bmd_ko": "1월 9일", "bmd_read": "일월 구일", "birth8": "19560109", "password": "81stroke_19560109" }, "password": "81stroke_19560109" }
   ],
   "clues": [
     { "id": "it_mail", "source": "email:1", "label": "비밀번호 재설정 안내", "text": "숫자 + 영어 단어 하나(단수), 밑줄, 날짜 8자리", "keyword": "숫자 + 영어 단어 하나(단수형), 밑줄, 날짜 8자리" },
