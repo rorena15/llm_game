@@ -26,6 +26,7 @@ app/                 게임 (Tauri + React + TS)
   scenarios/         미션 데이터 (JSON, 변형 포함). 영어판은 scenarios/en/
   story/             엔딩 문구(ending.json), 모든 미션 공통 웹페이지(sites.json). 영어판은 story/en/
   eval/convos/       모델 평가용 대화 세트. 영어판은 eval/convos/en/
+  eval/labels/       대화 세트의 판정 정답표 (한국어·영어 공용)
   tools/             시나리오 검증, 대화 실행, 평가 실행 (Node)
   src-tauri/         데스크톱 앱 껍데기 (Rust): 저장, 로그, llama-server 실행, 모델 다운로드
   src-tauri/models.json  배포본이 받을 모델 조각 목록 (주소, 크기, sha256)
@@ -88,7 +89,7 @@ ollama create se-kanana-8b -f Modelfile.kanana-8b
 | `npm run validate` | 시나리오 형식과 미션 설계 규칙 검사 (변형마다). 영어 시나리오와 `story/en/`은 한국어와 구조가 같은지도 검사 |
 | `npm run story` | 이야기 원고(docs/이야기.md "7. 원고")를 게임 데이터에 넣기. `-- --export`는 반대로 지금 데이터로 원고를 새로 씀 |
 | `npm run chat -- mission_1 a < 대사.txt` | 실제 모델에 대사를 차례로 보내 판정·응답 보기 (`--lang en`이면 영어 시나리오) |
-| `npm run eval -- se-kanana-8b se-kanana-2.1b` | 평가 대화 세트를 모델별로 돌려 요약표와 기록 남김 (`app/eval/runs/`). `--lang en`이면 `eval/convos/en/`과 `scenarios/en/`으로. `--variants`면 변형을 모두 돌리고, 요약에 대화·변형별로 공개한 사실과 턴을 적음 |
+| `npm run eval -- se-kanana-8b se-kanana-2.1b` | 평가 대화 세트를 모델별로 돌려 요약표와 기록 남김 (`app/eval/runs/`). `--lang en`이면 `eval/convos/en/`과 `scenarios/en/`으로. `--variants`면 변형을 모두 돌리고, 요약에 대화·변형별로 공개한 사실과 턴을 적음. `eval/labels/`의 정답표와 비교해 tactic·topic 정확도와 META 놓침·오탐도 적음 |
 | `npm run fetch-llama` | 배포본에 넣을 llama-server 받기 (`src-tauri/llama/`) |
 | `npm run lint` | ESLint |
 | `npm run build` | 타입 검사 + 웹 빌드 |

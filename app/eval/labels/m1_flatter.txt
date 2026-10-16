@@ -1,0 +1,7 @@
+chat -
+flatter role|-
+flatter wife|-
+chat|flatter first_meet
+chat first_meet|-
+ask password
+* - meta

@@ -1,0 +1,3 @@
+rush|pretext -
+ask|rush password
+rush|ask|chat bday

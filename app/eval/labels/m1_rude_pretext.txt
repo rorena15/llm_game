@@ -1,0 +1,9 @@
+chat|hostile -
+chat|hostile -
+chat|hostile|pretext -
+chat|hostile|ask -|role|techbad
+pretext|rush|hostile -
+pretext|hostile -
+ask|hostile|pretext password
+chat|hostile wife|-
+chat|hostile first_meet
