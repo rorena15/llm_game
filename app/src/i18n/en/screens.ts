@@ -95,7 +95,7 @@ export const screens: typeof Ko = {
     failed: (err: string) => `Download failed: ${err}. Check your internet connection and try again.`,
     retry: 'Try again',
     starting: 'Starting the dialogue model…',
-    cpuMode: "Couldn't use the graphics card, so the model is running on the CPU. Replies may be slow.",
+    cpuMode: "Couldn't use the graphics card, so the model is running on the CPU. Each reply may take around 20 seconds. A graphics card with 4 GB of VRAM or more is recommended.",
     notDownloaded: 'Not downloaded',
   },
   licenses: {

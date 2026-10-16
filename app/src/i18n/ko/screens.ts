@@ -94,7 +94,7 @@ export const screens = {
     failed: (err: string) => `받지 못했습니다: ${err}. 인터넷 연결을 확인하고 다시 시도해 주세요.`,
     retry: '다시 시도',
     starting: '대화 모델을 준비하는 중…',
-    cpuMode: '그래픽카드로 실행하지 못해 CPU로 실행 중입니다. 대답이 느릴 수 있습니다.',
+    cpuMode: '그래픽카드로 실행하지 못해 CPU로 실행 중입니다. 한 번 대답하는 데 20초 안팎 걸릴 수 있습니다. 권장 사양은 VRAM 4GB 이상의 그래픽카드입니다.',
     notDownloaded: '받지 않음',
   },
   licenses: {
