@@ -1,0 +1,98 @@
+{
+  "id": "mission_2",
+  "title": "MISSION 02: Highlights",
+  "difficulty": 2,
+  "briefing": "Target: Assistant Manager Park Jihyun, Dev Team 2\nDifficulty: ★★☆☆☆\n\nGoal: Assistant Manager Park's intranet account password\n\nNotes:\n- Posts her whole day on social media. Start with her public account.\n- Weak to compliments and chatter. Gets friendly fast with anyone who clicks with her.\n- Can't stand the Security Team.",
+  "request": { "sender": "K", "subject": "The test server left out of the audit", "body": "Please check the recent records on the test server in Dev Team 2.\n\nI have heard that customer data was moved into the test environment. We need to find out whether it was a simple mistake or whether someone hid it on purpose.\n\nIn particular, look at the materials handed to outside vendors and the audit response records. If the original and the revised version differ, that difference may matter.\n\nDo not decide yet who to suspect. The records will tell you.\n\n— K" },
+  "npc": {
+    "name": "Park Jihyun",
+    "speech": "neutral",
+    "persona": "Assistant Manager on CorpX Dev Team 2, 28 years old, a developer in her third year. Bright, chatty, and likes to brag. She has a golden retriever she calls \"my baby\" and dotes on. She gets excited by compliments and talks more and more, and opens up quickly to anyone who chats well with her. Chatty and casual-leaning, with lots of exclamations (\"omg\", \"no way\", \"haha\"), but stays polite to strangers. She is upset because the Security Team recently tried to follow her personal social media account.",
+    "weak": { "flatter": 1.8, "rush": 0.7, "empathy": 1.2, "pretext": 0.8, "ask": 0.5, "chat": 1.5, "hostile": 0.5 },
+    "rules": [{ "keyword": "security team", "suspicion": 10 }],
+    "fallbackLines": {
+      "normal": ["Oh really? Haha.", "Oh wow, really?", "No way, I see."],
+      "evade": ["Hmm, that's a secret haha.", "Aw, that's a bit much.", "I'll tell you next time."],
+      "wary": ["Wait, why are you asking that?", "Hmm, you're acting a little weird today."],
+      "angry": ["I think that was kind of harsh.", "Keep this up and I'll tell the Security Team."],
+      "confused": ["Huh? What do you mean?", "Hmm, I didn't quite get that."]
+    }
+  },
+  "facts": [
+    { "id": "role", "level": "free", "label": "Assistant Manager Park's work", "text": "I am a third-year Assistant Manager on Dev Team 2 and I handle the internal payment system." },
+    { "id": "dog", "level": "free", "label": "My baby", "text": "I have a golden retriever named {{dog_ko}}. I call him my baby and post his photos on social media a lot." },
+    { "id": "sns", "level": "free", "label": "Social media habits", "text": "I post on social media almost every day, from work life and my commute home to photos of my baby." },
+    {
+      "id": "adopt_year",
+      "level": "guarded",
+      "label": "The year she brought her dog home",
+      "text": "I brought {{dog_ko}} home in {{month_name}} {{year}}. I'll never forget that year.",
+      "when": { "rapportMin": 30, "suspicionMax": 60 },
+      "keys": ["{{year}}", "'{{yy}}"]
+    },
+    { "id": "pw", "level": "secret", "label": "Password", "text": "{{password}}" }
+  ],
+  "password": {
+    "pieces": [
+      { "key": "prefix", "sources": ["insta_tag"] },
+      { "key": "dog", "sources": ["dog_bio"] },
+      { "key": "year", "sources": ["adopt_year"] }
+    ]
+  },
+  "variants": [
+    { "id": "a", "values": { "dog_ko": "Rex", "dog_en": "Rex", "year": "2023", "yy": "23", "month": "5", "month_name": "May", "password": "MyPuppy_Rex2023!", "hint1": "MyPuppy_Rex●●●●!", "hint2": "MyPuppy_Rex20●●!" }, "password": "MyPuppy_Rex2023!" },
+    { "id": "b", "values": { "dog_ko": "Coco", "dog_en": "Coco", "year": "2021", "yy": "21", "month": "9", "month_name": "September", "password": "MyPuppy_Coco2021!", "hint1": "MyPuppy_Coco●●●●!", "hint2": "MyPuppy_Coco20●●!" }, "password": "MyPuppy_Coco2021!" },
+    { "id": "c", "values": { "dog_ko": "Max", "dog_en": "Max", "year": "2022", "yy": "22", "month": "3", "month_name": "March", "password": "MyPuppy_Max2022!", "hint1": "MyPuppy_Max●●●●!", "hint2": "MyPuppy_Max20●●!" }, "password": "MyPuppy_Max2022!" }
+  ],
+  "clues": [
+    { "id": "insta_hint", "source": "web:www.instargram.com/dev_jihyun", "label": "Highlight \"Don't Forget\"", "text": "Company account: my usual tag, then my baby's name, the year my baby came home, one exclamation mark", "keyword": "Don't Forget" },
+    { "id": "insta_tag", "source": "web:www.instargram.com/dev_jihyun", "label": "The tag she always adds", "text": "Adds the tag #MyPuppy_ to her posts", "keyword": "#MyPuppy_" },
+    { "id": "dog_bio", "source": "web:www.instargram.com/dev_jihyun", "label": "My baby's name", "text": "The dog's name in her profile is {{dog_en}}", "keyword": "{{dog_en}} (Golden Retriever)" },
+    { "id": "bf_mail", "source": "email:1", "label": "Boyfriend's mail", "text": "Next week is the day the baby came home", "keyword": "came home" }
+  ],
+  "inferences": [
+    {
+      "id": "inf_tag",
+      "label": "The usual tag",
+      "requires": ["insta_hint", "insta_tag"],
+      "yields": "The \"usual tag\" in the note is #MyPuppy_. The company account password starts with MyPuppy_."
+    },
+    {
+      "id": "inf_insta",
+      "label": "Beginning of the password",
+      "requires": ["inf_tag", "dog_bio"],
+      "yields": "The password is MyPuppy_ followed by {{dog_en}}, then the year the dog came home and an exclamation mark. The year is still unknown.",
+      "unlocks": ["login_hint_1"]
+    },
+    {
+      "id": "inf_anniv",
+      "label": "The baby's upcoming anniversary",
+      "requires": ["bf_mail", "dog_bio"],
+      "yields": "Next week is the day {{dog_ko}} came home. Talking about the adoption looks promising.",
+      "leverage": true
+    },
+    {
+      "id": "inf_final",
+      "label": "Complete combination",
+      "requires": ["inf_insta", "adopt_year"],
+      "yields": "MyPuppy_ + {{dog_en}} + {{year}} + !",
+      "unlocks": ["login_hint_2"],
+      "final": true
+    }
+  ],
+  "loginHints": { "login_hint_1": "{{hint1}}", "login_hint_2": "{{hint2}}" },
+  "emails": [
+    { "sender": "Instargram", "subject": "New follow request", "body": "corpx_security wants to follow you (www.instargram.com/dev_jihyun).\n\nYou declined the request.", "date": "10/14 23:51" },
+    { "sender": "Jaehyun", "subject": "What do you want for lunch?", "body": "Next week is the day our {{dog_ko}} came home haha. Wanna go to a dog cafe this weekend? Let's get a cake too.", "date": "10/15 11:48" },
+    { "sender": "Security Team", "subject": "[Notice] Be careful with personal social media", "body": "Do not post anything about your employee ID, work screens, or accounts on personal social media. Posts on public accounts can be seen by anyone.", "date": "10/02 09:00" },
+    { "sender": "Dev Team 2 Lead", "subject": "Deployment schedule this week", "body": "The payment module deploys Thursday evening. We'll clean up the test server after the audit is over.", "date": "10/14 16:20" },
+    { "sender": "Woof Market", "subject": "[Ad] Dog treats on regular delivery, first month free", "body": "Treats for your little one, delivered to your door every month. The first month is free.", "folder": "trash", "date": "10/13 12:00" }
+  ],
+  "websites": {
+    "www.instargram.com/dev_jihyun": "📸 Instargram\n\n@dev_jihyun\nDeveloper who codes | ENFP | 🐶 {{dog_en}} (Golden Retriever)\nCommuting to Gangnam 💻 Guarding the payment server\nNot a baby photo account (it is)\n\n[Story Highlights] Commute · Baby · 🔑 Don't Forget\n\nCommute\n\"Line 2 hell train again today 🚇 Five minutes from Yeoksam Station to the office\"\nBaby\n\"My baby jumped into a puddle on our walk 🐾 Bath confirmed for today\"\n🔑 Don't Forget\n\"Locked out of my company account again so I'm writing it down here lol. My usual tag, then my baby's name, the year my baby came home, and one exclamation mark! Never forgetting it now\"\n\n[Recent Posts]\n#codeoftheday #offwork Payment module deployed! Walk with my baby tonight 🐾 #MyPuppy_\n#baby Next week is the day my baby came home 🎂 Planning a party #MyPuppy_\n#devlife Convenience store ramyeon after overtime 🍜 The server is peaceful again today\n#baby Ten fetches in a row at the park 🎾 Genius or what? #MyPuppy_\n#teamdinner Team dinner at a great meat place 🥩 Thanks for the meal, Team Lead\n#weekend Picnic by the Han River with my baby 🧺 So windy, fur everywhere #MyPuppy_\n#cafe New cafe in front of the office ☕ Found a great latte\n#baby Back from the groomer ✂️ Teddy bear cut success #MyPuppy_"
+  },
+  "secretDocuments": [
+    "CONFIDENTIAL: Dev Team 2 test server inspection record\nSubject: Customer support service test environment\nInspection item: Source of test data and handling of personal information\n\nFindings:\n- 2,400 records of live customer data were found in the test environment.\n- Some of the data still contains customer identification information.\n- The item structure of the materials handed to outside parties matches the test data.\n- The data processing history and the record in the internal inspection checklist do not agree.\n\nNote from the person in charge:\n\"At first I was told it was temporary data for reproducing an error. But the materials handed to the outside vendor have the same items.\"",
+    "INTERNAL: Excerpt from audit response mail\nFrom: CEO Kang Taeho\nTo: Head of Dev Team 2\nSubject: Matters concerning the test server\n\nUntil the regular audit is over, do not let the customer data problem on the test server grow into a separate issue.\nThe external consulting materials have already been submitted. Adding related records now will only cause unnecessary misunderstanding.\nOrganize the audit response materials to match the existing reports, and report any changes separately.\n\n— Kang Taeho"
+  ]
+}

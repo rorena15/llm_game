@@ -4,13 +4,10 @@ import { useT } from '../../i18n'
 import { T } from './common'
 import { cells, sections, seeded, type SiteProps } from './parse'
 
-// 현재 메뉴 판별은 페이지 글(한국어)과 비교하므로 한국어 목록을 두고, 보이는 이름만 번역한다
-const GNB = ['학교 소개', '학교 소식', '교육 활동', '학부모 마당', '열린 마당']
-
 export function SchoolSite(p: SiteProps) {
   const t = useT().sites.school
   const { head, parts } = sections(p.body)
-  const [school, board = '학교 소식'] = head.split('·').map((s) => s.trim())
+  const [school, board = t.gnb[1]] = head.split('·').map((s) => s.trim())
   const [post, ...more] = parts.filter((s) => s.tag !== null)
   const views = Math.round(40 + seeded(p.pageKey) * 300)
 
@@ -67,9 +64,9 @@ export function SchoolSite(p: SiteProps) {
         </div>
       </header>
       <nav className="sch-gnb">
-        {GNB.map((g, gi) => (
+        {t.gnb.map((g) => (
           <span key={g} className={g === board ? 'on' : ''}>
-            {t.gnb[gi]}
+            {g}
           </span>
         ))}
       </nav>

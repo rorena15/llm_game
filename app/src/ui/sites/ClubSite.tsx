@@ -3,9 +3,6 @@ import { useT } from '../../i18n'
 import { T } from './common'
 import { cells, sections, type SiteProps } from './parse'
 
-// 현재 메뉴 판별은 페이지 글(한국어)과 비교하므로 한국어 목록을 두고, 보이는 이름만 번역한다
-const GNB = ['클럽 소개', '코스 안내', '예약', '회원 기록실', '오시는 길']
-
 export function ClubSite(p: SiteProps) {
   const t = useT().sites.club
   const { head, parts } = sections(p.body)
@@ -20,9 +17,9 @@ export function ClubSite(p: SiteProps) {
           <small>COUNTRY CLUB</small>
         </div>
         <nav>
-          {GNB.map((g, gi) => (
+          {t.gnb.map((g) => (
             <span key={g} className={g === page ? 'on' : ''}>
-              {t.gnb[gi]}
+              {g}
             </span>
           ))}
         </nav>

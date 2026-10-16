@@ -1,0 +1,82 @@
+{
+  "id": "mission_1",
+  "title": "MISSION 01: Shadow HR",
+  "difficulty": 1,
+  "briefing": "Target: Director Kim Cheolsu, HR Team\nDifficulty: ★☆☆☆☆\n\nGoal: Director Kim's intranet account password\n\nNotes:\n- Bad with computers and very authoritative.\n- Weak to flattery and to anyone begging that something is urgent.\n- Gets angry if you ask for the password outright.",
+  "request": { "sender": "K", "subject": "Questions about the list of successful candidates", "body": "Please check the HR Team's recent hiring records.\n\nI have heard that the evaluation result of one particular applicant was handled differently from the others. I do not yet know whether it was a simple correction or whether someone interfered.\n\nCompare the evaluation sheets with the approval records, and if the originals remain, check the differences there as well.\n\n— K" },
+  "npc": {
+    "name": "Kim Cheolsu",
+    "speech": "neutral",
+    "persona": "Director of the CorpX HR Team, 20 years with the company. Authoritative and condescending, he calls people below him \"young man\" or \"kid\" (sparingly). Bad with computers and often forgets his passwords. Weak to praise and flattery, and when someone begs that something is urgent he swells with importance and tries to help. He is worried because things with his wife are not what they used to be. Speaks in short, pompous statements: \"Hmm, I see.\", \"Heh heh\", \"Watch your tongue.\" Never apologizes.",
+    "weak": { "flatter": 1.8, "rush": 1.5, "empathy": 1.0, "pretext": 1.0, "ask": 0.5, "chat": 1.0, "hostile": 0.5 },
+    "rules": [{ "keyword": "audit team", "suspicion": 10 }],
+    "fallbackLines": {
+      "normal": ["Hmm, is that so.", "Heh heh, I see.", "Yes, all right."],
+      "evade": ["Why do you ask?", "Heh heh, let's talk about that another time.", "Well, I'd rather not."],
+      "wary": ["You're acting strange today, kid.", "Why do you keep asking about that?"],
+      "angry": ["Who do you think you're talking to?", "Watch your tongue. Keep this up and I will talk to the Security Team."],
+      "confused": ["Heh heh, what are you talking about?", "Hmm? Say that again."]
+    }
+  },
+  "facts": [
+    { "id": "role", "level": "free", "label": "Director Kim's position", "text": "I am the Director of the HR Team and I have worked at this company for 20 years." },
+    { "id": "techbad", "level": "free", "label": "Computer skills", "text": "I find computers very hard, and I often forget my passwords." },
+    { "id": "wife", "level": "free", "label": "Wife", "text": "Lately things with my wife are not what they used to be, and it weighs on me." },
+    {
+      "id": "first_meet",
+      "level": "guarded",
+      "label": "The day he first met his wife",
+      "text": "The day I first met my wife, we walked a long time together under the {{sky_ko}}. Anything important, I settle with those words ever since.",
+      "when": { "rapportMin": 35, "suspicionMax": 60 },
+      "keys": ["{{sky_ko}}", "{{sky_en}}"]
+    },
+    { "id": "pw", "level": "secret", "label": "Password", "text": "{{password}}" }
+  ],
+  "password": {
+    "pieces": [
+      { "key": "phrase", "sources": ["first_meet"] },
+      { "key": "format_year", "sources": ["policy"] }
+    ]
+  },
+  "variants": [
+    { "id": "a", "values": { "sky_ko": "blue sky", "sky_en": "blue_sky", "year": "2024", "password": "blue_sky_2024", "mask": "●●●●_●●●_2024", "hint2": "b●●●_s●●_2024" }, "password": "blue_sky_2024" },
+    { "id": "b", "values": { "sky_ko": "white snow", "sky_en": "white_snow", "year": "2025", "password": "white_snow_2025", "mask": "●●●●●_●●●●_2025", "hint2": "w●●●●_s●●●_2025" }, "password": "white_snow_2025" },
+    { "id": "c", "values": { "sky_ko": "red sunset", "sky_en": "red_sunset", "year": "2024", "password": "red_sunset_2024", "mask": "●●●_●●●●●●_2024", "hint2": "r●●_s●●●●●_2024" }, "password": "red_sunset_2024" }
+  ],
+  "clues": [
+    { "id": "wife_mail", "source": "email:0", "label": "Wife's mail", "text": "His wife misses the day they first met", "keyword": "the day we first met" },
+    { "id": "policy", "source": "email:1", "label": "Password policy", "text": "Lowercase English words joined by underscores, ending with _{{year}}", "keyword": "underscores" },
+    { "id": "memo", "source": "email:2", "label": "Director Kim's mail to himself", "text": "He chose words full of memories with his wife as his password", "keyword": "those words" }
+  ],
+  "inferences": [
+    {
+      "id": "inf_memory",
+      "label": "The password is a memory with his wife",
+      "requires": ["wife_mail", "memo"],
+      "yields": "Director Kim used words from the day he first met his wife in his password. Approaching him through talk about his wife looks promising.",
+      "unlocks": ["login_hint_1"],
+      "leverage": true
+    },
+    {
+      "id": "inf_final",
+      "label": "Complete combination",
+      "requires": ["inf_memory", "first_meet", "policy"],
+      "yields": "Write '{{sky_ko}}' in lowercase English words joined by an underscore, and end with _{{year}}",
+      "unlocks": ["login_hint_2"],
+      "final": true
+    }
+  ],
+  "loginHints": { "login_hint_1": "{{mask}}", "login_hint_2": "{{hint2}}" },
+  "emails": [
+    { "sender": "Wife", "subject": "Honey, this weekend", "body": "We've both been so busy lately. Do you remember the day we first met? I'd like us to take a long walk together like that day.", "date": "11/18 21:40" },
+    { "sender": "Security Team", "subject": "[Notice] {{year}} password policy", "body": "From {{year}}, intranet passwords must be lowercase English words joined by underscores (_), with _{{year}} added at the end. Example: green_tea_{{year}}", "date": "01/02 09:00" },
+    { "sender": "Kim Cheolsu", "subject": "RE: Password change complete", "body": "They told me to change it again, so I did. This time I used those words that belong to my wife and me, so I won't forget. Heh heh.", "folder": "sent", "date": "01/03 17:25" },
+    { "sender": "HR Team Oh Jihun", "subject": "Second-half open recruitment: final list of successful candidates", "body": "Director, I've submitted the final list of successful candidates for approval. Please take a look.", "date": "09/13 10:05" },
+    { "sender": "Golfzone Mall", "subject": "[Ad] Golf wear season sale, up to 50% off", "body": "Get ready for winter rounds. Season sale runs until this weekend.", "folder": "trash", "date": "11/20 07:00" }
+  ],
+  "websites": {},
+  "secretDocuments": [
+    "CONFIDENTIAL: Corporate card statement\nSubject: Director Kim Cheolsu\n\n2024-11-20 Gangnam entertainment bar - KRW 2.5 million (booked as entertainment expenses)\n2024-11-25 Department store gift certificates - KRW 1 million (purpose unknown)",
+    "Kim Cheolsu's personal folder: evaluation_sheet_backup.pdf (2 scanned pages)\n\n[Page 1]\n2024 Second-Half Open Recruitment Interview Evaluation Sheet\nApplicant: Yoon Jaemin / Interview date: 2024-09-03\nInterview score: 64 / Passing score: 70 / Result: Fail\nInterviewers: Oh Jihun (signed), Jang Seoyun (signed)\nPrinted: 2024-09-03\n\n[Page 2]\n2024 Second-Half Open Recruitment Interview Evaluation Sheet\nApplicant: Yoon Jaemin / Interview date: 2024-09-03\nInterview score: 88 / Passing score: 70 / Result: Pass\nInterviewers: Oh Jihun (signed), Jang Seoyun (signed)\nPrinted: 2024-09-12"
+  ]
+}

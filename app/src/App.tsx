@@ -4,7 +4,7 @@ import { useDevFlags } from './game/dev'
 import { MissionRun, useRun } from './game/run'
 import { save, useSave } from './game/save'
 import { llm, scenarios } from './game/scenarios'
-import { ENDING } from './game/story'
+import { ending } from './game/story'
 import { msg } from './i18n'
 import { DevPanel } from './ui/DevPanel'
 import { Desktop } from './ui/Desktop'
@@ -71,7 +71,7 @@ export default function App() {
       <SettingsScreen onBack={() => setScreen({ name: 'title' })} onLicenses={() => setScreen({ name: 'licenses' })} />
     )
   else if (screen.name === 'licenses') body = <LicenseScreen onBack={() => setScreen({ name: 'settings' })} />
-  else if (screen.name === 'ending') body = <EndingScreen ending={ENDING} onDone={() => setScreen({ name: 'title' })} />
+  else if (screen.name === 'ending') body = <EndingScreen ending={ending()} onDone={() => setScreen({ name: 'title' })} />
   else
     body = (
       <Play
@@ -80,7 +80,7 @@ export default function App() {
         debug={dev.showDebug}
         onQuit={() => setScreen({ name: 'title' })}
         onRestart={() => play(screen.run.scenario.id)}
-        onEnding={screen.run.scenario.id === ENDING.afterMission ? () => setScreen({ name: 'ending' }) : undefined}
+        onEnding={screen.run.scenario.id === ending().afterMission ? () => setScreen({ name: 'ending' }) : undefined}
       />
     )
 

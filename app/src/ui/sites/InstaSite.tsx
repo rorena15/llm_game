@@ -16,13 +16,14 @@ const GRADIENTS = [
 
 export function InstaSite(p: SiteProps) {
   const t = useT().sites.insta
+  const mk = useT().sites.marks
   const { parts } = sections(p.body)
   const intro = parts.find((s) => s.tag === null)?.lines ?? []
   const handleLine = intro.find((l) => l.trim().startsWith('@'))
   const handle = handleLine?.trim().slice(1) ?? p.path.split('/').pop() ?? p.host
   const bio = intro.filter((l) => l !== handleLine)
 
-  const hlSec = parts.find((s) => s.tag?.includes('하이라이트'))
+  const hlSec = parts.find((s) => s.tag?.includes(mk.highlights))
   const highlights = (hlSec?.title ?? '').split('·').map((h) => h.trim()).filter(Boolean)
   // 하이라이트 덩어리 안에서 하이라이트 이름으로 시작하는 줄 아래가 그 스토리
   const stories: Record<string, string[]> = {}
@@ -32,7 +33,7 @@ export function InstaSite(p: SiteProps) {
     else if (cur) (stories[cur] ??= []).push(l)
   }
   const posts = parts.filter((s) => s.tag && s !== hlSec).flatMap((s) => s.lines)
-  const others = parts.filter((s) => s.tag && s !== hlSec && !s.tag.includes('게시물'))
+  const others = parts.filter((s) => s.tag && s !== hlSec && !s.tag.includes(mk.posts))
 
   const [open, setOpen] = useState<string | null>(null)
   const overlay = (node: ReactNode) => (p.layer ? createPortal(node, p.layer) : node)

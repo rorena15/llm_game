@@ -1,7 +1,7 @@
 // 시나리오 검증: 형식과 설계안 §7 미션 설계 규칙을 변형마다 검사한다.
 // 영어 시나리오(scenarios/en/)는 같은 이름의 한국어 파일과 구조가 같은지도 본다 (설계안 §17.2).
-// 실행: npm run validate [파일...]   (파일을 주면 그 파일만, 경로에 /en/이 있으면 영어로 본다)
-import { existsSync } from 'node:fs'
+// 실행: npm run validate [파일...]   (파일을 주면 그 파일만, 경로에 /en/이 있으면 영어로 본다. 파일을 안 주면 story/en/도 본다)
+import { existsSync, readFileSync } from 'node:fs'
 import { basename, join, sep } from 'node:path'
 import { SPEECHES } from '../src/engine/lang'
 import { applyDecision, decide } from '../src/engine/rules'
@@ -9,7 +9,7 @@ import { applyVariant, unfilledSlots } from '../src/engine/scenario'
 import { newState } from '../src/engine/session'
 import type { Lang, Scenario, ScenarioSpec, Tactic } from '../src/engine/types'
 import { TACTICS } from '../src/engine/types'
-import { readSpec, scenarioDir, scenarioFiles } from './content'
+import { readSpec, ROOT, scenarioDir, scenarioFiles } from './content'
 
 const MAX_TURNS_TO_REVEAL = 8
 const MIN_VARIANTS = 3
@@ -175,7 +175,11 @@ function diff(a: unknown, b: unknown, path = ''): string[] {
 function checkSameAsKorean(spec: ScenarioSpec): string[] {
   const koFile = join(scenarioDir('ko'), `${spec.id}.json`)
   if (!existsSync(koFile)) return [`같은 id의 한국어 파일이 없음: ${spec.id}.json`]
-  return diff(skeleton(readSpec(koFile, 'ko')), skeleton(spec))
+  const ko = skeleton(readSpec(koFile, 'ko'))
+  const mine = skeleton(spec)
+  // 변형의 자리 표시는 한국어에 있는 것이 다 있으면 된다. 영어에만 있는 표시 값(날짜 읽는 법 등)은 더해도 된다
+  mine.variants = mine.variants.map((v, i) => ({ ...v, slots: v.slots.filter((s) => ko.variants[i]?.slots.includes(s)) }))
+  return diff(ko, mine)
     .slice(0, 20)
     .map((d) => `한국어와 구조가 다름: ${d}`)
 }
@@ -203,6 +207,35 @@ for (const file of files) {
       .filter((f) => f.level === 'guarded')
       .map((f) => `${f.id} ${turnsToReveal(applyVariant(spec, spec.variants[0]), f.id)}턴`)
     console.log(`✓ ${name} (변형 ${spec.variants.length}개${turns.length ? `, 공개까지 ${turns.join(', ')}` : ''})`)
+  }
+}
+
+// 이야기 파일(story/en/)도 한국어와 뼈대가 같아야 한다: 사이트는 주소 목록, 엔딩은 id·모양·배열 길이
+/** 글은 빼고 모양만. id와 afterMission은 값까지 남긴다 */
+const shape = (v: unknown, key = ''): unknown =>
+  Array.isArray(v)
+    ? v.map((x) => shape(x))
+    : v && typeof v === 'object'
+      ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, shape(x, k)]))
+      : key === 'id' || key === 'afterMission'
+        ? v
+        : typeof v
+const STORY = join(ROOT, 'story')
+const storyChecks: [string, (j: unknown) => unknown][] = [
+  ['sites.json', (j) => Object.keys(j as object).sort()],
+  ['ending.json', (j) => shape(j)],
+]
+if (!args.length) {
+  for (const [file, pick] of storyChecks) {
+    const enFile = join(STORY, 'en', file)
+    if (!existsSync(enFile)) continue
+    const read = (f: string) => pick(JSON.parse(readFileSync(f, 'utf8')))
+    const errors = diff(read(join(STORY, file)), read(enFile)).slice(0, 20)
+    if (errors.length) {
+      failed++
+      console.log(`✗ story/en/${file}`)
+      for (const m of errors) console.log(`  - 한국어와 구조가 다름: ${m}`)
+    } else console.log(`✓ story/en/${file}`)
   }
 }
 process.exit(failed ? 1 : 0)

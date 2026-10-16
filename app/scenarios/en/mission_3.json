@@ -1,0 +1,86 @@
+{
+  "id": "mission_3",
+  "title": "MISSION 03: A Mother's Weak Spot",
+  "difficulty": 3,
+  "briefing": "Target: Manager Choi Sujin, Finance Team\nDifficulty: ★★★☆☆\n\nGoal: Manager Choi's finance system account password\n\nNotes:\n- Meticulous and prickly. She shuts you down at once if you rush her or ask outright.\n- Word is she has a soft spot when it comes to her daughter.\n- It's closing season and she is worn out from overtime.",
+  "request": { "sender": "K", "subject": "Overseas service fee not in the books", "body": "Please look into the overseas consulting fee processed by the Finance Team.\n\nCheck whether the contract matches the payment record, and what service was actually provided.\n\nThere may be things that cannot be confirmed from the official closing documents alone. If the person in charge kept a separate record, please confirm that it exists and what it says.\n\nPlease also check whether the figures in the closing documents match the money that actually moved.\n\n— K" },
+  "npc": {
+    "name": "Choi Sujin",
+    "speech": "neutral",
+    "persona": "Manager on the CorpX Finance Team, age 42. Meticulous and prickly, she cannot stand people who do sloppy work. With someone she has just met she gives short, businesslike answers: clipped replies such as \"Yes.\" and \"Fine.\", and \"Let's keep it to work.\" when pushed. Her sixth-grade daughter is the most precious thing in the world to her, and when her daughter comes up she warms into longer sentences. Lately she works late because of the closing, and it weighs on her that she cannot spend time with her daughter.",
+    "weak": { "flatter": 0.8, "rush": 0.4, "empathy": 1.7, "pretext": 0.9, "ask": 0.4, "chat": 1.3, "hostile": 0.5 },
+    "rules": [{ "keyword": "audit team", "suspicion": 10 }],
+    "fallbackLines": {
+      "normal": ["Yes.", "Fine.", "Understood."],
+      "evade": ["Why do you ask?", "I'd rather not say.", "Let's keep it to work."],
+      "wary": ["Who did you say you were?", "You have a lot of questions today."],
+      "angry": ["What do you think you're doing?", "If this keeps up, I'll check with the Security Team."],
+      "confused": ["Sorry, what?", "Could you say that again?"]
+    }
+  },
+  "facts": [
+    { "id": "role", "level": "free", "label": "Manager Choi's work", "text": "I am a manager on the Finance Team. I handle the corporate account and the quarterly closing." },
+    { "id": "daughter", "level": "free", "label": "Daughter", "text": "I have a sixth-grade daughter, {{dname_ko}}. She is good at English and I am proud of her." },
+    { "id": "overtime", "level": "free", "label": "Her situation lately", "text": "The closing keeps me working late and I hardly see my daughter. That is what upsets me most." },
+    {
+      "id": "bday",
+      "level": "guarded",
+      "label": "Daughter's birthday",
+      "text": "{{dname_ko}}'s birthday is {{bday_ko}}. I take annual leave that day no matter what.",
+      "when": { "rapportMin": 50, "suspicionMax": 40, "tactics": ["empathy", "chat"] },
+      "keys": ["{{bday_ko}}", "{{bday_num}}", "{{bday_read}}", "{{bday_d}} {{bday_m}}", "{{bday_dth}} of {{bday_m}}", "{{bday_dth}} {{bday_m}}", "{{bday_m}} {{bday_word}}"]
+    },
+    { "id": "pw", "level": "secret", "label": "Password", "text": "{{password}}" }
+  ],
+  "password": {
+    "pieces": [
+      { "key": "name", "sources": ["school_page"] },
+      { "key": "date", "sources": ["bday"] },
+      { "key": "format", "sources": ["audit_mail"] }
+    ]
+  },
+  "variants": [
+    { "id": "a", "values": { "dname_ko": "Yuna", "dname_cap": "Yuna", "dname_lower": "yuna", "bday_ko": "July 7", "bday_num": "0707", "bday_read": "the seventh of July", "bday_d": "7", "bday_dth": "7th", "bday_m": "July", "bday_word": "seventh", "password": "yuna0707!!" }, "password": "yuna0707!!" },
+    { "id": "b", "values": { "dname_ko": "Seoyeon", "dname_cap": "Seoyeon", "dname_lower": "seoyeon", "bday_ko": "March 21", "bday_num": "0321", "bday_read": "the twenty-first of March", "bday_d": "21", "bday_dth": "21st", "bday_m": "March", "bday_word": "twenty-first", "password": "seoyeon0321!!" }, "password": "seoyeon0321!!" },
+    { "id": "c", "values": { "dname_ko": "Jiwoo", "dname_cap": "Jiwoo", "dname_lower": "jiwoo", "bday_ko": "November 4", "bday_num": "1104", "bday_read": "the fourth of November", "bday_d": "4", "bday_dth": "4th", "bday_m": "November", "bday_word": "fourth", "password": "jiwoo1104!!" }, "password": "jiwoo1104!!" }
+  ],
+  "clues": [
+    { "id": "audit_mail", "source": "email:0", "label": "Security check result", "text": "Lowercase English name + 4 digits + !!", "keyword": "lowercase English name + 4 digits + two special characters (!!)" },
+    { "id": "habit_mail", "source": "email:1", "label": "Mail to her husband", "text": "She always builds her password from \"our princess's name\" and \"the day\"", "keyword": "our princess's name and the day" },
+    { "id": "school_page", "source": "web:www.hanbit-es.kr/news", "label": "Daughter's name", "text": "Sixth grader Choi {{dname_cap}} won the school English speaking contest", "keyword": "Choi {{dname_cap}}" }
+  ],
+  "inferences": [
+    {
+      "id": "inf_daughter",
+      "label": "The name in the password",
+      "requires": ["habit_mail", "school_page"],
+      "yields": "\"Our princess\" is her daughter {{dname_cap}}. The password contains the daughter's English name and \"the day\". That day must be special to the daughter.",
+      "unlocks": ["login_hint_1"],
+      "leverage": true
+    },
+    {
+      "id": "inf_final",
+      "label": "Complete combination",
+      "requires": ["inf_daughter", "audit_mail", "bday"],
+      "yields": "{{dname_lower}} + birthday {{bday_num}} + !!",
+      "unlocks": ["login_hint_2"],
+      "final": true
+    }
+  ],
+  "loginHints": { "login_hint_1": "{{dname_lower}}●●●●●●", "login_hint_2": "{{dname_lower}}●●●●!!" },
+  "emails": [
+    { "sender": "Security Team", "subject": "[Finance Team] Regular security check result", "body": "Manager Choi Sujin, your account has used the same password for five years. Your current password follows the policy format of lowercase English name + 4 digits + two special characters (!!), but please change it without fail within this quarter.", "date": "10/28 14:00" },
+    { "sender": "Choi Sujin", "subject": "RE: Did you change your password?", "body": "They told me to change it, so I only pretended to. Same as always, our princess's name and the day. How could I ever forget that.", "folder": "sent", "date": "10/28 22:13" },
+    { "sender": "Hanbit Elementary School", "subject": "[School Newsletter] School English Speaking Contest Results", "body": "Dear parents, we have posted the results of the school English speaking contest in the school website's news section (www.hanbit-es.kr/news). Please give a round of applause to every student who took part.", "date": "10/25 15:30" },
+    { "sender": "Finance Team Lead", "subject": "Quarterly closing schedule", "body": "The closing deadline for this quarter is November 29. We will handle the overseas service item after the CEO has reviewed it.", "date": "10/29 09:10" },
+    { "sender": "English Land", "subject": "[Ad] Elementary winter English camp enrollment", "body": "Early registration discount for the winter vacation English camp. The 6th grade class is almost full.", "folder": "trash", "date": "10/27 18:00" }
+  ],
+  "websites": {
+    "www.hanbit-es.kr/news": "Hanbit Elementary School · School News\n\n[Award] School English Speaking Contest\n\nGrand Prize   Grade 6, Class 2, Choi {{dname_cap}}\nGold   Grade 5, Class 1, Lee Doyun\nSilver   Grade 6, Class 3, Park Harin\nBronze   Grade 4, Class 2, Jung Haeun\n\nGrand Prize winner's remarks: \"Even when Mom came home late every day, I practiced by myself!\"\nThe contest was judged by a native-speaker teacher and the English specialist teacher. Every student who took part receives an encouragement prize.\n\n[Notice] We are taking applications for next month's open class for parents.\n[Event] The fall sports day will be held on the school field. If it rains, it will be held in the auditorium.\n[Lunch] This week's lunch menu has been posted. Please check the allergy labels.\n[After-school] We are recruiting students for the second-semester after-school English conversation and robot coding classes.\n[Safety] We are looking for parent volunteers to help with traffic safety on the way to school."
+  },
+  "secretDocuments": [
+    "Personal notepad: password list.txt\n\nIntranet: {{password}}\nERP: {{password}}\nBank: {{password}}\n\n=> It's my daughter's birthday, so I'll never forget it",
+    "CONFIDENTIAL: Corporate account transfer record (accounting entry on hold)\nRecipient company: Meridian Advisory Pte. Ltd. (Singapore)\nRegistered head of recipient company: Han Giyoung\nTotal paid: KRW 300 million\n\n- 1st payment: KRW 100 million\n- 2nd payment: KRW 100 million\n- 3rd payment: KRW 100 million\n\n- Overseas consulting fee of KRW 300 million, no contract at the time of the first payment\n- Approval: direct order from the CEO\n- The contract was drawn up ten days after the first transfer\n- At closing, the account was changed to \"overseas market research expense\"\n\nChoi Sujin's note:\n\"I was told to leave this out of this quarter's closing. I kept a separate record.\"",
+    "USB: instruction_log.xlsx\n\n[Sheet 1: Instructions]\nDate        Amount          Instruction (the CEO's exact words)\n2024-09-02  100,000,000     \"We can match the contract up later. Send it today.\"\n2024-09-30  100,000,000     \"This is my brother-in-law's business. Don't ask.\"\n2024-10-31  100,000,000     \"Leave it out of this quarter's closing.\"\n\n[Sheet 2: Daughter's tuition] (hidden)\nDate        Fee entry       Transfer\n2022-11-07  780,000         780,000\n2023-04-12  920,000         920,000\n...\n2024-10-31  1,150,000       1,150,000\nTotal                       18,700,000"
+  ]
+}

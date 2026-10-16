@@ -63,7 +63,7 @@ function indexed(body: string): string {
     .split('\n')
     .filter((l) => {
       const sec = l.trim().match(/^\[(.+?)\]/)
-      if (sec) hidden = sec[1].includes('하이라이트')
+      if (sec) hidden = sec[1].includes(msg().sites.marks.highlights)
       return !hidden || !!sec
     })
     .join('\n')

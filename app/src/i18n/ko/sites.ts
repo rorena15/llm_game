@@ -1,5 +1,23 @@
 // 화면 문구 (한국어): sites
 export const sites = {
+  /** 내용(웹페이지 본문) 속에서 틀이 찾는 표시. 그 언어의 내용 파일이 쓰는 낱말과 같아야 한다 (설계안 §17.2) */
+  marks: {
+    /** [메뉴] 덩어리 */
+    menu: '메뉴',
+    /** 빨간 꼬리표로 보이는 글 */
+    mustRead: '필독',
+    /** SNS 하이라이트(스토리) 덩어리 */
+    highlights: '하이라이트',
+    /** SNS 게시물 덩어리 */
+    posts: '게시물',
+    /** 조직도의 인원 칸 */
+    headcount: /^(\d+)명$/,
+    /** 채용 표의 상태 칸 */
+    closed: '마감',
+    ongoing: '상시',
+    /** 첫 화면 알림 상자가 찾는 메뉴 이름 */
+    notices: '알림',
+  },
   generic: {
     copyright: (host: string) => `© 2024 ${host}. All rights reserved.`,
   },

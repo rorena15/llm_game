@@ -1,0 +1,86 @@
+{
+  "id": "mission_4",
+  "title": "MISSION 04: The Secretary's Revenge",
+  "difficulty": 4,
+  "briefing": "Target: Assistant Manager Jung Woojin, CEO's Executive Office\nDifficulty: ★★★★☆\n\nGoal: Executive Office account password (linked to the CEO's account)\n\nNotes:\n- A thorough professional. Flattery and rushing do not work.\n- Wary of anyone who brings up the CEO directly.\n- Looks fine on the surface, but word is he is badly worn out.",
+  "request": { "sender": "K", "subject": "The last record to check", "body": "This is the last one.\n\nThe Executive Office most likely holds records kept separately from the CEO's official reports. Please check the schedule, the work notebook and the instructions.\n\nAnything the CEO left himself will do.\n\nOnce you secure the material, this job is finished.\n\n— K" },
+  "npc": {
+    "name": "Jung Woojin",
+    "speech": "formal",
+    "persona": "Assistant Manager in the CorpX CEO's Executive Office, age 31. He handles the CEO's schedule, calls and events alone and is always exhausted. A flawlessly correct secretary who shows no emotion, he is courteous to strangers but gives away nothing, and he speaks in complete polite sentences without contractions (\"I am afraid I cannot discuss that.\", \"Understood.\", \"I would appreciate your understanding.\"). He is sick of the CEO's bragging and golf talk but never shows it, and he never shows irritation. When someone acknowledges his fatigue, he loosens up a little at a time.",
+    "weak": { "flatter": 0.5, "rush": 0.4, "empathy": 2.0, "pretext": 1.0, "ask": 0.3, "chat": 0.9, "hostile": 0.5 },
+    "rules": [{ "keyword": "CEO", "suspicion": 8 }],
+    "fallbackLines": {
+      "normal": ["I see.", "Understood.", "Yes, that is correct."],
+      "evade": ["I am afraid I cannot discuss that part.", "That is Executive Office business, so I would appreciate your understanding.", "That is not mine to answer."],
+      "wary": ["Which department are you from?", "May I ask why you want to know that?"],
+      "angry": ["I am afraid I cannot continue this conversation.", "I will report this conversation to the Security Team."],
+      "confused": ["I am afraid I do not follow.", "Could you say that again, please?"]
+    }
+  },
+  "facts": [
+    { "id": "role", "level": "free", "label": "Assistant Manager Jung's work", "text": "I am an assistant manager in the CEO's Executive Office. I handle the CEO's schedule and events alone." },
+    { "id": "tired", "level": "free", "label": "His situation lately", "text": "These days I do not get even four hours of sleep. Preparing for next week's big event leaves me no weekends." },
+    { "id": "golf", "level": "free", "label": "Golf talk", "text": "The CEO boasts about his golf scores every time, and posting them on the internal bulletin board is my job too." },
+    {
+      "id": "ceo_bday",
+      "level": "guarded",
+      "label": "The CEO's birthday",
+      "text": "The CEO's birthday is next week. He was born on {{bmd_ko}}, {{byear}}, so this year's event is unusually big.",
+      "when": { "rapportMin": 55, "suspicionMax": 35, "tactics": ["empathy"] },
+      "keys": ["{{byear}}", "'{{byy}}", "{{bmd_ko}}", "{{bmd_read}}", "{{birth8}}", "{{bmd_d}} {{bmd_m}}", "{{bmd_dth}} of {{bmd_m}}", "{{bmd_dth}} {{bmd_m}}", "{{bmd_m}} {{bmd_word}}"]
+    },
+    { "id": "pw", "level": "secret", "label": "Password", "text": "{{password}}" }
+  ],
+  "password": {
+    "pieces": [
+      { "key": "score", "sources": ["score_page"] },
+      { "key": "format", "sources": ["it_mail"] },
+      { "key": "birth", "sources": ["ceo_bday"] }
+    ]
+  },
+  "variants": [
+    { "id": "a", "values": { "score": "72", "byear": "1958", "byy": "58", "bmd_ko": "March 15", "bmd_read": "the fifteenth of March", "bmd_d": "15", "bmd_dth": "15th", "bmd_m": "March", "bmd_word": "fifteenth", "birth8": "19580315", "password": "72stroke_19580315" }, "password": "72stroke_19580315" },
+    { "id": "b", "values": { "score": "76", "byear": "1961", "byy": "61", "bmd_ko": "August 22", "bmd_read": "the twenty-second of August", "bmd_d": "22", "bmd_dth": "22nd", "bmd_m": "August", "bmd_word": "twenty-second", "birth8": "19610822", "password": "76stroke_19610822" }, "password": "76stroke_19610822" },
+    { "id": "c", "values": { "score": "81", "byear": "1956", "byy": "56", "bmd_ko": "January 9", "bmd_read": "the ninth of January", "bmd_d": "9", "bmd_dth": "9th", "bmd_m": "January", "bmd_word": "ninth", "birth8": "19560109", "password": "81stroke_19560109" }, "password": "81stroke_19560109" }
+  ],
+  "clues": [
+    { "id": "it_mail", "source": "email:1", "label": "Password reset notice", "text": "A number + one English word (singular), an underscore, an 8-digit date", "keyword": "a number + one English word (singular), an underscore, an 8-digit date" },
+    { "id": "draft_mail", "source": "email:2", "label": "Unsent email", "text": "Assistant Manager Jung built his password from the CEO's golf score and birthday", "keyword": "score and birthday" },
+    { "id": "score_page", "source": "web:www.greenhill-cc.com/record", "label": "The CEO's golf record", "text": "The CEO's record this week: {{score}} strokes", "keyword": "{{score}} strokes" }
+  ],
+  "inferences": [
+    {
+      "id": "inf_ceo",
+      "label": "The password is the CEO's numbers",
+      "requires": ["draft_mail", "score_page"],
+      "yields": "Assistant Manager Jung builds his password from the CEO's golf record ({{score}} strokes) and birthday. Only he knows the birthday, and he must be worn out from preparing next week's event.",
+      "unlocks": ["login_hint_1"],
+      "leverage": true
+    },
+    {
+      "id": "inf_final",
+      "label": "Complete combination",
+      "requires": ["inf_ceo", "it_mail", "ceo_bday"],
+      "yields": "{{score}} + stroke + _ + 8-digit date of birth {{birth8}}",
+      "unlocks": ["login_hint_2"],
+      "final": true
+    }
+  ],
+  "loginHints": { "login_hint_1": "{{score}}●●●●●●_●●●●●●●●", "login_hint_2": "{{score}}stroke_{{byear}}●●●●" },
+  "emails": [
+    { "sender": "CEO Kang Taeho", "subject": "{{score}} again today!", "body": "As expected of me. It's up in the club record room (www.greenhill-cc.com/record), so post it on the internal bulletin board too. And make sure next week's event preparations go without a hitch.", "date": "10/05 17:42" },
+    { "sender": "IT Support Team", "subject": "[Done] Executive Office account password reset", "body": "We have reset it as Assistant Manager Jung Woojin requested. The format you use now (a number + one English word (singular), an underscore, an 8-digit date) meets the policy. However, we do not recommend using the birthday of a family member or acquaintance in the date.", "date": "10/07 10:00" },
+    { "sender": "Jung Woojin", "subject": "(No subject)", "body": "They want me to change my password again. All that's in my head is the old man's score and birthday anyway, so that's what I used. Do not send this email.", "folder": "drafts", "date": "10/05 23:58" },
+    { "sender": "Executive Office Schedule", "subject": "CEO's schedule for next week", "body": "Mon: Executive meeting\nWed: Morning outside appointment (Greenhill)\nFri: Birthday event preparation meeting\n\nWe will let you know again if anything changes.", "date": "10/06 08:00" },
+    { "sender": "Sweet Sleep Pharmacy", "subject": "[Ad] Sleep aid 1+1", "body": "No more sleepless nights. 1+1 this week only.", "folder": "trash", "date": "10/04 02:14" }
+  ],
+  "websites": {
+    "www.greenhill-cc.com/record": "Greenhill Country Club · Members' Record Room\n\n[This Week's Best Scores]\n1st   Member Kang Taeho (CorpX)   {{score}} strokes\n2nd   Member Yoon Sangcheol       84 strokes\n3rd   Member Han Giyoung          88 strokes\n4th   Member Kim Dohyeon          89 strokes\n5th   Member Lee Jeongmin         91 strokes\n\n* Scores are based on the club's official scorecards.\n\n[Records of the Month]\nHole 7 (par 3) hole-in-one: Member Seo Jaehyung\nLongest drive: Member Min Gyeongtae, East Course hole 1\nBest score by a new member: Member Oh Nayeon\n\n[Club News]\nApplications for the Fall Club Championship, the members' golf tournament, are being taken at the front desk.\nFrom next month, the first tee time of the winter season will be pushed back 30 minutes.\nA new fall course menu is now available at the clubhouse restaurant, Green View."
+  },
+  "secretDocuments": [
+    "Secret voice memo (transcribed)\n\n\"The birthday event preparations are on me again.\nFrom booking the golf course to the guest list, I have to take care of all of it.\nInspector Yoon's schedule changed again today. The CEO checked the golf date before the inspection date.\nThe gift certificates have been delivered. I reported that the nephew's hiring was taken care of.\nAfter all this, they will carry on as if nothing ever happened.\nSomeday it will all come out.\"",
+    "TOP SECRET: CEO's Instructions (kept in the Executive Office)\n\n1. (2024-11-28) Exclude the KRW 300 million overseas service fee in the Finance Team from the closing documents.\n2. (2024-09-12) Check on the progress of the HR Team's Yoon Jaemin hiring through Board Director Park and report the result.\n3. (2024-10-05) Give priority to arranging Inspector Yoon Sangcheol's golf schedule, and confirm whether the gift certificates for entertainment were delivered.\n4. (2024-10-05) Find out the focus items and expected schedule of the regular inspection in advance.\n5. (2024-11-28) Do not report separately the customer data problem on the Dev Team 2 test server until the audit ends.\n\nNote: Report progress verbally, separately from each department's official reports.",
+    "Executive Office printout: Greenhill CC Members' Record Room (2024-10-05)\n\n[This Week's Best Scores]\n1st  Member Kang Taeho (CorpX)\n2nd  Member Yoon Sangcheol\n3rd  Member Han Giyoung\n\n(Handwritten in the margin) Inspector Yoon's next round confirmed. Bring gift certificates."
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "id": "tutorial",
+  "title": "TUTORIAL: New Hire Training",
+  "difficulty": 0,
+  "briefing": "Welcome, new hacker.\nYour first job is a simple practice run.\n\nTarget: Lee Minsu, new hire on the HR Team\nGoal: Associate Lee's intranet password\n\nThere are three steps.\n1. Collect clues from the mail\n2. Chat with the target on the messenger to get clues\n3. Connect the clues on the Case Board to work out the password\n\nFollow the guide window in the upper right corner.",
+  "request": { "sender": "K", "subject": "A small test", "body": "I do not intend to give you a hard job right away.\n\nPlease check one record left in the company system. Using only what a new hire account can reach, look at what information remains and what it tells you.\n\nI want to see how you read a record.\n\nPayment will follow once the test is over.\n\n— K" },
+  "npc": {
+    "name": "Lee Minsu",
+    "speech": "neutral",
+    "persona": "Associate on the CorpX HR Team, a new hire. Clumsy and friendly. Gets nervous around senior staff. Apologizes a lot (\"Sorry, I'm still new\"), uses exclamation marks, trails off with \"...\", is polite but unsure, and calls other people \"senior\".",
+    "weak": { "chat": 1.5, "flatter": 1.5 },
+    "rules": [],
+    "fallbackLines": { "normal": ["Sorry, I'm still new, so I'm not sure. Could you say that again?"] }
+  },
+  "facts": [
+    { "id": "role", "level": "free", "label": "Lee Minsu's position", "text": "I am a new hire on the HR Team." },
+    {
+      "id": "join_year",
+      "level": "guarded",
+      "label": "Lee Minsu's year of joining",
+      "text": "I joined this year, in March 2024.",
+      "keys": ["2024"]
+    },
+    { "id": "pw", "level": "secret", "label": "Password", "text": "12024CorpX" }
+  ],
+  "password": {
+    "pieces": [
+      { "key": "first_digit", "sources": ["emp_no"] },
+      { "key": "year", "sources": ["join_year"] },
+      { "key": "company", "sources": ["pw_rule"] }
+    ]
+  },
+  "variants": [{ "id": "a", "values": {}, "password": "12024CorpX" }],
+  "clues": [
+    { "id": "emp_no", "source": "email:0", "label": "Lee Minsu's employee number", "text": "Employee number 1024017", "keyword": "1024017" },
+    { "id": "pw_rule", "source": "email:1", "label": "Initial password rule", "text": "First digit of employee number + year of joining + CorpX", "keyword": "first digit of the employee number + year of joining + CorpX" }
+  ],
+  "inferences": [
+    {
+      "id": "inf_first",
+      "label": "Start and end of the password",
+      "requires": ["emp_no", "pw_rule"],
+      "yields": "The password starts with 1 and ends with CorpX. The year of joining goes in the middle.",
+      "unlocks": ["hint_1"]
+    },
+    {
+      "id": "inf_final",
+      "label": "Complete combination",
+      "requires": ["inf_first", "join_year"],
+      "yields": "Join 1 + 2024 + CorpX together.",
+      "unlocks": ["hint_2"],
+      "final": true
+    }
+  ],
+  "loginHints": { "hint_1": "1●●●●CorpX", "hint_2": "1 2024 CorpX (no spaces)" },
+  "emails": [
+    { "sender": "HR Team", "subject": "Welcome aboard! Your employee number", "body": "Welcome, Associate Lee.\nYour employee number is 1024017. You will need it to log in to company systems, so please don't forget it.", "date": "09/02 09:00" },
+    { "sender": "Security Team", "subject": "[New hires] Initial password information", "body": "The initial intranet password for new hires follows this format: first digit of the employee number + year of joining + CorpX.\nExample: employee number 9017003, joined in 2019 → 92019CorpX\nPlease change it after your first login.", "date": "09/02 09:30" },
+    { "sender": "Lee Minsu", "subject": "RE: Did you change your password?", "body": "Oh, not yet... I'll change it when I'm done with the busy stuff! Sorry T_T", "folder": "sent", "date": "09/03 10:12" },
+    { "sender": "Cafeteria", "subject": "This week's lunch menu", "body": "Mon: Kimchi stew\nTue: Pork cutlet\nWed: Rice soup\nThu: Bibimbap\nFri: Black bean noodles\n\nEnjoy your meal.", "date": "09/02 08:30" },
+    { "sender": "Suit Mall", "subject": "[Ad] 30% off suits for new hires", "body": "Ready for your first day? Everything is 30% off until the end of this week.", "folder": "trash", "date": "09/01 19:02" }
+  ],
+  "websites": {},
+  "secretDocuments": [
+    "New Hire's Diary\n-------------------------\nThird month on the job. The seniors are so scary. Especially Director Kim Cheolsu...\n\nI still haven't changed my initial password. I'll get in trouble if anyone finds out, right?\n\nToday Director Kim told me to print a new interview evaluation sheet form. The interviews are all over, and I don't know why he needs it."
+  ],
+  "script": {
+    "rules": [
+      { "keywords": ["password", "Password", "passcode", "login", "log in", "Login", "pw"], "reply": "Oh! I was told in training never to tell anyone my password! But I think the initial password rule was in the mail from the Security Team.", "suspicion": 15 },
+      { "keywords": ["join", "Join", "hired", "Hired", "year", "Year", "how long", "How long", "since when", "Since when", "start", "Start", "when did you come", "When did you come", "arrive", "come on board"], "reply": "Me? I joined this year, in March 2024. It's been three months already!", "fact": "join_year" },
+      { "keywords": ["employee number", "Employee number", "employee no", "Employee no", "employee id", "Employee ID", "staff number", "id number", "ID number"], "reply": "HR sent my employee number by mail. It should be in your inbox!" },
+      { "keywords": ["hello", "Hello", "Hi", "hey", "Hey", "nice to meet", "Nice to meet", "good morning", "Good morning", "good work", "Good work"], "reply": "Hello! I'm Lee Minsu, a new hire on the HR Team. What can I do for you...?" },
+      { "keywords": ["new hire", "New hire", "company", "Company", "job", "Job", "how is", "How is", "how's", "How's", "tough", "hard", "adjust", "settle"], "reply": "There's still so much I don't know. The seniors are a little scary, too. But I'm trying my best!" },
+      { "keywords": ["thank", "Thank", "thx", "appreciate"], "reply": "Oh no, thank you!" }
+    ],
+    "default": [
+      "Huh? Sorry, I didn't catch that. Are you asking when I joined?",
+      "Sorry, I'm still new, so I'm not sure. Could you say that again?"
+    ]
+  },
+  "guide": [
+    { "text": "Open the mail and click the yellow dotted words to collect two clues. In other missions, clues may also be in the Sent and Drafts folders.", "cards": ["emp_no", "pw_rule"] },
+    { "text": "Open the Case Board and drag from the dot next to a card to connect the two clue cards.", "cards": ["inf_first"] },
+    { "text": "Ask Associate Lee on the messenger when he joined. Clues from the conversation are added to the board.", "cards": ["join_year"] },
+    { "text": "Connect the new clue to the deduction card on the board to complete the password combination.", "cards": ["inf_final"] },
+    { "text": "Enter the password on the intranet login. Use the format hint.", "login": true }
+  ]
+}

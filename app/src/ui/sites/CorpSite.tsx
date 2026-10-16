@@ -2,7 +2,7 @@
 // 연혁, 표, 조직도(본부 → 팀 → 구성원, 인원 합계)
 import { useState, type ReactNode } from 'react'
 import { normalizeUrl } from '../../game/run'
-import { useT } from '../../i18n'
+import { msg, useT } from '../../i18n'
 import { Go, T } from './common'
 import { cells, NAV_LINE, sections, seeded, type Section, type SiteProps } from './parse'
 
@@ -25,7 +25,7 @@ function orgTree(lines: string[]): OrgNode[] | null {
   rows.forEach((l, i) => {
     const depth = Math.floor((l.length - l.trimStart().length) / 2)
     const s = split[i]
-    const count = s[2]?.match(/^(\d+)명$/)
+    const count = s[2]?.match(msg().sites.marks.headcount)
     const node: OrgNode =
       s.length >= 2
         ? { dept: s[0], name: s[1], count: count ? Number(count[1]) : null, kids: [] }
@@ -49,11 +49,12 @@ const DATE_TAG = /^\d{4}\.\d{2}\.\d{2}$/
 
 export function CorpSite(p: SiteProps) {
   const t = useT().sites.corp
+  const mk = useT().sites.marks
   const brand = p.host.split('.')[0]
   const brandName = brand === 'corpx' ? 'CorpX' : brand
   const home = `www.${p.host}`
   const homeParts = sections(p.find(home) ?? '').parts
-  const menuSec = homeParts.find((s) => s.tag === '메뉴')
+  const menuSec = homeParts.find((s) => s.tag === mk.menu)
   const menu = (menuSec?.lines ?? [])
     .map((l) => l.trim().match(NAV_LINE))
     .filter((m): m is RegExpMatchArray => !!m)
@@ -64,7 +65,7 @@ export function CorpSite(p: SiteProps) {
   const { head, parts } = sections(p.body)
   const isHome = p.path === ''
   const pageTitle = head.replace(new RegExp(`^${brandName}\\s*`), '') || brandName
-  const content = parts.filter((s) => s.tag !== '메뉴')
+  const content = parts.filter((s) => s.tag !== mk.menu)
   const intro = content.find((s) => s.tag === null)
   const rest = content.filter((s) => s.tag !== null)
   const board = !isHome && rest.length >= 2 && rest.every((s) => s.title)
@@ -126,7 +127,7 @@ export function CorpSite(p: SiteProps) {
                 {rows.map((r, i) => (
                   <tr key={i}>
                     {r.map((c, j) => (
-                      <td key={j} className={c === '마감' ? 'closed' : /마감|상시/.test(c) ? 'due' : ''}>
+                      <td key={j} className={c === mk.closed ? 'closed' : c.includes(mk.closed) || c.includes(mk.ongoing) ? 'due' : ''}>
                         <T p={p} text={c} />
                       </td>
                     ))}
@@ -201,7 +202,7 @@ export function CorpSite(p: SiteProps) {
   }
 
   // 첫 화면의 알림 상자: 알림 페이지의 제목 몇 개
-  const noticeUrl = menuUrl('알림')
+  const noticeUrl = menuUrl(mk.notices)
   const noticeTitles = noticeUrl ? sections(p.find(noticeUrl) ?? '').parts.filter((s) => s.title).slice(0, 4) : []
 
   return (
@@ -270,7 +271,7 @@ export function CorpSite(p: SiteProps) {
             <ul className="corp-mini">
               {noticeTitles.map((s, i) => (
                 <li key={i}>
-                  <span className={`corp-badge${s.tag === '필독' ? ' hot' : ''}`}>{s.tag}</span>
+                  <span className={`corp-badge${s.tag === mk.mustRead ? ' hot' : ''}`}>{s.tag}</span>
                   <Go p={p} url={noticeUrl}>
                     {s.title}
                   </Go>
@@ -294,6 +295,7 @@ export function CorpSite(p: SiteProps) {
 /** 게시판: 번호·꼬리표·제목·조회. 제목을 누르면 본문이 펼쳐진다 (처음에는 맨 위 글만) */
 function Board({ p, items, render }: { p: SiteProps; items: Section[]; render: (lines: string[]) => ReactNode[] }) {
   const t = useT().sites.corp
+  const mk = useT().sites.marks
   const [open, setOpen] = useState<Set<number>>(() => new Set([0]))
   const toggle = (i: number) =>
     setOpen((o) => {
@@ -317,7 +319,7 @@ function Board({ p, items, render }: { p: SiteProps; items: Section[]; render: (
               <div className="row" onClick={() => toggle(i)}>
                 <span className="no">{items.length - i}</span>
                 <span className="subject">
-                  {!date && <span className={`corp-badge${s.tag === '필독' ? ' hot' : ''}`}>{s.tag}</span>}
+                  {!date && <span className={`corp-badge${s.tag === mk.mustRead ? ' hot' : ''}`}>{s.tag}</span>}
                   <b>
                     <T p={p} text={s.title} />
                   </b>

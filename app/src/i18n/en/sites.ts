@@ -2,6 +2,16 @@
 import type { sites as Ko } from '../ko/sites'
 
 export const sites: typeof Ko = {
+  marks: {
+    menu: 'Menu',
+    mustRead: 'Must read',
+    highlights: 'Highlights',
+    posts: 'Posts',
+    headcount: /^(\d+) (?:people|person)$/,
+    closed: 'Closed',
+    ongoing: 'Ongoing',
+    notices: 'Notices',
+  },
   generic: {
     copyright: (host: string) => `© 2024 ${host}. All rights reserved.`,
   },
