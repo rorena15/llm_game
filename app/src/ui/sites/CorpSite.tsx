@@ -2,6 +2,7 @@
 // 게시판(눌러서 펼침), 연혁, 표, 조직도(본부 → 팀 → 구성원, 인원 합계), 사이트맵 푸터, 쿠키 안내
 import { useEffect, useState, type ReactNode } from 'react'
 import { normalizeUrl } from '../../game/run'
+import { siteImage } from '../../game/siteImages'
 import { lang, msg, useT } from '../../i18n'
 import { Go, T } from './common'
 import { cells, NAV_LINE, sections, seeded, type Section, type SiteProps } from './parse'
@@ -346,8 +347,12 @@ export function CorpSite(p: SiteProps) {
                 {pressItems.map((s, i) => (
                   <Go key={i} p={p} url={pressUrl} className="corp-news-card">
                     <span
-                      className="thumb"
-                      style={{ background: `hsl(${215 + Math.round(seeded(s.title) * 40)} 55% ${30 + Math.round(seeded(s.title, 1) * 20)}%)` }}
+                      className={`thumb${siteImage(home, `news${i + 1}`) ? ' photo' : ''}`}
+                      style={
+                        siteImage(home, `news${i + 1}`)
+                          ? { backgroundImage: `url(${siteImage(home, `news${i + 1}`)})` }
+                          : { background: `hsl(${215 + Math.round(seeded(s.title) * 40)} 55% ${30 + Math.round(seeded(s.title, 1) * 20)}%)` }
+                      }
                     />
                     <time>{s.tag}</time>
                     <b>{s.title}</b>
@@ -483,9 +488,13 @@ function Carousel({ p, slides, brandName }: { p: SiteProps; slides: { title: str
   }, [paused, slides.length])
   const i = at % slides.length
   const s = slides[i]
+  const photo = siteImage(`www.${p.host}`, `slide${i + 1}`)
   const move = (d: number) => setAt((x) => (x + d + slides.length) % slides.length)
   return (
-    <section className={`corp-hero slide-${i % 3}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+    <section
+      className={`corp-hero slide-${i % 3}${photo ? ' photo' : ''}`}
+      style={photo ? { backgroundImage: `linear-gradient(90deg, #0f2350e6 0%, #0f235099 45%, #0f235022 100%), url(${photo})` } : undefined}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
       <small>{brandName.toUpperCase()}</small>
       <h1 key={i}>
         <T p={p} text={s.title} />

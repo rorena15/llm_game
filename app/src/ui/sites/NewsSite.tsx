@@ -1,4 +1,5 @@
 // 뉴스 사이트 (비즈데일리, 테크나우): 제호·분야 메뉴, 첫 화면(헤드라인·분야별 기사·많이 본 뉴스), 기사(분류·기자·입력, 본문, 관련 기사)
+import { siteImage } from '../../game/siteImages'
 import { useT } from '../../i18n'
 import { Go, T } from './common'
 import { brand, NAV_LINE, sections, seeded, type Section, type SiteProps } from './parse'
@@ -17,8 +18,12 @@ const links = (s: Section | undefined): Link[] =>
 /** "분류: 경제" 꼴 */
 const KV = /^([^:：]{1,12})[:：]\s*(.+)$/
 
-/** 꾸밈용 사진 자리: 제목으로 색과 무늬를 정한다 */
-const thumb = (seed: string) => ({
+/** 사진 자리: 기사 사진이 있으면 그것, 없으면 제목으로 정한 색 */
+const thumb = (seed: string, url?: string) => {
+  const src = url && siteImage(url, 'photo')
+  return src ? { backgroundImage: `url(${src})`, backgroundSize: 'cover', backgroundPosition: 'center' } : gradient(seed)
+}
+const gradient = (seed: string) => ({
   background: `linear-gradient(${Math.round(seeded(seed) * 180)}deg, hsl(${Math.round(seeded(seed, 1) * 360)} 35% 45%), hsl(${Math.round(seeded(seed, 2) * 360)} 30% 25%))`,
 })
 
@@ -81,7 +86,7 @@ export function NewsSite(p: SiteProps) {
                   <section key={i} className="news-headline">
                     {ls.map((l) => (
                       <Go key={l.url} p={p} url={l.url} className="news-lead">
-                        <span className="pic" style={thumb(l.label)} />
+                        <span className="pic" style={thumb(l.label, l.url)} />
                         <b>{l.label}</b>
                       </Go>
                     ))}
@@ -92,7 +97,7 @@ export function NewsSite(p: SiteProps) {
                   <h2>{s.tag}</h2>
                   {ls.map((l, j) => (
                     <Go key={l.url} p={p} url={l.url} className={j === 0 ? 'first' : ''}>
-                      {j === 0 && <span className="pic" style={thumb(l.label)} />}
+                      {j === 0 && <span className="pic" style={thumb(l.label, l.url)} />}
                       {l.label}
                     </Go>
                   ))}
@@ -116,7 +121,7 @@ export function NewsSite(p: SiteProps) {
                   {t.fontSize} · {t.share}
                 </span>
               </div>
-              <span className="pic news-photo" style={thumb(head)} />
+              <span className="pic news-photo" style={thumb(head, p.pageKey)} />
               <div className="news-text">
                 {paras.map((x, i) => (
                   <p key={i}>

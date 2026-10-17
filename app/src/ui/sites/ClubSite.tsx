@@ -1,4 +1,5 @@
 // 골프장 홈페이지 (greenhill-cc.com): 짙은 초록과 금색, 세리프 글꼴, 순위표
+import { siteImage } from '../../game/siteImages'
 import { useT } from '../../i18n'
 import { T } from './common'
 import { cells, sections, type SiteProps } from './parse'
@@ -24,7 +25,14 @@ export function ClubSite(p: SiteProps) {
           ))}
         </nav>
       </header>
-      <section className="club-hero">
+      <section
+        className="club-hero"
+        style={
+          siteImage(p.pageKey, 'course')
+            ? { backgroundImage: `linear-gradient(#16301fb0, #16301fd9), url(${siteImage(p.pageKey, 'course')})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+            : undefined
+        }
+      >
         <small>{club}</small>
         <h1>{page || club}</h1>
       </section>
@@ -80,6 +88,7 @@ export function ClubSite(p: SiteProps) {
           )
         })}
       </div>
+      {siteImage(p.pageKey, 'club') && <img className="club-photo" src={siteImage(p.pageKey, 'club')!} alt="" />}
       <footer className="club-foot">
         <b>{club}</b>
         <small>{t.footer}</small>

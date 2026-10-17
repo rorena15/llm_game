@@ -1,5 +1,6 @@
 // 학교 홈페이지 (hanbit-es.kr): 교표와 학교 이름, 위쪽 메뉴, 게시판 글 보기, 수상자 표, 아래 알림
 import type { ReactNode } from 'react'
+import { siteImage } from '../../game/siteImages'
 import { useT } from '../../i18n'
 import { T } from './common'
 import { cells, sections, seeded, type SiteProps } from './parse'
@@ -85,6 +86,7 @@ export function SchoolSite(p: SiteProps) {
               <span>{t.author}</span>
               <span>{t.views(views)}</span>
             </div>
+            {siteImage(p.pageKey, 'photo') && <img className="sch-photo" src={siteImage(p.pageKey, 'photo')!} alt="" />}
             <div className="sch-content">{body(post.lines)}</div>
           </div>
         ) : (
