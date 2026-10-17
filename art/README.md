@@ -17,5 +17,6 @@
 |---|---|---|
 | `instargram.com/dev_jihyun/` profile, p1~p8, h1~h3 | `gen_sns.py` (프롬프트와 시드가 스크립트에 있습니다) | profile A, p1 C, p2 D, p3 D, p4 C, p5 D, p6 C, p7 D, p8 B, h1 D, h2 C, h3 A |
 | 뉴스 기사 14장, CorpX 슬라이드 3장·뉴스룸 3장, 학교 1장, 골프장 2장 (`ITEMS` 순서) | `gen_sites.py` | A C B C A C B B C A B D A C D A D C B D B B A |
+| 금리 발표장, 겨울 골프장, 펫카페 (다시 뽑음) | `gen_redo.py` | A B C |
 
 다시 만들려면 `E:/Git_Project/stigma-train/.venv`의 파이썬으로 `python gen_sns.py <출력 폴더>`(또는 `gen_sites.py`)를 실행합니다. 고른 후보는 위 표의 글자(A=1번 시드)입니다.
