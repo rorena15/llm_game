@@ -7,6 +7,7 @@ import { Go, T } from './common'
 import { brand, NAV_LINE, sections, type SiteProps } from './parse'
 import { CorpSite } from './CorpSite'
 import { InstaSite } from './InstaSite'
+import { NewsSite } from './NewsSite'
 import { SchoolSite } from './SchoolSite'
 import './sites.css'
 
@@ -17,6 +18,8 @@ const TEMPLATES: Record<string, (p: SiteProps) => ReactNode> = {
   'instargram.com': InstaSite,
   'hanbit-es.kr': SchoolSite,
   'greenhill-cc.com': ClubSite,
+  'bizdaily.co.kr': NewsSite,
+  'technow.kr': NewsSite,
 }
 
 export function Site(p: SiteProps) {

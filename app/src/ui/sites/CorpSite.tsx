@@ -1,6 +1,6 @@
-// 회사 홈페이지 (CorpX): 위쪽 메뉴, 첫 화면(배너·사업·숫자·소식·알림·보도자료), 게시판(눌러서 펼침),
-// 연혁, 표, 조직도(본부 → 팀 → 구성원, 인원 합계)
-import { useState, type ReactNode } from 'react'
+// 회사 홈페이지 (CorpX): 위쪽 메뉴와 펼침 메뉴, 첫 화면(슬라이드·사업·숫자·뉴스룸·알림·고객사), 하위 페이지 옆 메뉴,
+// 게시판(눌러서 펼침), 연혁, 표, 조직도(본부 → 팀 → 구성원, 인원 합계), 사이트맵 푸터, 쿠키 안내
+import { useEffect, useState, type ReactNode } from 'react'
 import { normalizeUrl } from '../../game/run'
 import { msg, useT } from '../../i18n'
 import { Go, T } from './common'
@@ -47,6 +47,29 @@ const headcount = (roots: OrgNode[]) => roots.reduce((a, r) => a + 1 + teamSum(r
 const KV = /^([^:：]{1,20})[:：]\s*(.+)$/
 const DATE_TAG = /^\d{4}\.\d{2}\.\d{2}$/
 
+interface MenuItem {
+  label: string
+  url: string
+  kids: MenuItem[]
+}
+
+/** [메뉴]: 들여쓰지 않은 줄은 대메뉴, 들여쓴 줄은 그 아래 메뉴 */
+function parseMenu(lines: string[]): MenuItem[] {
+  const out: MenuItem[] = []
+  for (const l of lines) {
+    const m = l.trim().match(NAV_LINE)
+    if (!m) continue
+    const item = { label: m[1].trim(), url: m[2], kids: [] }
+    if (/^\s/.test(l) && out.length) out[out.length - 1].kids.push(item)
+    else out.push(item)
+  }
+  return out
+}
+
+/** 쿠키 안내는 한 번 닫으면 이번 실행 동안 다시 띄우지 않는다 */
+let cookieClosed = false
+const SLIDE_MS = 5000
+
 export function CorpSite(p: SiteProps) {
   const t = useT().sites.corp
   const mk = useT().sites.marks
@@ -54,21 +77,30 @@ export function CorpSite(p: SiteProps) {
   const brandName = brand === 'corpx' ? 'CorpX' : brand
   const home = `www.${p.host}`
   const homeParts = sections(p.find(home) ?? '').parts
-  const menuSec = homeParts.find((s) => s.tag === mk.menu)
-  const menu = (menuSec?.lines ?? [])
-    .map((l) => l.trim().match(NAV_LINE))
-    .filter((m): m is RegExpMatchArray => !!m)
-    .map((m) => ({ label: m[1].trim(), url: m[2] }))
-  const menuUrl = (label: string) => menu.find((m) => m.label === label)?.url
-  const isHomeUrl = (u: string) => normalizeUrl(u) === normalizeUrl(home)
+  const groups = parseMenu(homeParts.find((s) => s.tag === mk.menu)?.lines ?? [])
+  const flat = groups.flatMap((g) => [g, ...g.kids])
+  const menuUrl = (label: string) => flat.find((m) => m.label === label)?.url
+  const same = (a: string, b: string) => normalizeUrl(a) === normalizeUrl(b)
+  const isHomeUrl = (u: string) => same(u, home)
+  const here = normalizeUrl(p.pageKey)
+  const group = groups.find((g) => same(g.url, here) || g.kids.some((k) => same(k.url, here)))
+  const [cookie, setCookie] = useState(!cookieClosed)
 
   const { head, parts } = sections(p.body)
   const isHome = p.path === ''
   const pageTitle = head.replace(new RegExp(`^${brandName}\\s*`), '') || brandName
-  const content = parts.filter((s) => s.tag !== mk.menu)
+  const content = parts.filter((s) => s.tag !== mk.menu && !(isHome && (s.tag === mk.slides || s.tag === mk.clients)))
   const intro = content.find((s) => s.tag === null)
   const rest = content.filter((s) => s.tag !== null)
   const board = !isHome && rest.length >= 2 && rest.every((s) => s.title)
+  const slides = (parts.find((s) => isHome && s.tag === mk.slides)?.lines ?? [])
+    .map((l) => l.trim().match(NAV_LINE))
+    .filter((m): m is RegExpMatchArray => !!m)
+    .map((m) => {
+      const [title, desc] = m[1].split(' · ')
+      return { title: title.trim(), desc: desc?.trim() ?? '', url: m[2] }
+    })
+  const clients = isHome ? (parts.find((s) => s.tag === mk.clients)?.lines.map((l) => l.trim()) ?? []) : []
 
   const renderLines = (lines: string[]): ReactNode[] => {
     const out: ReactNode[] = []
@@ -201,38 +233,95 @@ export function CorpSite(p: SiteProps) {
     return out
   }
 
-  // 첫 화면의 알림 상자: 알림 페이지의 제목 몇 개
+  // 첫 화면의 알림 상자와 뉴스룸 카드: 알림·보도자료 페이지의 글 몇 개
   const noticeUrl = menuUrl(mk.notices)
   const noticeTitles = noticeUrl ? sections(p.find(noticeUrl) ?? '').parts.filter((s) => s.title).slice(0, 4) : []
+  const pressUrl = menuUrl(mk.press)
+  const pressItems = pressUrl
+    ? sections(p.find(pressUrl) ?? '')
+        .parts.filter((s) => s.title && DATE_TAG.test(s.tag ?? ''))
+        .slice(0, 3)
+    : []
+
+  const body = board ? (
+    <Board p={p} items={rest} render={renderLines} />
+  ) : (
+    rest.map((s, i) => (
+      <section key={i} className="corp-sec">
+        <h2>
+          {s.tag}
+          {s.title && (
+            <small>
+              <T p={p} text={s.title} />
+            </small>
+          )}
+        </h2>
+        {renderLines(s.lines)}
+      </section>
+    ))
+  )
 
   return (
     <article className="s-corp">
+      <div className="corp-util">
+        {t.langs.map((l, i) => (
+          <span key={l} className={i === 0 ? 'on' : ''}>
+            {l}
+          </span>
+        ))}
+      </div>
       <header className="corp-gnb">
         <Go p={p} url={home} className="corp-logo">
           <span className="mark" />
           {brandName}
         </Go>
         <nav>
-          {menu.map((m) => (
-            <Go key={m.url} p={p} url={m.url} className={normalizeUrl(m.url) === normalizeUrl(p.pageKey) ? 'on' : ''}>
-              {m.label}
+          {groups.map((g) => (
+            <Go key={g.url} p={p} url={g.url} className={g === group ? 'on' : ''}>
+              {g.label}
             </Go>
           ))}
         </nav>
+        {groups.some((g) => g.kids.length) && (
+          <div className="corp-mega">
+            {groups.map((g) => (
+              <div key={g.url}>
+                <b>{g.label}</b>
+                {g.kids.map((k) => (
+                  <Go key={k.url + k.label} p={p} url={k.url}>
+                    {k.label}
+                  </Go>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
       </header>
 
       {isHome ? (
-        <section className="corp-hero">
-          <small>{brandName.toUpperCase()}</small>
-          <h1>{intro?.lines[0] ? <T p={p} text={intro.lines[0].trim()} /> : brandName}</h1>
-          {intro && intro.lines.length > 1 && <div className="hero-sub">{renderLines(intro.lines.slice(1))}</div>}
-        </section>
+        slides.length ? (
+          <Carousel p={p} slides={slides} brandName={brandName} />
+        ) : (
+          <section className="corp-hero">
+            <small>{brandName.toUpperCase()}</small>
+            <h1>{intro?.lines[0] ? <T p={p} text={intro.lines[0].trim()} /> : brandName}</h1>
+            {intro && intro.lines.length > 1 && <div className="hero-sub">{renderLines(intro.lines.slice(1))}</div>}
+          </section>
+        )
       ) : (
         <section className="corp-band">
           <small>
             <Go p={p} url={home}>
               {t.home}
-            </Go>{' '}
+            </Go>
+            {group && !same(group.url, here) && (
+              <>
+                {' › '}
+                <Go p={p} url={group.url}>
+                  {group.label}
+                </Go>
+              </>
+            )}{' '}
             › {pageTitle}
           </small>
           <h1>
@@ -241,54 +330,200 @@ export function CorpSite(p: SiteProps) {
         </section>
       )}
 
-      <div className="corp-body">
-        {!isHome && intro && renderLines(intro.lines)}
-        {board ? (
-          <Board p={p} items={rest} render={renderLines} />
-        ) : (
-          rest.map((s, i) => (
-            <section key={i} className="corp-sec">
+      {isHome ? (
+        <div className="corp-body">
+          {slides.length > 0 && intro && intro.lines.length > 0 && <div className="corp-lead">{renderLines(intro.lines)}</div>}
+          {body}
+          {pressItems.length > 0 && pressUrl && (
+            <section className="corp-sec">
               <h2>
-                {s.tag}
-                {s.title && (
-                  <small>
-                    <T p={p} text={s.title} />
-                  </small>
-                )}
+                {t.newsroom}
+                <Go p={p} url={pressUrl} className="more">
+                  {t.more}
+                </Go>
               </h2>
-              {renderLines(s.lines)}
-            </section>
-          ))
-        )}
-        {isHome && noticeTitles.length > 0 && noticeUrl && (
-          <section className="corp-sec">
-            <h2>
-              {t.notices}
-              <Go p={p} url={noticeUrl} className="more">
-                {t.more}
-              </Go>
-            </h2>
-            <ul className="corp-mini">
-              {noticeTitles.map((s, i) => (
-                <li key={i}>
-                  <span className={`corp-badge${s.tag === mk.mustRead ? ' hot' : ''}`}>{s.tag}</span>
-                  <Go p={p} url={noticeUrl}>
-                    {s.title}
+              <div className="corp-news">
+                {pressItems.map((s, i) => (
+                  <Go key={i} p={p} url={pressUrl} className="corp-news-card">
+                    <span
+                      className="thumb"
+                      style={{ background: `hsl(${215 + Math.round(seeded(s.title) * 40)} 55% ${30 + Math.round(seeded(s.title, 1) * 20)}%)` }}
+                    />
+                    <time>{s.tag}</time>
+                    <b>{s.title}</b>
                   </Go>
-                </li>
+                ))}
+              </div>
+            </section>
+          )}
+          {noticeTitles.length > 0 && noticeUrl && (
+            <section className="corp-sec">
+              <h2>
+                {t.notices}
+                <Go p={p} url={noticeUrl} className="more">
+                  {t.more}
+                </Go>
+              </h2>
+              <ul className="corp-mini">
+                {noticeTitles.map((s, i) => (
+                  <li key={i}>
+                    <span className={`corp-badge${s.tag === mk.mustRead ? ' hot' : ''}`}>{s.tag}</span>
+                    <Go p={p} url={noticeUrl}>
+                      {s.title}
+                    </Go>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {clients.length > 0 && (
+            <section className="corp-clients">
+              <h2>{t.clients}</h2>
+              <div>
+                {clients.map((c) => (
+                  <span key={c}>{c}</span>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      ) : (
+        <div className={`corp-body${group?.kids.length ? ' with-lnb' : ''}`}>
+          {group && group.kids.length > 0 && (
+            <aside className="corp-lnb">
+              <b>{group.label}</b>
+              {group.kids.map((k) => (
+                <Go key={k.url + k.label} p={p} url={k.url} className={same(k.url, here) ? 'on' : ''}>
+                  {k.label}
+                </Go>
               ))}
-            </ul>
-          </section>
-        )}
-      </div>
+            </aside>
+          )}
+          <div className="corp-main">
+            {intro && renderLines(intro.lines)}
+            {body}
+          </div>
+        </div>
+      )}
 
       <footer className="corp-foot">
-        <b>{brandName}</b>
-        <span>{t.footerLinks}</span>
-        <small>{t.footerAddress(brandName)}</small>
-        <small>{t.copyright(brandName)}</small>
+        {groups.length > 0 && (
+          <div className="corp-sitemap">
+            {groups.map((g) => (
+              <div key={g.url}>
+                <Go p={p} url={g.url}>
+                  {g.label}
+                </Go>
+                {g.kids.map((k) => (
+                  <Go key={k.url + k.label} p={p} url={k.url}>
+                    {k.label}
+                  </Go>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="corp-foot-bottom">
+          <div>
+            <b>{brandName}</b>
+            <p className="policy">
+              {t.footerPolicy.map((x, i) => (
+                <span key={x} className={i === 0 ? 'strong' : ''}>
+                  {x}
+                </span>
+              ))}
+            </p>
+            <small>{t.footerAddress(brandName)}</small>
+            <small>{t.footerBiz}</small>
+            <small>{t.copyright(brandName)}</small>
+          </div>
+          <select aria-label={t.familySite} defaultValue="">
+            <option value="" disabled>
+              {t.familySite}
+            </option>
+            {t.families.map((f) => (
+              <option key={f}>{f}</option>
+            ))}
+          </select>
+        </div>
       </footer>
+
+      <button className="corp-top" title={t.top} onClick={(e) => e.currentTarget.closest('.s-corp')?.scrollIntoView({ block: 'start' })}>
+        ↑
+      </button>
+      {cookie && (
+        <div className="corp-cookie">
+          <span>{t.cookie}</span>
+          <button className="ghost">{t.cookieSet}</button>
+          <button
+            onClick={() => {
+              cookieClosed = true
+              setCookie(false)
+            }}
+          >
+            {t.cookieOk}
+          </button>
+        </div>
+      )}
     </article>
+  )
+}
+
+/** 첫 화면 슬라이드: 5초마다 넘어가고, 점·화살표로 고른다. 마우스를 올리면 멈춘다 */
+function Carousel({ p, slides, brandName }: { p: SiteProps; slides: { title: string; desc: string; url: string }[]; brandName: string }) {
+  const t = useT().sites.corp
+  const [at, setAt] = useState(0)
+  const [hover, setHover] = useState(false)
+  const [stopped, setStopped] = useState(false)
+  const paused = hover || stopped
+  useEffect(() => {
+    if (paused || slides.length < 2) return
+    const timer = setInterval(() => setAt((i) => (i + 1) % slides.length), SLIDE_MS)
+    return () => clearInterval(timer)
+  }, [paused, slides.length])
+  const i = at % slides.length
+  const s = slides[i]
+  const move = (d: number) => setAt((x) => (x + d + slides.length) % slides.length)
+  return (
+    <section className={`corp-hero slide-${i % 3}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      <small>{brandName.toUpperCase()}</small>
+      <h1 key={i}>
+        <T p={p} text={s.title} />
+      </h1>
+      {s.desc && (
+        <p className="hero-desc">
+          <T p={p} text={s.desc} />
+        </p>
+      )}
+      <Go p={p} url={s.url} className="hero-cta">
+        {t.detail}
+      </Go>
+      <div className="hero-ctrl">
+        <button title={t.prev} onClick={() => move(-1)}>
+          ‹
+        </button>
+        {slides.map((_, k) => (
+          <button key={k} className={`dot${k === i ? ' on' : ''}`} onClick={() => setAt(k)} aria-label={`${k + 1}`} />
+        ))}
+        <button title={t.next} onClick={() => move(1)}>
+          ›
+        </button>
+        <button title={stopped ? t.play : t.pause} onClick={() => setStopped((v) => !v)}>
+          {stopped ? '▶' : 'Ⅱ'}
+        </button>
+        <span className="count">
+          {String(i + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
+        </span>
+      </div>
+      <div className="hero-tabs">
+        {/* 슬라이드 제목 띠: 누르면 그 슬라이드로 (주소는 '자세히 보기'로 연다) */}
+        {slides.map((x, k) => (
+          <button key={k} className={k === i ? 'on' : ''} data-url={x.url} onClick={() => setAt(k)}>
+            {x.title}
+          </button>
+        ))}
+      </div>
+    </section>
   )
 }
 

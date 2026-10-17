@@ -66,6 +66,8 @@ const BRAND: Record<string, string> = {
   'hanbit-es.kr': '#2f7d4f',
   'greenhill-cc.com': '#23422f',
   'nachimban.com': '#1f8a70',
+  'bizdaily.co.kr': '#0b3d91',
+  'technow.kr': '#d6336c',
 }
 
 export function brand(host: string): string {
