@@ -2,7 +2,7 @@
 // 게시판(눌러서 펼침), 연혁, 표, 조직도(본부 → 팀 → 구성원, 인원 합계), 사이트맵 푸터, 쿠키 안내
 import { useEffect, useState, type ReactNode } from 'react'
 import { normalizeUrl } from '../../game/run'
-import { msg, useT } from '../../i18n'
+import { lang, msg, useT } from '../../i18n'
 import { Go, T } from './common'
 import { cells, NAV_LINE, sections, seeded, type Section, type SiteProps } from './parse'
 
@@ -265,7 +265,7 @@ export function CorpSite(p: SiteProps) {
     <article className="s-corp">
       <div className="corp-util">
         {t.langs.map((l, i) => (
-          <span key={l} className={i === 0 ? 'on' : ''}>
+          <span key={l} className={i === (lang() === 'en' ? 1 : 0) ? 'on' : ''}>
             {l}
           </span>
         ))}

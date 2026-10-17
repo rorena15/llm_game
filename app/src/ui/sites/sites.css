@@ -1983,3 +1983,16 @@
 .s-news.home .news-headline {
   grid-column: 1 / -1;
 }
+.corp-news-card .thumb {
+  position: relative;
+}
+.corp-news-card .thumb::after {
+  content: 'CorpX NEWSROOM';
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #ffffffb0;
+}
