@@ -35,6 +35,7 @@ train/               모델 준비 (배포본에 들어가지 않음)
   out/               변환한 GGUF (git 제외)
 docs/                설계 문서
 legacy/              Godot + Python 프로토타입 (이식이 끝나면 삭제)
+art/                 사이트 사진 생성 스크립트와 출처 (art/README.md)
 ```
 
 ## 실행

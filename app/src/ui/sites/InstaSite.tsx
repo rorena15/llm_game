@@ -1,6 +1,7 @@
 // SNS 프로필 (instargram): 프로필 머리, 하이라이트 동그라미와 스토리 보기, 게시물 격자
 import { useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { siteImage } from '../../game/siteImages'
 import { useT } from '../../i18n'
 import { T } from './common'
 import { firstEmoji, sections, seeded, type SiteProps } from './parse'
@@ -41,6 +42,13 @@ export function InstaSite(p: SiteProps) {
   const avatar = firstEmoji(bio.join(' ')) ?? handle[0]?.toUpperCase()
   const followers = Math.round(180 + seeded(handle) * 900) + (following ? 1 : 0)
   const followingN = Math.round(120 + seeded(handle, 7) * 400)
+  // 사진이 있으면 그림, 없으면 그라데이션 위에 이모지
+  const pic = (name: string) => siteImage(p.pageKey, name)
+  const bg = (name: string, fallback: string) => {
+    const src = pic(name)
+    return src ? { backgroundImage: `url(${src})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: fallback }
+  }
+  const profilePic = pic('profile')
 
   return (
     <article className="s-insta">
@@ -51,8 +59,8 @@ export function InstaSite(p: SiteProps) {
       </header>
 
       <section className="ig-profile">
-        <div className="ig-avatar ring">
-          <span>{avatar}</span>
+        <div className="ig-avatar ring" style={profilePic ? bg('profile', '') : undefined}>
+          {!profilePic && <span>{avatar}</span>}
         </div>
         <div className="ig-info">
           <div className="ig-name">
@@ -91,9 +99,9 @@ export function InstaSite(p: SiteProps) {
                 className="ig-avatar small"
                 title={stories[h] ? t.viewStory : h}
                 onClick={() => stories[h] && setOpen(h)}
-                style={{ background: GRADIENTS[i % GRADIENTS.length] }}
+                style={bg(`h${i + 1}`, GRADIENTS[i % GRADIENTS.length])}
               >
-                <span>{firstEmoji(h) ?? h[0]}</span>
+                {!pic(`h${i + 1}`) && <span>{firstEmoji(h) ?? h[0]}</span>}
               </button>
               <small>
                 <T p={p} text={h} />
@@ -114,8 +122,8 @@ export function InstaSite(p: SiteProps) {
           const caption = l.replace(/#\S+\s*/g, '').trim()
           return (
             <figure key={i} className="ig-post">
-              <div className="ig-img" style={{ background: GRADIENTS[(i + 2) % GRADIENTS.length] }}>
-                <span>{firstEmoji(l) ?? '📷'}</span>
+              <div className="ig-img" style={bg(`p${i + 1}`, GRADIENTS[(i + 2) % GRADIENTS.length])}>
+                {!pic(`p${i + 1}`) && <span>{firstEmoji(l) ?? '📷'}</span>}
                 <i>♡ {Math.round(8 + seeded(l) * 90)}</i>
               </div>
               <figcaption>
@@ -149,8 +157,8 @@ export function InstaSite(p: SiteProps) {
               <i />
             </div>
             <div className="ig-story-head">
-              <span className="ig-avatar tiny">
-                <span>{avatar}</span>
+              <span className="ig-avatar tiny" style={profilePic ? bg('profile', '') : undefined}>
+                {!profilePic && <span>{avatar}</span>}
               </span>
               <b>{handle}</b>
               <small>
