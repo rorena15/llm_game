@@ -26,6 +26,7 @@ export const apps: typeof Ko = {
     author: 'Author',
     sender: 'From',
     noMail: 'No mail received.',
+    attachments: 'Attachments',
   },
   browser: {
     history: 'History',
@@ -61,6 +62,24 @@ export const apps: typeof Ko = {
     login: 'Log in',
     formatHint: 'Format hint',
     fails: (n: number) => `Failed logins: ${n}. Each failure raises the security system's suspicion.`,
+  },
+  files: {
+    pc: (npc: string) => `${npc}'s PC`,
+    docs: 'Documents',
+    attach: 'Mail attachments',
+    trash: 'Recycle Bin',
+    name: 'Name',
+    modified: 'Date modified',
+    empty: 'No files.',
+    attachEmpty: 'Attachments show up here once you read the mail they came with.',
+    trashEmpty: 'The Recycle Bin is empty.',
+    pick: 'Select a file to see its contents.',
+  },
+  notepad: {
+    file: 'my notes.txt',
+    placeholder: 'Write down what you find. Notes stay between missions and save automatically.',
+    saved: 'Saved',
+    chars: (n: number) => `${n} chars`,
   },
   clue: {
     collected: (label: string) => `Collected: ${label}`,

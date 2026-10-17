@@ -33,12 +33,25 @@ function checkSpec(spec: ScenarioSpec): string[] {
   for (const f of spec.facts) {
     if (f.level === 'guarded' && !f.keys?.length) e.push(`guarded 사실에 keys 없음: ${f.id}`)
   }
+  const files = spec.files ?? []
   for (const c of spec.clues) {
     const [kind, ref] = c.source.split(':')
     if (kind === 'email' && !spec.emails[Number(ref)]) e.push(`단서 ${c.id}: 없는 메일 ${ref}`)
     else if (kind === 'web' && !(ref in spec.websites)) e.push(`단서 ${c.id}: 없는 웹페이지 ${ref}`)
-    else if (kind !== 'email' && kind !== 'web') e.push(`단서 ${c.id}: 알 수 없는 출처 ${c.source}`)
+    else if (kind === 'file' && !files.some((f) => f.id === ref)) e.push(`단서 ${c.id}: 없는 파일 ${ref}`)
+    else if (!['email', 'web', 'file'].includes(kind)) e.push(`단서 ${c.id}: 알 수 없는 출처 ${c.source}`)
   }
+  // 파일: id는 하나씩, 첨부는 메일이 가리키고, 메일이 가리키는 첨부는 있어야 한다
+  const fileIds = new Set<string>()
+  for (const f of files) {
+    if (fileIds.has(f.id)) e.push(`파일 id가 겹침: ${f.id}`)
+    fileIds.add(f.id)
+    if (!['docs', 'attach', 'trash'].includes(f.folder)) e.push(`파일 ${f.id}: 알 수 없는 폴더 ${f.folder}`)
+  }
+  const attached = spec.emails.flatMap((m) => m.attachments ?? [])
+  for (const a of attached)
+    if (files.find((f) => f.id === a)?.folder !== 'attach') e.push(`메일 첨부 ${a}: attach 폴더의 파일이 없음`)
+  for (const f of files) if (f.folder === 'attach' && !attached.includes(f.id)) e.push(`첨부 파일 ${f.id}: 어느 메일에도 붙어 있지 않음`)
   for (const inf of spec.inferences) {
     if (inf.requires.length < 2) e.push(`추론 ${inf.id}: 재료가 2개 미만`)
     for (const r of inf.requires) if (!ids.has(r)) e.push(`추론 ${inf.id}: 없는 재료 ${r}`)
@@ -109,6 +122,7 @@ function checkVariant(spec: ScenarioSpec, vi: number): string[] {
     ...Object.values(sc.loginHints),
     ...sc.emails.map((m) => m.subject + m.body),
     ...Object.values(sc.websites),
+    ...(sc.files ?? []).map((f) => f.name + f.body),
     sc.npc.persona,
   ]
   if (exposed.some((t) => t.toLowerCase().includes(pw))) e.push(tag('비밀번호 원문이 노출된 곳이 있음'))
@@ -116,13 +130,17 @@ function checkVariant(spec: ScenarioSpec, vi: number): string[] {
   // 단서 낱말이 문서에 실제로 있어야 누를 수 있다
   for (const c of sc.clues) {
     const [kind, ref] = c.source.split(':')
-    const doc = kind === 'email' ? sc.emails[Number(ref)]?.body : sc.websites[ref]
+    const doc =
+      kind === 'email' ? sc.emails[Number(ref)]?.body : kind === 'file' ? sc.files?.find((f) => f.id === ref)?.body : sc.websites[ref]
     if (!c.keyword) e.push(tag(`단서 ${c.id}: keyword 없음 (누를 낱말이 없어 모을 수 없음)`))
     else if (doc !== undefined && !doc.includes(c.keyword)) e.push(tag(`단서 ${c.id}: 본문에 "${c.keyword}"가 없음`))
   }
   // 웹페이지 주소는 메일이나 다른 페이지에 적혀 있어야 찾아갈 수 있다
   for (const url of Object.keys(sc.websites)) {
-    const docs = [...sc.emails.map((m) => m.subject + m.body), ...Object.entries(sc.websites).filter(([u]) => u !== url).map(([, t]) => t)]
+    const docs = [
+      ...sc.emails.map((m) => m.subject + m.body),
+      ...(sc.files ?? []).map((f) => f.body),
+      ...Object.entries(sc.websites).filter(([u]) => u !== url).map(([, t]) => t)]
     if (!docs.some((t) => t.includes(url))) e.push(tag(`웹페이지 ${url}: 주소가 어디에도 적혀 있지 않음`))
   }
 
@@ -152,7 +170,8 @@ function skeleton(spec: ScenarioSpec) {
     pieces: spec.password.pieces,
     variants: spec.variants.map((v) => ({ id: v.id, password: v.password, slots: Object.keys(v.values).sort() })),
     loginHints: Object.keys(spec.loginHints).sort(),
-    emails: spec.emails.map((m) => m.folder ?? 'inbox'),
+    emails: spec.emails.map((m) => ({ folder: m.folder ?? 'inbox', attachments: m.attachments ?? [] })),
+    files: (spec.files ?? []).map((f) => ({ id: f.id, folder: f.folder })),
     websites: Object.keys(spec.websites).sort(),
     secretDocuments: spec.secretDocuments.length,
     script: spec.script ? { rules: spec.script.rules.map((r) => r.fact ?? null) } : null,

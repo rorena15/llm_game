@@ -22,6 +22,8 @@ export interface SaveData {
   version: 1
   missions: Record<string, MissionRecord>
   settings: Settings
+  /** 메모장 글 ({d.desktop}). 미션을 넘나들며 하나 */
+  memo?: string
 }
 
 export interface SaveBackend {
@@ -60,7 +62,9 @@ export function parseSave(text: string | null): SaveData {
   try {
     const d = JSON.parse(text) as Partial<SaveData>
     if (d.version !== 1 || typeof d.missions !== 'object' || !d.missions) return emptySave()
-    return { version: 1, missions: d.missions, settings: d.settings ?? {} }
+    const out: SaveData = { version: 1, missions: d.missions, settings: d.settings ?? {} }
+    if (typeof d.memo === 'string') out.memo = d.memo
+    return out
   } catch {
     return emptySave()
   }
@@ -114,6 +118,12 @@ export class SaveStore {
 
   setSetting(key: string, value: string | number | boolean) {
     this.data = { ...this.data, settings: { ...this.data.settings, [key]: value } }
+    this.persist()
+  }
+
+  setMemo(memo: string) {
+    if (memo === (this.data.memo ?? '')) return
+    this.data = { ...this.data, memo }
     this.persist()
   }
 

@@ -24,6 +24,7 @@ export const apps = {
     author: '작성',
     sender: '보낸 사람',
     noMail: '받은 메일이 없습니다.',
+    attachments: '첨부',
   },
   browser: {
     history: '방문 기록',
@@ -59,6 +60,24 @@ export const apps = {
     login: '로그인',
     formatHint: '형식 힌트',
     fails: (n: number) => `로그인 실패 ${n}회. 실패할 때마다 보안 시스템의 의심이 오릅니다.`,
+  },
+  files: {
+    pc: (npc: string) => `${npc}의 PC`,
+    docs: '내 문서',
+    attach: '메일 첨부',
+    trash: '휴지통',
+    name: '이름',
+    modified: '수정한 날짜',
+    empty: '파일이 없습니다.',
+    attachEmpty: '첨부가 있는 메일을 읽으면 여기에 보입니다.',
+    trashEmpty: '휴지통이 비어 있습니다.',
+    pick: '파일을 고르면 내용이 보입니다.',
+  },
+  notepad: {
+    file: '내 메모.txt',
+    placeholder: '알아낸 것을 적어 두세요. 미션이 바뀌어도 남고, 저절로 저장됩니다.',
+    saved: '저장됨',
+    chars: (n: number) => `${n}자`,
   },
   clue: {
     collected: (label: string) => `수집함: ${label}`,

@@ -147,3 +147,19 @@ describe('dev panel shortcuts', () => {
     expect(run.status).toBe('cleared')
   })
 })
+
+describe('files', () => {
+  it('shows a mail attachment only after its mail is read, and opens it on request', () => {
+    const run = new MissionRun(sc, noLlm)
+    expect(run.visibleFiles('docs').length).toBeGreaterThan(0)
+    expect(run.visibleFiles('trash').length).toBeGreaterThan(0)
+    expect(run.visibleFiles('attach')).toEqual([])
+    const i = sc.emails.findIndex((m) => m.attachments?.length)
+    run.markRead(i)
+    const att = run.visibleFiles('attach')
+    expect(att.map((f) => f.id)).toEqual(sc.emails[i].attachments)
+    run.openFile(att[0].id)
+    run.openFile(att[0].id)
+    expect(run.fileRequest).toEqual({ id: att[0].id, n: 2 })
+  })
+})

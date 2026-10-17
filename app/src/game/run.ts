@@ -4,7 +4,7 @@ import type { Llm } from '../engine/llm'
 import { ALARM_AT } from '../engine/rules'
 import { ScriptedSession } from '../engine/scripted'
 import { Session, type Talker } from '../engine/session'
-import type { FactSpec, InferenceSpec, Scenario, TurnResult } from '../engine/types'
+import type { DocFile, FactSpec, FileFolder, InferenceSpec, Scenario, TurnResult } from '../engine/types'
 import { achieved, type ChallengeId } from './challenge'
 import { gradeOf, score, type Grade } from './grade'
 import { checkHealth } from './health'
@@ -80,6 +80,8 @@ export class MissionRun {
   browser: { history: string[]; index: number } = { history: [], index: -1 }
   /** 다른 창에서 브라우저를 열어 달라는 요청 (n이 바뀔 때마다 연다) */
   browserRequest = 0
+  /** 다른 창에서 파일 탐색기로 이 파일을 열어 달라는 요청 (n이 바뀔 때마다 연다) */
+  fileRequest: { id: string; n: number } | null = null
   private nextMsg = 0
   private nextNotice = 0
   private version = 0
@@ -168,6 +170,20 @@ export class MissionRun {
   openUrl(url: string) {
     this.navigate(url)
     this.browserRequest++
+    this.emit()
+  }
+
+  /** 탐색기에서 지금 보이는 파일: 내 문서·휴지통은 늘, 첨부는 그 메일을 읽은 뒤에 */
+  visibleFiles(folder: FileFolder): DocFile[] {
+    const files = (this.scenario.files ?? []).filter((f) => f.folder === folder)
+    if (folder !== 'attach') return files
+    const got = new Set(this.scenario.emails.flatMap((m, i) => (this.readMails.has(i) ? (m.attachments ?? []) : [])))
+    return files.filter((f) => got.has(f.id))
+  }
+
+  /** 메일의 첨부를 눌렀을 때: 탐색기 창을 열고 그 파일을 고른다 */
+  openFile(id: string) {
+    this.fileRequest = { id, n: (this.fileRequest?.n ?? 0) + 1 }
     this.emit()
   }
 

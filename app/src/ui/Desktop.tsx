@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ALARM_AT } from '../engine/rules'
+import type { FileFolder } from '../engine/types'
 import { useRun, type MissionRun, type Notice } from '../game/run'
 import { useSave } from '../game/save'
 import { localeTag, useT } from '../i18n'
@@ -8,11 +9,13 @@ import { Volume } from './Settings'
 import { BoardApp } from './apps/BoardApp'
 import { BrowserApp } from './apps/BrowserApp'
 import { EmailApp } from './apps/EmailApp'
+import { FilesApp } from './apps/FilesApp'
 import { MessengerApp } from './apps/MessengerApp'
+import { NotepadApp } from './apps/NotepadApp'
 import { ServerApp } from './apps/ServerApp'
 import { Window, type WinPos, type WinSize } from './Window'
 
-type AppId = 'messenger' | 'email' | 'browser' | 'board' | 'server'
+type AppId = 'messenger' | 'email' | 'browser' | 'board' | 'server' | 'files' | 'trash' | 'notepad'
 
 const APPS: Record<AppId, { icon: string; w: number; h: number; at: WinPos }> = {
   email: { icon: '✉', w: 780, h: 440, at: { x: 130, y: 40 } },
@@ -20,8 +23,14 @@ const APPS: Record<AppId, { icon: string; w: number; h: number; at: WinPos }> = 
   browser: { icon: '🌐', w: 760, h: 500, at: { x: 170, y: 70 } },
   board: { icon: '📌', w: 640, h: 460, at: { x: 220, y: 90 } },
   server: { icon: '🖥', w: 420, h: 320, at: { x: 600, y: 160 } },
+  files: { icon: '📁', w: 720, h: 420, at: { x: 150, y: 60 } },
+  trash: { icon: '🗑', w: 620, h: 380, at: { x: 260, y: 120 } },
+  notepad: { icon: '📝', w: 380, h: 420, at: { x: 640, y: 50 } },
 }
-const ORDER: AppId[] = ['email', 'messenger', 'browser', 'board', 'server']
+const ORDER: AppId[] = ['email', 'messenger', 'browser', 'board', 'server', 'files', 'notepad', 'trash']
+
+const EXPLORER: FileFolder[] = ['docs', 'attach', 'trash']
+const TRASH: FileFolder[] = ['trash']
 
 interface OpenWin {
   id: AppId
@@ -119,6 +128,14 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
     browserReq.current = run.browserRequest
     setWins((ws) => raise(ws, 'browser'))
   }, [run.browserRequest])
+  // 메일의 첨부를 누르면 파일 탐색기를 연다
+  const fileReq = useRef(run.fileRequest?.n ?? 0)
+  useEffect(() => {
+    const n = run.fileRequest?.n ?? 0
+    if (n === fileReq.current) return
+    fileReq.current = n
+    setWins((ws) => raise(ws, 'files'))
+  }, [run.fileRequest])
   const focus = (id: AppId) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, z: top() } : w)))
   const close = (id: AppId) => setWins((ws) => ws.filter((w) => w.id !== id))
   const patch = (id: AppId, p: Partial<OpenWin>) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, ...p } : w)))
@@ -139,6 +156,12 @@ export function Desktop({ run, playerName, debug, onQuit, onRestart, answerChang
         return <BoardApp run={run} visible={visible} />
       case 'server':
         return <ServerApp run={run} />
+      case 'files':
+        return <FilesApp run={run} folders={EXPLORER} />
+      case 'trash':
+        return <FilesApp run={run} folders={TRASH} />
+      case 'notepad':
+        return <NotepadApp />
     }
   }
 

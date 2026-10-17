@@ -37,7 +37,7 @@ export interface NpcSpec {
 
 export interface ClueSpec {
   id: string
-  /** email:<index> · web:<url> */
+  /** email:<index> · web:<url> · file:<파일 id> */
   source: string
   label: string
   text: string
@@ -80,6 +80,23 @@ export interface Email {
   folder?: MailFolder
   /** 화면에 그대로 보이는 날짜 (예: "11/18 09:12") */
   date?: string
+  /** 첨부 파일 id (files 가운데 folder가 attach인 것) */
+  attachments?: string[]
+}
+
+/** 파일 탐색기 폴더. docs 내 문서 · attach 메일 첨부(그 메일을 읽으면 보임) · trash 휴지통 */
+export type FileFolder = 'docs' | 'attach' | 'trash'
+
+/** 타깃 PC의 파일 (설계안 §18). 글만 담는다 */
+export interface DocFile {
+  /** 언어 사이에 같은 id. 단서 출처 file:<id> */
+  id: string
+  /** 화면에 보이는 파일 이름 (예: "회의록_1118.txt") */
+  name: string
+  folder: FileFolder
+  body: string
+  /** 화면에 그대로 보이는 수정 날짜 */
+  date?: string
 }
 
 /** 튜토리얼: 모델 없이 낱말로 고르는 정해진 대사 */
@@ -119,6 +136,8 @@ export interface ScenarioSpec {
   loginHints: Record<string, string>
   emails: Email[]
   websites: Record<string, string>
+  /** 타깃 PC의 파일. 없으면 탐색기·휴지통이 빈다 */
+  files?: DocFile[]
   secretDocuments: string[]
   /** 있으면 모델 대신 이 정해진 대사로 대화한다 (튜토리얼) */
   script?: { rules: ScriptRule[]; default: string[] }

@@ -10,6 +10,7 @@ export function EmailApp({ run }: { run: MissionRun }) {
   useRun(run)
   const t = useT().apps.mail
   const { emails, clues } = run.scenario
+  const files = run.scenario.files ?? []
   const [folder, setFolder] = useState<MailFolder>('inbox')
   const [query, setQuery] = useState('')
   const [sel, setSel] = useState(0)
@@ -57,7 +58,10 @@ export function EmailApp({ run }: { run: MissionRun }) {
           <li key={i} className={`${i === sel ? 'sel' : ''}${run.readMails.has(i) ? '' : ' unread'}`} onClick={() => open(i)}>
             <b>{m.sender}</b>
             {m.date && <time>{m.date}</time>}
-            <span>{m.subject}</span>
+            <span>
+              {m.attachments?.length ? '📎 ' : ''}
+              {m.subject}
+            </span>
           </li>
         ))}
       </ul>
@@ -77,6 +81,19 @@ export function EmailApp({ run }: { run: MissionRun }) {
               onLink={(url) => run.openUrl(url)}
             />
           </p>
+          {mail.attachments?.length ? (
+            <div className="mail-attach">
+              <small>{t.attachments}</small>
+              {mail.attachments.map((id) => {
+                const f = files.find((x) => x.id === id)
+                return f ? (
+                  <button key={id} onClick={() => run.openFile(id)}>
+                    📎 {f.name}
+                  </button>
+                ) : null
+              })}
+            </div>
+          ) : null}
         </article>
       ) : (
         <p className="hint">{t.noMail}</p>

@@ -30,6 +30,20 @@ describe('grade', () => {
 })
 
 describe('save', () => {
+  it('keeps the memo across reloads and ignores a broken one', async () => {
+    const { b, backend } = memBackend()
+    const st = new SaveStore(backend)
+    await st.load()
+    st.setMemo('김 부장: 아내 이야기')
+    st.setMemo('김 부장: 아내 이야기')
+    await st.flush()
+    expect(b.writes).toBe(1)
+    const again = new SaveStore(backend)
+    await again.load()
+    expect(again.data.memo).toBe('김 부장: 아내 이야기')
+    expect(parseSave(JSON.stringify({ version: 1, missions: {}, memo: 3 })).memo).toBeUndefined()
+  })
+
   it('starts empty on missing or broken data', () => {
     expect(parseSave(null).missions).toEqual({})
     expect(parseSave('{oops').missions).toEqual({})
